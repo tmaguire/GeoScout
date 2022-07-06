@@ -1,2 +1,2 @@
-# W3W-Geocache
-What3Words Geocaching example
+# Witham Scouts Geocaching
+Geocaching for Witham Scouts using What3Words
