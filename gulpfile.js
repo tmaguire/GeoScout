@@ -46,7 +46,7 @@ function bundledJs() {
 			'./node_modules/dompurify/dist/purify.min.js',
 			'./src/js/script.min.js'
 		])
-		.pipe(concat('main.min.js'))
+		.pipe(concat(`main-${version}.min.js`))
 		.pipe(uglify())
 		.pipe(dest('dist/js/'));
 }
@@ -57,7 +57,7 @@ function bundledCss() {
 			'./node_modules/bootstrap-icons/font/bootstrap-icons.scss',
 			'./node_modules/sweetalert2/dist/sweetalert2.min.css'
 		])
-		.pipe(concat('bundle.min.css'))
+		.pipe(concat(`bundle-${version}.min.css`))
 		.pipe(sass.sync({
 			outputStyle: 'compressed'
 		}).on('error', sass.logError))

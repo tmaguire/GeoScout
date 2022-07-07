@@ -105,3 +105,6 @@ dist
 
 # Snyk audit cache
 .dccache
+
+# Third party license JSON
+thirdparty-licenses.json
