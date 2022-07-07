@@ -9,3 +9,12 @@ X-Frame-Options = "DENY"
 X-XSS-Protection = "1; mode=block"
 [functions]
 node_bundler = "esbuild"
+[[redirects]]
+force = true
+from = "/api/*"
+status = 200
+to = "/.netlify/functions/:splat"
+[[redirects]]
+from = "/*"
+status = 200
+to = "/index.html"

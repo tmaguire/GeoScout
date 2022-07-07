@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+	<meta charset="utf-8">
+	<title>Witham Scouts Geocaching</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="author" content="Tom Maguire">
+	<!-- Bundled CSS -->
+	<link rel="stylesheet" type="text/css" href="./css/bundle.min.css">
+	<link rel="icon" href="./img/icon.png">
+	<!-- Theme colour -->
+	<meta name="theme-color" content="#332e35">
+</head>
+
+<body>
+	<div id="app">
+		<a href="#content" class="visually-hidden-focusable">Skip to main content</a>
+
+		<nav class="navbar navbar-expand-md navbar-dark bg-primary">
+			<div class="container-fluid">
+				<span class="navbar-brand">
+					<!-- <picture>
+						<source srcset="./img/site-logo.svg" type="image/svg+xml">
+						<img src="./img/site-logo.png" height="30" width="67" class="d-inline-block align-top"
+							alt="Logo">
+					</picture> -->
+					<span class="ms-1 d-inline"><span class="d-none d-md-inline">Witham
+							Scouts&nbsp;</span>Geocaching</span>
+				</span>
+			</div>
+		</nav>
+		<!-- Main app layout -->
+		<main class="container mt-3" id="content">
+			<div class="container">
+				<!-- Home screen -->
+				<div id="home" class="row mx-auto" aria-hidden="false">
+					<div class="col mx-auto">
+						<h1 class="mb-3 text-center"><i class="bi-compass"></i>&nbsp;Welcome</h1>
+						<div id="homeContent"></div>
+					</div>
+				</div>
+				<!-- Editor screen -->
+				<div id="editor" class="row mx-auto d-none" aria-hidden="true">
+					<div class="col mx-auto">
+						<h1 id="editorHeader" class="mb-3 text-center">Editor screen</h1>
+						<div id="editorCard"></div>
+					</div>
+				</div>
+			</div>
+		</main>
+		<!-- Page footer -->
+		<footer class="container pt-5 my-5 text-muted border-top">
+			<p>Witham Scouts Geocaching v@@version | All content &copy; <a href="https://www.withamscouts.org.uk">Witham
+					Scouts</a>.
+				All Rights Reserved. | <a data-bs-toggle="modal" href="#openSourceLicenses">Open
+					Source Licenses</a></p>
+		</footer>
+		<!-- Modal for Open Source Licenses -->
+		<div class="modal fade" id="openSourceLicenses" tabindex="-1" aria-labelledby="openSourceLicensesLabel"
+			aria-hidden="true">
+			<div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h1 class="modal-title" id="openSourceLicensesLabel">Open Source Licenses</h1>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<p>The Witham Scouts Geocaching app (v@@version) is
+							built using the following open source libraries:</p>
+						@@for (var i = 0; i < licenses.length; i++) { @@include('./src/includes/license.html',
+							`+(JSON.stringify(licenses[i]))+`) } </div> <div class="modal-footer">
+							<button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="./js/main.min.js"></script>
+
+</body>
+
+</html>
