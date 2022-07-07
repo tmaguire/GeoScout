@@ -16,7 +16,6 @@
 <body>
 	<div id="app">
 		<a href="#content" class="visually-hidden-focusable">Skip to main content</a>
-
 		<nav class="navbar navbar-expand-md navbar-dark bg-primary">
 			<div class="container-fluid">
 				<span class="navbar-brand">
@@ -36,8 +35,37 @@
 				<!-- Home screen -->
 				<div id="home" class="row mx-auto" aria-hidden="false">
 					<div class="col mx-auto">
-						<h1 class="mb-3 text-center"><i class="bi-compass"></i>&nbsp;Welcome</h1>
-						<div id="homeContent"></div>
+						<h1 class="my-4 text-center"><i class="bi bi-compass" aria-hidden="true"></i>&nbsp;Welcome</h1>
+						<div class="row home-tiles">
+							<div class="col-sm-3">
+								<button id="showMap" class="btn btn-sq-lg btn-primary">
+									<i class="bi bi-map home-icon" aria-hidden="true"></i>
+									<br>
+									<span class="home-caption">View caches</span>
+								</button>
+							</div>
+							<div class="col-sm-3">
+								<button id="showSignUp" class="btn btn-sq-lg btn-primary page-btn">
+									<i class="bi bi-person-plus home-icon" aria-hidden="true"></i>
+									<br>
+									<span class="home-caption">Create an account</span>
+								</button>
+							</div>
+							<div class="col-sm-3">
+								<button id="showLogin" class="btn btn-sq-lg btn-primary page-btn">
+									<i class="bi bi-door-open home-icon" aria-hidden="true"></i>
+									<br>
+									<span class="home-caption">Log into your account</span>
+								</button>
+							</div>
+							<div class="col-sm-3">
+								<button id="showAbout" class="btn btn-sq-lg btn-primary page-btn">
+									<i class="bi bi-info-circle home-icon" aria-hidden="true"></i>
+									<br>
+									<span class="home-caption">Find out more</span>
+								</button>
+							</div>
+						</div>
 					</div>
 				</div>
 				<!-- Editor screen -->

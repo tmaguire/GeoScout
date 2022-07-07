@@ -71,3 +71,30 @@ body {
 .legend {
 	font-size: var(--bs-body-font-size) !important;
 }
+
+.btn-sq-lg {
+	width: 100% !important;
+	height: 185px !important;
+	padding: 10px;
+	margin: 5px;
+}
+
+.home-icon {
+	padding: 5px;
+	margin-top: 10px;
+	font-size: 80px;
+}
+
+.home-caption {
+	font-size: 20px;
+	text-overflow: ellipsis;
+}
+
+.hidden {
+	display: none;
+}
+
+.home-tiles {
+	margin-left: auto !important;
+	margin-right: auto !important;
+}
