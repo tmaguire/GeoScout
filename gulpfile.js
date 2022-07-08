@@ -44,6 +44,7 @@ function bundledJs() {
 			'./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js',
 			'./node_modules/sweetalert2/dist/sweetalert2.min.js',
 			'./node_modules/dompurify/dist/purify.min.js',
+			'./node_modules/navigo/lib/navigo.min.js',
 			'./src/js/script.min.js'
 		])
 		.pipe(concat(`main-${version}.min.js`))

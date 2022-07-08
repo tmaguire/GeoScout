@@ -192,7 +192,42 @@ function handleErrors(response) {
 	return response;
 }
 
+function loadMap() {
+	changePage('map');
+}
+
+function changePage(page) {
+	document.querySelectorAll('section').forEach(section => {
+		if (section.id !== page) {
+			section.setAttribute('class', 'row mx-auto d-none');
+			section.setAttribute('aria-hidden', 'true');
+		}
+	});
+	document.getElementById(page).setAttribute('class', 'row mx-auto');
+	document.getElementById(page).setAttribute('aria-hidden', 'false');
+}
+
 // Function to start on page load
 window.onload = function () {
-	console.log('hello world');
+	const router = new Navigo('/');
+	router
+		.on('/viewCaches', function () {
+			loadMap();
+		})
+		.on('/test-:id', function(value) {
+			console.log(value);
+		})
+		.on('/', function() {
+			changePage('home');
+		})
+		.on('/home', function () {
+			changePage('home');
+		})
+		.on('/foundCache', function () {
+			changePage('cache');
+		})
+		.on('/about', function () {
+			changePage('about');
+		})
+		.resolve();
 };

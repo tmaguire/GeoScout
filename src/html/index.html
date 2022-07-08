@@ -33,48 +33,62 @@
 		<main class="container mt-3" id="content">
 			<div class="container">
 				<!-- Home screen -->
-				<div id="home" class="row mx-auto" aria-hidden="false">
+				<section id="home" class="row mx-auto d-none" aria-hidden="true">
 					<div class="col mx-auto">
 						<h1 class="my-4 text-center"><i class="bi bi-compass" aria-hidden="true"></i>&nbsp;Welcome</h1>
 						<div class="row home-tiles">
-							<div class="col-sm-3">
-								<button id="showMap" class="btn btn-sq-lg btn-primary">
+							<div class="col-sm-4">
+								<a href="viewCaches" class="btn btn-sq-lg btn-primary" data-navigo>
 									<i class="bi bi-map home-icon" aria-hidden="true"></i>
 									<br>
 									<span class="home-caption">View caches</span>
-								</button>
+								</a>
 							</div>
-							<div class="col-sm-3">
-								<button id="showSignUp" class="btn btn-sq-lg btn-primary page-btn">
-									<i class="bi bi-person-plus home-icon" aria-hidden="true"></i>
+							<div class="col-sm-4">
+								<a href="foundCache" class="btn btn-sq-lg btn-primary page-btn" data-navigo>
+									<i class="bi bi-pin-map home-icon" aria-hidden="true"></i>
 									<br>
-									<span class="home-caption">Create an account</span>
-								</button>
+									<span class="home-caption">Found a cache?</span>
+								</a>
 							</div>
-							<div class="col-sm-3">
-								<button id="showLogin" class="btn btn-sq-lg btn-primary page-btn">
-									<i class="bi bi-door-open home-icon" aria-hidden="true"></i>
-									<br>
-									<span class="home-caption">Log into your account</span>
-								</button>
-							</div>
-							<div class="col-sm-3">
-								<button id="showAbout" class="btn btn-sq-lg btn-primary page-btn">
+							<div class="col-sm-4">
+								<a href="about" class="btn btn-sq-lg btn-primary page-btn" data-navigo>
 									<i class="bi bi-info-circle home-icon" aria-hidden="true"></i>
 									<br>
 									<span class="home-caption">Find out more</span>
-								</button>
+								</a>
 							</div>
 						</div>
 					</div>
-				</div>
+				</section>
 				<!-- Editor screen -->
-				<div id="editor" class="row mx-auto d-none" aria-hidden="true">
+				<section id="editor" class="row mx-auto d-none" aria-hidden="true">
 					<div class="col mx-auto">
-						<h1 id="editorHeader" class="mb-3 text-center">Editor screen</h1>
+						<h1 id="editorHeader" class="my-4 text-center">Editor screen</h1>
 						<div id="editorCard"></div>
 					</div>
-				</div>
+				</section>
+				<!-- Map screen -->
+				<section id="map" class="row mx-auto d-none" aria-hidden="true">
+					<div class="col mx-auto">
+						<h1 class="my-4 text-center"><i class="bi bi-map" aria-hidden="true"></i>&nbsp;View caches</h1>
+						<div id="mapContainer"></div>
+					</div>
+				</section>
+				<!-- Cache screen -->
+				<section id="cache" class="row mx-auto d-none" aria-hidden="true">
+					<div class="col mx-auto">
+						<h1 class="my-4 text-center"><i class="bi bi-pin-map" aria-hidden="true"></i>&nbsp;Check a cache</h1>
+						<div id="cacheContainer"></div>
+					</div>
+				</section>
+				<!-- About screen -->
+				<section id="about" class="row mx-auto d-none" aria-hidden="true">
+					<div class="col mx-auto">
+						<h1 class="my-4 text-center"><i class="bi bi-info-circle" aria-hidden="true"></i>&nbsp;About the Witham Scouts Geocaching app</h1>
+						<div id="aboutContainer"></div>
+					</div>
+				</section>
 			</div>
 		</main>
 		<!-- Page footer -->

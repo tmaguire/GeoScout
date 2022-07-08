@@ -108,3 +108,5 @@ dist
 
 # Third party license JSON
 thirdparty-licenses.json
+# Local Netlify folder
+.netlify
