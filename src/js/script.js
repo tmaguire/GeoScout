@@ -193,8 +193,34 @@ function handleErrors(response) {
 }
 
 function loadMap() {
+	const map = L.map('mapContainer').fitWorld();
+	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		maxZoom: 19,
+		attribution: '© OpenStreetMap'
+	}).addTo(map);
+	map.locate({
+		setView: true,
+		maxZoom: 16
+	});
+
+	function onLocationFound(event) {
+		const radius = event.accuracy;
+		L.marker(event.latlng).addTo(map)
+			.bindPopup(`You are within ${radius} metres from this point`).openPopup();
+		L.circle(event.latlng, radius).addTo(map);
+	}
+
+	function onLocationError(event) {
+		showToast.fire({
+			title: event.message,
+			icon: 'error'
+		});
+	}
+	map.on('locationfound', onLocationFound);
+	map.on('locationerror', onLocationError);
 	changePage('map');
 }
+
 
 function changePage(page) {
 	document.querySelectorAll('section').forEach(section => {
@@ -214,10 +240,10 @@ window.onload = function () {
 		.on('/viewCaches', function () {
 			loadMap();
 		})
-		.on('/test-:id', function(value) {
+		.on('/test-:id', function (value) {
 			console.log(value);
 		})
-		.on('/', function() {
+		.on('/', function () {
 			changePage('home');
 		})
 		.on('/home', function () {

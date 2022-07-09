@@ -7,5 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Tom Maguire",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@azure/identity": "^2.1.0",
+    "@microsoft/microsoft-graph-client": "^3.0.2",
+    "isomorphic-fetch": "^3.0.0"
+  }
 }
