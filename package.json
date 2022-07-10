@@ -21,15 +21,14 @@
 	"dependencies": {
 		"@azure/msal-browser": "^2.27.0",
 		"@popperjs/core": "^2.11.5",
-		"@what3words/javascript-components": "^4.0.6",
 		"bootstrap": "^5.1.3",
 		"bootstrap-icons": "^1.8.3",
-		"leaflet": "^1.8.0",
 		"navigo": "^8.11.1",
 		"sweetalert2": "^11.4.20",
 		"validator": "^13.7.0"
 	},
 	"devDependencies": {
+		"@what3words/javascript-components": "^4.0.6",
 		"dompurify": "^2.3.8",
 		"gulp": "^4.0.2",
 		"gulp-concat": "^2.6.1",

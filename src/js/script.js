@@ -24,6 +24,7 @@ const tokenRequest = {
 const msalInstance = new msal.PublicClientApplication(msalConfig);
 
 let mainMap;
+let router;
 
 // Redirect: once login is successful and redirects with tokens, call Graph API
 msalInstance.handleRedirectPromise().then(handleResponse).catch(err => {
@@ -190,39 +191,74 @@ function handleErrors(response) {
 }
 
 function loadCachesPage() {
-	try {
-		mainMap = L.map('mapContainer', {
-			maxZoom: 18,
-			minZoom: 13,
-			center: [51.80007, 0.64038],
-			zoom: 13
+	mainMap = new google.maps.Map(document.getElementById('mapContainer'), {
+		center: {
+			lat: 51.80007,
+			lng: 0.64038
+		},
+		zoom: 13
+	});
+	fetch('./api/get-caches')
+		.then(response => response.json())
+		.then(handleErrors)
+		.then(data => {
+			if (data.hasOwnProperty('caches')) {
+				let count = 0;
+				data.caches.forEach(cache => {
+					count++;
+					const marker = new google.maps.Marker({
+						position: {
+							lat: cache.coordinates.split(',')[0],
+							lng: cache.coordinates.split(',')[1]
+						},
+						map: mainMap,
+						title: `Cache ${count}`,
+						label: String(count)
+					});
+					marker.addListener('click', () => {
+						router.navigate(`/viewCache-${cache.id}`);
+					});
+				});
+			} else {
+				throw 'Invalid response received';
+			}
+		})
+		.catch(error => {
+			showToast.fire({
+				title: error,
+				icon: 'error'
+			});
 		});
-	} catch (error) {}
-	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-		maxZoom: 18,
-		minZoom: 13,
-		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
-	}).addTo(mainMap);
-	mainMap.setMaxBounds(mainMap.getBounds());
 	changePage('map');
-	mainMap.invalidateSize();
 }
 
 
 function changePage(page) {
+	// Update menu
+	document.querySelectorAll('a.nav-link').forEach(menuItem => {
+		if (menuItem.getAttribute('data-page') === page) {
+			menuItem.setAttribute('class', 'nav-link active');
+			menuItem.setAttribute('aria-current', 'page');
+		} else {
+			menuItem.setAttribute('class', 'nav-link');
+			menuItem.removeAttribute('aria-current');
+		}
+	});
+	// Hide all pages (except selected)
 	document.querySelectorAll('section').forEach(section => {
 		if (section.id !== page) {
 			section.setAttribute('class', 'row mx-auto d-none');
 			section.setAttribute('aria-hidden', 'true');
 		}
 	});
+	// Set page as active
 	document.getElementById(page).setAttribute('class', 'row mx-auto');
 	document.getElementById(page).setAttribute('aria-hidden', 'false');
 }
 
 // Function to start on page load
 window.onload = function () {
-	const router = new Navigo('/');
+	router = new Navigo('/');
 	router
 		.on('/viewCaches', function () {
 			loadCachesPage();
@@ -237,14 +273,14 @@ window.onload = function () {
 		.on('/foundCache', function () {
 			changePage('cache');
 		})
-		.on('/foundCache-:id', function(value) {
+		.on('/foundCache-:id', function (value) {
 			console.log(value.data.id);
 			console.log(value);
 		})
 		.on('/about', function () {
 			changePage('about');
 		})
-		.notFound(function() {
+		.notFound(function () {
 			changePage('404');
 		})
 		.resolve();

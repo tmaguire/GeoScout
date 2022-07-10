@@ -45,7 +45,6 @@ function bundledJs() {
 			'./node_modules/sweetalert2/dist/sweetalert2.min.js',
 			'./node_modules/dompurify/dist/purify.min.js',
 			'./node_modules/navigo/lib/navigo.min.js',
-			'./node_modules/leaflet/dist/leaflet.js',
 			'./src/js/script.min.js'
 		])
 		.pipe(concat(`main-${version}.min.js`))
@@ -57,8 +56,7 @@ function bundledCss() {
 	return src([
 			'./src/css/style.scss',
 			'./node_modules/bootstrap-icons/font/bootstrap-icons.scss',
-			'./node_modules/sweetalert2/dist/sweetalert2.min.css',
-			'./node_modules/leaflet/dist/leaflet.css'
+			'./node_modules/sweetalert2/dist/sweetalert2.min.css'
 		])
 		.pipe(concat(`bundle-${version}.min.css`))
 		.pipe(sass.sync({
@@ -67,12 +65,12 @@ function bundledCss() {
 		.pipe(dest('dist/css/'));
 }
 
-// function copyImg() {
-// 	return src([
-// 			'./src/img/*'
-// 		])
-// 		.pipe(dest('dist/img/'));
-// }
+function copyImg() {
+	return src([
+			'./src/img/*'
+		])
+		.pipe(dest('dist/img/'));
+}
 
 function copyIcons() {
 	return src('./node_modules/bootstrap-icons/font/fonts/*')
@@ -97,5 +95,5 @@ function sitePages() {
 		.pipe(dest('dist/'));
 }
 
-exports.default = parallel(series(parallel(bundledJs, bundledCss, sitePages, copyIcons), sri));
-exports.dev = parallel(bundledJs, bundledCss, sitePages, copyIcons);
+exports.default = parallel(series(parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg), sri));
+exports.dev = parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg);

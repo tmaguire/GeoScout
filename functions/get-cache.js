@@ -29,8 +29,8 @@ const siteId = process.env.graphSiteId;
 
 // Start Lambda Function
 export async function handler(event, context) {
-	// Only allow GET
-	if (event.httpMethod !== 'GET') {
+	// Only allow POST
+	if (event.httpMethod !== 'POST') {
 		return {
 			statusCode: 405,
 			body: JSON.stringify({
@@ -42,30 +42,42 @@ export async function handler(event, context) {
 		};
 	}
 
+	let cacheGuid;
+
+	try {
+		cacheGuid = JSON.parse(event.body).cache;
+	} catch {
+		return {
+			statusCode: 400,
+			body: JSON.stringify({
+				error: 'Invalid request'
+			}),
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		};
+	}
+
 	// Get list items from library
-	return client.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields&$select=id,fields`).get()
+	return client.api(`/sites/${siteId}/lists/${listId}/items/${cacheGuid}?$expand=fields&$select=id,fields`).get()
 		.then(data => {
 			if (data.hasOwnProperty('error')) {
 				throw {
 					error: data.error
 				};
 			}
-			const caches = [];
-			data.value.forEach(cache => {
-				const fields = cache.fields;
-				caches.push({
-					location: fields.W3WLocation,
-					coordinates: fields.Coordinates,
-					id: cache.id
-				});
-			});
-			return caches;
+			const fields = data.fields;
+			return {
+				location: fields.W3WLocation,
+				coordinates: fields.Coordinates,
+				id: data.id
+			};
 		})
-		.then(array => {
+		.then(obj => {
 			return {
 				statusCode: 200,
 				body: JSON.stringify({
-					caches: array
+					cache: obj
 				}),
 				headers: {
 					'Content-Type': 'application/json'
