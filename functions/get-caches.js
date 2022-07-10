@@ -51,12 +51,13 @@ export async function handler(event, context) {
 				};
 			}
 			const caches = [];
+			console.log(data.value);
 			data.value.forEach(cache => {
 				const fields = cache.fields;
 				caches.push({
 					location: fields.W3WLocation,
 					coordinates: fields.Coordinates,
-					id: cache.id
+					id: fields.Title
 				});
 			});
 			return caches;

@@ -196,7 +196,17 @@ function loadCachesPage() {
 			lat: 51.80007,
 			lng: 0.64038
 		},
-		zoom: 13
+		zoom: 13,
+		restriction: {
+			latLngBounds: {
+				north: 51.826601357825716,
+				east: 0.7474966992187326,
+				south: 51.773523020732,
+				west: 0.5332633007812326
+			},
+			strictBounds: true
+		},
+		mapId: '6b8e857a992e95a7'
 	});
 	fetch('./api/get-caches')
 		.then(response => response.json())
@@ -208,8 +218,8 @@ function loadCachesPage() {
 					count++;
 					const marker = new google.maps.Marker({
 						position: {
-							lat: cache.coordinates.split(',')[0],
-							lng: cache.coordinates.split(',')[1]
+							lat: Number(cache.coordinates.split(',')[0]),
+							lng: Number(cache.coordinates.split(',')[1])
 						},
 						map: mainMap,
 						title: `Cache ${count}`,
@@ -279,6 +289,9 @@ window.onload = function () {
 		})
 		.on('/about', function () {
 			changePage('about');
+		})
+		.on('/disclaimer', function () {
+			changePage('disclaimer');
 		})
 		.notFound(function () {
 			changePage('404');
