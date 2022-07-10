@@ -23,10 +23,7 @@ const tokenRequest = {
 
 const msalInstance = new msal.PublicClientApplication(msalConfig);
 
-let username = '';
-let authority = [];
-let table;
-let isNew = false;
+let mainMap;
 
 // Redirect: once login is successful and redirects with tokens, call Graph API
 msalInstance.handleRedirectPromise().then(handleResponse).catch(err => {
@@ -192,33 +189,23 @@ function handleErrors(response) {
 	return response;
 }
 
-function loadMap() {
-	const map = L.map('mapContainer').fitWorld();
-	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-		maxZoom: 19,
-		attribution: '© OpenStreetMap'
-	}).addTo(map);
-	map.locate({
-		setView: true,
-		maxZoom: 16
-	});
-
-	function onLocationFound(event) {
-		const radius = event.accuracy;
-		L.marker(event.latlng).addTo(map)
-			.bindPopup(`You are within ${radius} metres from this point`).openPopup();
-		L.circle(event.latlng, radius).addTo(map);
-	}
-
-	function onLocationError(event) {
-		showToast.fire({
-			title: event.message,
-			icon: 'error'
+function loadCachesPage() {
+	try {
+		mainMap = L.map('mapContainer', {
+			maxZoom: 18,
+			minZoom: 13,
+			center: [51.80007, 0.64038],
+			zoom: 13
 		});
-	}
-	map.on('locationfound', onLocationFound);
-	map.on('locationerror', onLocationError);
+	} catch (error) {}
+	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		maxZoom: 18,
+		minZoom: 13,
+		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
+	}).addTo(mainMap);
+	mainMap.setMaxBounds(mainMap.getBounds());
 	changePage('map');
+	mainMap.invalidateSize();
 }
 
 
@@ -238,22 +225,27 @@ window.onload = function () {
 	const router = new Navigo('/');
 	router
 		.on('/viewCaches', function () {
-			loadMap();
+			loadCachesPage();
 		})
-		.on('/test-:id', function (value) {
+		.on('/viewCache-:id', function (value) {
+			console.log(value.data.id);
 			console.log(value);
 		})
 		.on('/', function () {
 			changePage('home');
 		})
-		.on('/home', function () {
-			changePage('home');
-		})
 		.on('/foundCache', function () {
 			changePage('cache');
 		})
+		.on('/foundCache-:id', function(value) {
+			console.log(value.data.id);
+			console.log(value);
+		})
 		.on('/about', function () {
 			changePage('about');
+		})
+		.notFound(function() {
+			changePage('404');
 		})
 		.resolve();
 };

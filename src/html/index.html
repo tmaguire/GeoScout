@@ -78,15 +78,36 @@
 				<!-- Cache screen -->
 				<section id="cache" class="row mx-auto d-none" aria-hidden="true">
 					<div class="col mx-auto">
-						<h1 class="my-4 text-center"><i class="bi bi-pin-map" aria-hidden="true"></i>&nbsp;Check a cache</h1>
+						<h1 class="my-4 text-center"><i class="bi bi-pin-map" aria-hidden="true"></i>&nbsp;Check a cache
+						</h1>
 						<div id="cacheContainer"></div>
 					</div>
 				</section>
 				<!-- About screen -->
 				<section id="about" class="row mx-auto d-none" aria-hidden="true">
 					<div class="col mx-auto">
-						<h1 class="my-4 text-center"><i class="bi bi-info-circle" aria-hidden="true"></i>&nbsp;About the Witham Scouts Geocaching app</h1>
+						<h1 class="my-4 text-center"><i class="bi bi-info-circle" aria-hidden="true"></i>&nbsp;About the
+							Witham Scouts Geocaching app</h1>
 						<div id="aboutContainer"></div>
+					</div>
+				</section>
+				<!-- Not found screen -->
+				<section id="404" class="row mx-auto d-none" aria-hidden="true">
+					<div class="container">
+						<div class="px-4 py-5 my-5 text-center">
+							<i class="fa-regular fa-exclamation-triangle fa-6x d-block mx-auto mb-4" aria-hidden="true"
+								role="img"></i>
+							<h1 class="display-5 fw-bold">Page not found</h1>
+							<div class="col-lg-6 mx-auto">
+								<p class="lead mb-4">The page or link you're trying to get to doesn't exist.
+								</p>
+								<div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+									<a class="btn btn-primary btn-lg px-4 gap-3"
+										href="https://geocaching.withamscouts.org.uk">Go
+										home</a>
+								</div>
+							</div>
+						</div>
 					</div>
 				</section>
 			</div>
@@ -119,6 +140,11 @@
 		</div>
 	</div>
 	<script src="./js/main-@@version.min.js"></script>
+	<script type="module"
+		src="https://cdn.what3words.com/javascript-components@4.0.6/dist/what3words/what3words.esm.js"></script>
+	<script nomodule
+		src="https://cdn.what3words.com/javascript-components@4.0.6/dist/what3words/what3words.js?key=48ATG678">
+	</script>
 
 </body>
 
