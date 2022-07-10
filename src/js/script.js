@@ -242,6 +242,10 @@ function loadCachesPage() {
 	changePage('map');
 }
 
+function loadCachePage(id) {
+	document.getElementById('cacheHeader').innerText = id;
+	changePage('cache');
+}
 
 function changePage(page) {
 	// Update menu
@@ -270,18 +274,14 @@ function changePage(page) {
 window.onload = function () {
 	router = new Navigo('/');
 	router
+		.on('/', function () {
+			changePage('home');
+		})
 		.on('/viewCaches', function () {
 			loadCachesPage();
 		})
 		.on('/viewCache-:id', function (value) {
-			console.log(value.data.id);
-			console.log(value);
-		})
-		.on('/', function () {
-			changePage('home');
-		})
-		.on('/foundCache', function () {
-			changePage('cache');
+			loadCachePage(value.data.id);
 		})
 		.on('/foundCache-:id', function (value) {
 			console.log(value.data.id);
