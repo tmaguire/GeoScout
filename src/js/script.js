@@ -386,7 +386,7 @@ function foundCachePage(id) {
 }
 
 function foundCachesPage() {
-	const noneFound = `<div class="px-4 py-5 my-5 text-center">
+	const noneFound = `<div class="p-3 text-center">
 		<i class="bi bi-emoji-frown home-icon d-block mx-auto mb-4" aria-hidden="true"
 			role="img"></i>
 		<h1 class="display-6 fw-bold">You haven't found any geocaches (yet)</h1>
