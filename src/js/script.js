@@ -330,6 +330,12 @@ function resetCachePage() {
 	mapBtn.setAttribute('href', '#');
 	mapBtn.setAttribute('tabindex', '-1');
 	mapBtn.setAttribute('class', 'btn btn-primary disabled placeholder col-5');
+	mapBtn.innerHTML = '';
+	const foundBtn = document.getElementById('cacheFoundLink');
+	foundBtn.setAttribute('href', '#');
+	foundBtn.setAttribute('tabindex', '-1');
+	foundBtn.setAttribute('class', 'btn btn-outline-primary disabled placeholder col-4');
+	foundBtn.innerHTML = '';
 }
 
 // Function to start on page load
