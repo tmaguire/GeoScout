@@ -35,7 +35,7 @@ import limiterFactory from 'lambda-rate-limiter';
 export async function handler(event, context) {
 	// Rate limiting configuration to prevent abuse
 	const limiter = limiterFactory({
-		interval: 60000,
+		interval: 6000,
 		uniqueTokenPerInterval: 500,
 	});
 	const ip = crypto.createHash('SHA256').update(event.headers['client-ip']).digest('hex');

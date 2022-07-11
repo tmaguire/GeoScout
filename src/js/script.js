@@ -226,18 +226,18 @@ function loadCachePage(id) {
 			w3wLink.innerHTML = `what3words address: <a href="https://what3words.com/${w3wAddress}" target="_blank" translate="no">///${w3wAddress}</a><br><br><strong id="cacheStats"></strong>`;
 			const mapBtn = document.getElementById('cacheMapsLink');
 			mapBtn.removeAttribute('tabindex');
-			mapBtn.setAttribute('class', 'btn btn-primary my-3');
+			mapBtn.setAttribute('class', 'btn btn-primary m-1');
 			mapBtn.setAttribute('href', `https://www.google.com/maps/dir/?api=1&destination=${DOMPurify.sanitize(data.coordinates)}&travelmode=walking`);
 			mapBtn.setAttribute('target', '_blank');
 			mapBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in Google Maps';
 			const foundBtn = document.getElementById('cacheFoundLink');
 			const cacheStats = document.getElementById('cacheStats');
 			if (data.found) {
-				foundBtn.setAttribute('class', 'btn btn-outline-primary disabled my-3');
+				foundBtn.setAttribute('class', 'btn btn-outline-primary disabled m-1');
 				foundBtn.innerHTML = `<i class="bi bi-patch-check" aria-hidden="true"></i>&nbsp;You've already found this cache`;
 				cacheStats.innerText = `You ${Number(data.stats) === 1 ? 'are the only person that found this cache!' : `and ${Number(data.stats) - 1} other ${(Number(data.stats) - 1) === 1 ? 'person' : 'people'} have found this cache`}`;
 			} else {
-				foundBtn.setAttribute('class', 'btn btn-outline-primary my-3');
+				foundBtn.setAttribute('class', 'btn btn-outline-primary m-1');
 				foundBtn.setAttribute('href', `foundCache-${id}`);
 				foundBtn.innerHTML = '<i class="bi bi-123" aria-hidden="true"></i>&nbsp;Found this cache?';
 				cacheStats.innerText = `${Number(data.stats) === 0 ? 'No one has found this cache yet. Can you find it?' : `${Number(data.stats)} ${Number(data.stats) === 1 ? 'person' : 'people'} have found this cache - can you find it?`}`;
@@ -295,10 +295,10 @@ function resetCachePage() {
 	mapBtn.removeAttribute('target');
 	mapBtn.setAttribute('href', '#');
 	mapBtn.setAttribute('tabindex', '-1');
-	mapBtn.setAttribute('class', 'btn btn-primary disabled placeholder col-5 my-3');
+	mapBtn.setAttribute('class', 'btn btn-primary disabled placeholder col-5 m-1');
 	mapBtn.innerHTML = '';
 	const foundBtn = document.getElementById('cacheFoundLink');
-	foundBtn.setAttribute('class', 'btn btn-outline-primary disabled placeholder col-4 my-3');
+	foundBtn.setAttribute('class', 'btn btn-outline-primary disabled placeholder col-4 m-1');
 	foundBtn.innerHTML = '';
 }
 
@@ -311,8 +311,8 @@ function foundCachePage(id) {
 			showCancelButton: true,
 			buttonsStyling: false,
 			customClass: {
-				cancelButton: 'btn btn-outline-primary mx-2',
-				confirmButton: 'btn btn-primary mx-2',
+				cancelButton: 'btn btn-outline-primary m-1',
+				confirmButton: 'btn btn-primary m-1',
 				loader: 'custom-loader'
 			},
 			loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Verifying code...</span></div>',
@@ -354,7 +354,7 @@ function foundCachePage(id) {
 					returnFocus: false,
 					showConfirmButton: true,
 					customClass: {
-						confirmButton: 'btn btn-primary'
+						confirmButton: 'btn btn-primary m-1'
 					},
 					didOpen: () => {
 						Swal.hideLoading();
@@ -373,7 +373,7 @@ function foundCachePage(id) {
 				icon: 'error',
 				buttonsStyling: false,
 				customClass: {
-					confirmButton: 'btn btn-primary'
+					confirmButton: 'btn btn-primary m-1'
 				},
 				didOpen: () => {
 					Swal.hideLoading();
