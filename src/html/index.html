@@ -85,20 +85,26 @@
 				<section id="editor" class="row mx-auto d-none" aria-hidden="true">
 					<div class="col mx-auto">
 						<h1 id="editorHeader" class="my-4 text-center">
-							<i class="bi bi-pencil" aria-hidden="true"></i>&nbsp;Editor screen
+							<i class="bi bi-pencil" aria-hidden="true"></i>&nbsp;Cache editor
 						</h1>
 						<div class="card text-dark bg-light mb-3 col-sm-6 mx-auto">
-							<form id="recordForm" class="card-body" novalidate>
+							<form id="editorForm" class="card-body" novalidate>
 								<div class="form-floating mb-3">
-									<input type="text" class="form-control" id="firstName" placeholder="John" required>
-									<label for="firstName">First name</label>
+									<input type="number" class="form-control" id="editorPin" placeholder="e.g. 123456"
+										autocomplete="off" required>
+									<label for="editorPin">Admin PIN</label>
 								</div>
 								<div class="form-floating mb-3">
-									<input type="text" class="form-control" id="lastName" placeholder="Smith" required>
-									<label for="lastName">Last name</label>
+									<input type="text" class="form-control" id="editorCacheLocation"
+										placeholder="e.g. ///scout.booth.tour" autocomplete="off" required>
+									<label for="editorW3W">What3Words location (including ///)</label>
 								</div>
-								<button type="submit" id="saveBtn" class="btn btn-primary m-1">Save</button>
-								<button type="button" id="cancelBtn" class="btn btn-outline-primary m-1">Cancel</button>
+								<div class="form-floating mb-3">
+									<input type="number" class="form-control" id="editorCacheCode"
+										placeholder="e.g. 12345" autocomplete="off" required>
+									<label for="editorCacheCode">5-digit code on cache</label>
+								</div>
+								<button type="submit" id="saveBtn" class="btn btn-primary">Add record</button>
 							</form>
 						</div>
 					</div>

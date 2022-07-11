@@ -235,12 +235,12 @@ function loadCachePage(id) {
 			if (data.found) {
 				foundBtn.setAttribute('class', 'btn btn-outline-primary disabled m-1');
 				foundBtn.innerHTML = `<i class="bi bi-patch-check" aria-hidden="true"></i>&nbsp;You've already found this cache`;
-				cacheStats.innerText = `You ${Number(data.stats) === 1 ? 'are the only person that found this cache!' : `and ${Number(data.stats) - 1} other ${(Number(data.stats) - 1) === 1 ? 'person' : 'people'} have found this cache`}`;
+				cacheStats.innerText = `You ${Number(data.stats) === 1 ? 'are the only person that has found this cache!' : `and ${Number(data.stats) - 1} other ${(Number(data.stats) - 1) === 1 ? 'person has' : 'people have'} found this cache`}`;
 			} else {
 				foundBtn.setAttribute('class', 'btn btn-outline-primary m-1');
 				foundBtn.setAttribute('href', `foundCache-${id}`);
 				foundBtn.innerHTML = '<i class="bi bi-123" aria-hidden="true"></i>&nbsp;Found this cache?';
-				cacheStats.innerText = `${Number(data.stats) === 0 ? 'No one has found this cache yet. Can you find it?' : `${Number(data.stats)} ${Number(data.stats) === 1 ? 'person' : 'people'} have found this cache - can you find it?`}`;
+				cacheStats.innerText = `${Number(data.stats) === 0 ? 'No one has found this cache yet. Can you find it?' : `${Number(data.stats)} ${Number(data.stats) === 1 ? 'person has' : 'people have'} found this cache - can you find it?`}`;
 				foundBtn.onclick = function () {
 					router.navigate(`/foundCache-${id}`);
 				};
@@ -308,6 +308,9 @@ function foundCachePage(id) {
 			title: `Found Cache ${id}?`,
 			text: "If you've found this cache, please enter the 5-digit code below to mark it as found:",
 			input: 'number',
+			inputAttributes: {
+				autocomplete: 'off'
+			},
 			showCancelButton: true,
 			buttonsStyling: false,
 			customClass: {
@@ -477,6 +480,9 @@ window.onload = function () {
 				behavior: 'smooth'
 			});
 			changePage('disclaimer', 'Disclaimer');
+		})
+		.on('/editor', function() {
+			changePage('editor', 'Cache editor');
 		})
 		.notFound(function () {
 			changePage('404', 'Page not found');
