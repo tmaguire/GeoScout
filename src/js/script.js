@@ -389,7 +389,7 @@ function foundCachesPage() {
 	const noneFound = `<div class="px-4 py-5 my-5 text-center">
 		<i class="bi bi-emoji-frown home-icon d-block mx-auto mb-4" aria-hidden="true"
 			role="img"></i>
-		<h1 class="display-5 fw-bold">You haven't found any geocaches (yet)</h1>
+		<h1 class="display-6 fw-bold">You haven't found any geocaches (yet)</h1>
 		<div class="col-lg-6 mx-auto">
 			<p class="lead mb-4">Get outside and go find some!</p>
 			<div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
@@ -397,7 +397,7 @@ function foundCachesPage() {
 			</div>
 		</div>
 	</div>`;
-	const placeholder = `<img src="./img/loading.gif" class="img-fluid text-center"	alt="Loading animation placeholder">`;
+	const placeholder = `<div class="text-center"><img src="./img/loading.gif" class="img-fluid text-center" alt="Loading animation placeholder"></div>`;
 	const foundContainer = document.getElementById('foundContainer');
 	foundContainer.innerHTML = placeholder;
 	fetch('./api/found-caches', {
@@ -432,11 +432,15 @@ function foundCachesPage() {
 				}).render(document.getElementById('wrapper'));
 			} else {
 				foundContainer.innerHTML = noneFound;
+				document.getElementById('findCachesBtn').onclick = function () {
+					router.navigate('/viewCaches');
+				};
 			}
 		})
 		.catch(error => {
 			showError(error, true);
 		});
+	changePage('found', 'Found caches');
 }
 
 // Function to start on page load
@@ -458,7 +462,7 @@ window.onload = function () {
 			loadCachePage(value.data.id);
 		})
 		.on('/foundCaches', function () {
-			changePage('found', 'Found caches');
+			foundCachesPage();
 		})
 		.on('/foundCache-:id', function (value) {
 			foundCachePage(value.data.id);
