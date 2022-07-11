@@ -1,4 +1,32 @@
 /* jshint esversion: 10 */
+// Import modules for Google Maps image creation
+import crypto from 'crypto';
+import {
+	URL
+} from 'node:url';
+
+function removeWebSafe(safeEncodedString) {
+	return safeEncodedString.replace(/-/g, '+').replace(/_/g, '/');
+}
+
+function makeWebSafe(encodedString) {
+	return encodedString.replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+function decodeBase64Hash(code) {
+	return Buffer.from(code, 'base64');
+}
+
+function encodeBase64Hash(key, data) {
+	return crypto.createHmac('sha1', key).update(data).digest('base64');
+}
+
+function sign(path, secret) {
+	const uri = new URL(path);
+	const safeSecret = decodeBase64Hash(removeWebSafe(secret));
+	const hashedSignature = makeWebSafe(encodeBase64Hash(safeSecret, `${uri.pathname}${uri.search}`));
+	return `${uri}&signature=${hashedSignature}`;
+}
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
 // Microsoft Graph API details
@@ -26,6 +54,8 @@ const client = Client.initWithMiddleware({
 // SharePoint Site Details
 const listId = process.env.graphSiteListId;
 const siteId = process.env.graphSiteId;
+// Google Maps Secret
+const mapsSecret = process.env.mapsSecret;
 
 // Start Lambda Function
 export async function handler(event, context) {
@@ -59,26 +89,25 @@ export async function handler(event, context) {
 	}
 
 	// Get list items from library
-	return client.api(`/sites/${siteId}/lists/${listId}/items/${cacheGuid}?$expand=fields&$select=id,fields`).get()
+	return client.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields&$select=id,fields&filter=fields/Title eq '${cacheGuid}'`).get()
 		.then(data => {
 			if (data.hasOwnProperty('error')) {
 				throw {
 					error: data.error
 				};
 			}
-			const fields = data.fields;
+			const fields = data.value[0].fields;
 			return {
 				location: fields.W3WLocation,
 				coordinates: fields.Coordinates,
-				id: data.id
+				id: fields.Title,
+				image: sign(`https://maps.googleapis.com/maps/api/staticmap?center=${fields.Coordinates}&zoom=17&markers=color:0x7413DC|${fields.Coordinates}&size=400x400&scale=2&map_id=6b8e857a992e95a7&key=AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4`, mapsSecret)
 			};
 		})
 		.then(obj => {
 			return {
 				statusCode: 200,
-				body: JSON.stringify({
-					cache: obj
-				}),
+				body: JSON.stringify(obj),
 				headers: {
 					'Content-Type': 'application/json'
 				}

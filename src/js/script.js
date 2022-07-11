@@ -222,8 +222,9 @@ function loadCachesPage() {
 							lng: Number(cache.coordinates.split(',')[1])
 						},
 						map: mainMap,
-						title: `Cache ${count}`,
-						label: String(count)
+						title: `Cache ${cache.id}`,
+						label: String(count),
+						animation: google.maps.Animation.DROP
 					});
 					marker.addListener('click', () => {
 						router.navigate(`/viewCache-${cache.id}`);
@@ -243,7 +244,50 @@ function loadCachesPage() {
 }
 
 function loadCachePage(id) {
-	document.getElementById('cacheHeader').innerText = id;
+	resetCachePage();
+	fetch('./api/get-cache', {
+			method: 'POST',
+			body: JSON.stringify({
+				cache: id
+			}),
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		})
+		.then(response => response.json())
+		.then(handleErrors)
+		.then(data => {
+			document.getElementById('cacheCard').removeAttribute('aria-hidden');
+			const img = document.getElementById('cacheMapImg');
+			img.setAttribute('src', `${DOMPurify.sanitize(data.image)}`);
+			img.setAttribute('alt', `Map for Cache ${id}`);
+			const header = document.getElementById('cacheHeader');
+			header.setAttribute('class', 'card-title');
+			header.innerHTML = '';
+			header.innerText = `Cache ${id}`;
+			const w3wLink = document.getElementById('cacheW3WLink');
+			w3wLink.setAttribute('class', 'card-text');
+			const w3wAddress = String(DOMPurify.sanitize(data.location)).split('///')[1];
+			w3wLink.innerHTML = `what3words address: <a href="https://what3words.com/${w3wAddress}" target="_blank" translate="no">///${w3wAddress}</a>`;
+			const mapBtn = document.getElementById('cacheMapsLink');
+			mapBtn.removeAttribute('tabindex');
+			mapBtn.setAttribute('class', 'btn btn-primary');
+			mapBtn.setAttribute('href', `https://www.google.com/maps/@?api=1&map_action=map&center=${DOMPurify.sanitize(data.coordinates)}&zoom=19&basemap=roadmap&layer=none`);
+			mapBtn.setAttribute('target', '_blank');
+			mapBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in Google Maps';
+			const foundBtn = document.getElementById('cacheFoundLink');
+			foundBtn.removeAttribute('tabindex');
+			foundBtn.setAttribute('class', 'btn btn-outline-primary');
+			foundBtn.setAttribute('href', `foundCache-${id}`);
+			foundBtn.setAttribute('data-navigo',true);
+			foundBtn.innerHTML = '<i class="bi bi-123" aria-hidden="true"></i>&nbsp;Found this cache?';
+		})
+		.catch(error => {
+			showToast.fire({
+				title: error,
+				icon: 'error'
+			});
+		});
 	changePage('cache');
 }
 
@@ -268,6 +312,24 @@ function changePage(page) {
 	// Set page as active
 	document.getElementById(page).setAttribute('class', 'row mx-auto');
 	document.getElementById(page).setAttribute('aria-hidden', 'false');
+}
+
+function resetCachePage() {
+	document.getElementById('cacheCard').setAttribute('aria-hidden', 'true');
+	const img = document.getElementById('cacheMapImg');
+	img.setAttribute('src', './img/loading.gif');
+	img.setAttribute('alt', 'Loading animation placeholder');
+	const header = document.getElementById('cacheHeader');
+	header.setAttribute('class', 'card-title placeholder-glow');
+	header.innerHTML = '<span class="placeholder col-6"></span>';
+	const w3wLink = document.getElementById('cacheW3WLink');
+	w3wLink.setAttribute('class', 'card-text placeholder-glow');
+	w3wLink.innerHTML = '<span class="placeholder col-7"></span><span class="placeholder col-4"></span><span class="placeholder col-4"></span><span class="placeholder col-6"></span><span class="placeholder col-8"></span>';
+	const mapBtn = document.getElementById('cacheMapsLink');
+	mapBtn.removeAttribute('target');
+	mapBtn.setAttribute('href', '#');
+	mapBtn.setAttribute('tabindex', '-1');
+	mapBtn.setAttribute('class', 'btn btn-primary disabled placeholder col-5');
 }
 
 // Function to start on page load

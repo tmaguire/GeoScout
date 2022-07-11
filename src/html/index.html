@@ -95,8 +95,34 @@
 				<!-- Cache screen -->
 				<section id="cache" class="row mx-auto d-none" aria-hidden="true">
 					<div class="col mx-auto">
-						<h1 class="my-4 text-center"><i class="bi bi-pin-map" aria-hidden="true"></i>&nbsp;Cache <span id="cacheHeader"></span></h1>
-						<div id="cacheContainer"></div>
+						<h1 class="my-4 text-center"><i class="bi bi-pin-map" aria-hidden="true"></i>&nbsp;Find the
+							cache</h1>
+						<div id="cacheCard" class="card mb-3" aria-hidden="true">
+							<div class="row g-0">
+								<div class="col-md-4 text-center">
+									<img id="cacheMapImg" src="./img/loading.gif" class="img-fluid rounded-start"
+										alt="Loading animation placeholder">
+								</div>
+								<div class="col-md-8">
+									<div class="card-body">
+										<h2 id="cacheHeader" class="card-title placeholder-glow">
+											<span class="placeholder col-6"></span>
+										</h2>
+										<p id="cacheW3WLink" class="card-text placeholder-glow">
+											<span class="placeholder col-7"></span>
+											<span class="placeholder col-4"></span>
+											<span class="placeholder col-4"></span>
+											<span class="placeholder col-6"></span>
+											<span class="placeholder col-8"></span>
+										</p>
+										<a id="cacheMapsLink" href="#" tabindex="-1"
+											class="btn btn-primary disabled placeholder col-5"></a>
+										<a id="cacheFoundLink" href="#" tabindex="-1"
+											class="btn btn-outline-primary disabled placeholder col-4"></a>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
 				</section>
 				<!-- About screen -->
@@ -111,7 +137,9 @@
 				<section id="disclaimer" class="row mx-auto d-none" aria-hidden="true">
 					<div class="col mx-auto">
 						<h1 class="my-4 text-center">Disclaimer for the Witham Scouts Geocaching website/app</h1>
-						<p>All the information on this website/app - <a href="https://geocaching.withamscouts.org.uk">https://geocaching.withamscouts.org.uk</a> - is published
+						<p>All the information on this website/app - <a
+								href="https://geocaching.withamscouts.org.uk">https://geocaching.withamscouts.org.uk</a>
+							- is published
 							in good faith and for general information purpose only. Witham Scouts does not
 							make any warranties about the completeness, reliability and accuracy of this information.
 							Any action you take upon the information you find on this website/app (Witham Scouts
@@ -123,7 +151,8 @@
 							imply a recommendation for all the content found on these sites. Site owners and content may
 							change without notice and may occur before we have the opportunity to remove a link which
 							may have gone 'bad'.</p>
-						<p>Please be also aware that when you leave our website/app, other sites may have different privacy
+						<p>Please be also aware that when you leave our website/app, other sites may have different
+							privacy
 							policies and terms which are beyond our control. Please be sure to check the Privacy
 							Policies of these sites as well as their "Terms of Service" before engaging in any business
 							or uploading any information.</p>
