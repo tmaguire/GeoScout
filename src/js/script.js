@@ -481,7 +481,31 @@ window.onload = function () {
 			});
 			changePage('disclaimer', 'Disclaimer');
 		})
-		.on('/editor', function() {
+		.on('/terms', function () {
+			window.scrollTo({
+				top: 0,
+				left: 0,
+				behavior: 'smooth'
+			});
+			changePage('terms', 'Terms and Conditions');
+		})
+		.on('/privacy', function () {
+			window.scrollTo({
+				top: 0,
+				left: 0,
+				behavior: 'smooth'
+			});
+			changePage('privacy', 'Privacy Policy');
+		})
+		.on('/openSourceLicenses', function () {
+			window.scrollTo({
+				top: 0,
+				left: 0,
+				behavior: 'smooth'
+			});
+			changePage('osl', 'Open Source Licenses');
+		})
+		.on('/editor', function () {
 			changePage('editor', 'Cache editor');
 		})
 		.notFound(function () {
