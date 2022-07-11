@@ -31,6 +31,20 @@ const adminPin = process.env.adminPin;
 // Imports for rate limiting
 import crypto from 'crypto';
 import limiterFactory from 'lambda-rate-limiter';
+// What3Words API
+import what3words from '@what3words/api';
+import {
+	fetchTransport
+} from '@what3words/api';
+const apiKey = process.env.w3wApiKey;
+const config = {
+	host: 'https://api.what3words.com',
+	apiVersion: 'v3',
+};
+const transport = fetchTransport();
+const w3wService = what3words(apiKey, config, {
+	transport
+});
 
 // Start Lambda Function
 export async function handler(event, context) {
@@ -67,11 +81,15 @@ export async function handler(event, context) {
 		};
 	}
 
-	let cacheW3W;
+	let cacheLocation;
+	let cacheCode;
+	let cacheCoordinates;
+	let cacheNumber;
 	let requestPin;
 
 	try {
-		cacheW3W = JSON.parse(event.body).location;
+		cacheLocation = JSON.parse(event.body).location;
+		cacheCode = JSON.parse(event.body).location;
 		requestPin = JSON.parse(event.body).pin;
 	} catch {
 		return {
@@ -85,9 +103,27 @@ export async function handler(event, context) {
 		};
 	}
 
-	// Get list items from library
-	return client.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields&$select=id,fields&$orderby=id%20desc&$top=1`)
-		.get()
+	if (requestPin !== adminPin) {
+		return {
+			statusCode: 401,
+			body: JSON.stringify({
+				error: 'Unauthorised'
+			}),
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		};
+	}
+
+	// Get coordinates from W3W
+	w3wService.convertToCoordinates({
+			words: cacheLocation
+		})
+		.then(data => {
+			cacheCoordinates = `${data.coordinates.lat},${data.coordinates.lng}`;
+			return client.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields&$select=id,fields&$orderby=id%20desc&$top=1`)
+				.get();
+		})
 		.then(data => {
 			if (data.hasOwnProperty('error')) {
 				throw {
@@ -95,53 +131,23 @@ export async function handler(event, context) {
 				};
 			}
 			const currentNumber = Number(data.value[0].fields.Title);
-			const newNumber = String(currentNumber + 1).padStart(3, '0');
+			cacheNumber = String(currentNumber + 1).padStart(3, '0');
 			return client.api(`/sites/${siteId}/lists/${listId}/items`)
 				.post({
 					fields: {
-						Title: newNumber,
-
+						Title: cacheNumber,
+						CableTieCode: Number(cacheCode),
+						W3WLocation: cacheLocation,
+						Coordinates: cacheCoordinates,
+						Found: 0
 					}
-				});
-		})
-		.then(data => {
-			const currentTime = new Date();
-			if (data.value.length === 0) {
-				return client.api(`/sites/${siteId}/lists/${deviceListId}/items`)
-					.post({
-						fields: {
-							Title: deviceId,
-							FoundCaches: JSON.stringify([{
-								id: cacheId,
-								date: currentTime.toISOString()
-							}])
-						}
-					});
-			} else if (data.value.length === 1) {
-				const found = [...JSON.parse(data.value[0].fields.FoundCaches)];
-				found.push({
-					id: cacheId,
-					date: currentTime.toISOString()
-				});
-				return client.api(`/sites/${siteId}/lists/${deviceListId}/items/${data.value[0].id}/fields`)
-					.patch({
-						FoundCaches: JSON.stringify(found)
-					});
-			} else {
-				throw 'Duplicate device ID!';
-			}
-		})
-		.then(() => {
-			return client.api(`/sites/${siteId}/lists/${listId}/items/${currentStats.id}/fields`)
-				.patch({
-					Found: Number(Number(currentStats.count) + 1)
 				});
 		})
 		.then(() => {
 			return {
 				statusCode: 200,
 				body: JSON.stringify({
-					success: `You've found Cache ${cacheId}`
+					success: `Cache ${cacheNumber} has been added`
 				}),
 				headers: {
 					'Content-Type': 'application/json'
@@ -150,27 +156,15 @@ export async function handler(event, context) {
 		})
 		.catch(error => {
 			console.log(error);
-			if (error === 'Invalid code') {
-				return {
-					statusCode: 403,
-					body: JSON.stringify({
-						error: error
-					}),
-					headers: {
-						'Content-Type': 'application/json'
-					}
-				};
-			} else {
-				return {
-					statusCode: 500,
-					body: JSON.stringify({
-						error: 'Unable to check cache code',
-						errorDebug: error
-					}),
-					headers: {
-						'Content-Type': 'application/json'
-					}
-				};
-			}
+			return {
+				statusCode: 500,
+				body: JSON.stringify({
+					error: 'Unable to check cache code',
+					errorDebug: error
+				}),
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			};
 		});
 }
