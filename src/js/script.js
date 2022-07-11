@@ -339,6 +339,9 @@ window.onload = function () {
 		.on('/', function () {
 			changePage('home');
 		})
+		.on('/home', function () {
+			changePage('home');
+		})
 		.on('/viewCaches', function () {
 			loadCachesPage();
 		})
