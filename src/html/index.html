@@ -40,6 +40,9 @@
 							<a class="nav-link" href="viewCaches" data-navigo data-page="map">View caches</a>
 						</li>
 						<li class="nav-item">
+							<a class="nav-link" href="foundCaches" data-navigo data-page="found">Found caches</a>
+						</li>
+						<li class="nav-item">
 							<a class="nav-link" href="about" data-navigo data-page="about">About</a>
 						</li>
 					</ul>
@@ -54,21 +57,21 @@
 					<div class="col mx-auto">
 						<h1 class="my-4 text-center"><i class="bi bi-compass" aria-hidden="true"></i>&nbsp;Welcome</h1>
 						<div class="row home-tiles">
-							<div class="col-sm-4">
+							<div class="col-md-4">
 								<a href="viewCaches" class="btn btn-sq-lg btn-primary" data-navigo>
 									<i class="bi bi-map home-icon" aria-hidden="true"></i>
 									<br>
 									<span class="home-caption">View caches</span>
 								</a>
 							</div>
-							<!-- <div class="col-sm-4">
-								<a href="foundCache" class="btn btn-sq-lg btn-primary" data-navigo>
+							<div class="col-sm-4">
+								<a href="foundCaches" class="btn btn-sq-lg btn-primary" data-navigo>
 									<i class="bi bi-pin-map home-icon" aria-hidden="true"></i>
 									<br>
-									<span class="home-caption">Found a cache?</span>
+									<span class="home-caption">Found caches</span>
 								</a>
-							</div> -->
-							<div class="col-sm-4">
+							</div>
+							<div class="col-md-4">
 								<a href="about" class="btn btn-sq-lg btn-primary" data-navigo>
 									<i class="bi bi-info-circle home-icon" aria-hidden="true"></i>
 									<br>
@@ -81,22 +84,40 @@
 				<!-- Editor screen -->
 				<section id="editor" class="row mx-auto d-none" aria-hidden="true">
 					<div class="col mx-auto">
-						<h1 id="editorHeader" class="my-4 text-center">Editor screen</h1>
+						<h1 id="editorHeader" class="my-4 text-center">
+							Editor screen
+						</h1>
 						<div id="editorCard"></div>
 					</div>
 				</section>
 				<!-- Map screen -->
 				<section id="map" class="row mx-auto d-none" aria-hidden="true">
 					<div class="col mx-auto">
-						<h1 class="my-4 text-center"><i class="bi bi-map" aria-hidden="true"></i>&nbsp;View caches</h1>
+						<h1 class="my-4 text-center">
+							<i class="bi bi-map" aria-hidden="true"></i>&nbsp;View caches
+						</h1>
 						<div id="mapContainer"></div>
+					</div>
+				</section>
+				<!-- Found screen -->
+				<section id="found" class="row mx-auto d-none" aria-hidden="true">
+					<div class="col mx-auto">
+						<h1 class="my-4 text-center">
+							<i class="bi bi-pin-map" aria-hidden="true"></i>&nbsp;Found caches
+						</h1>
+						<div id="foundContainer">
+							<img src="./img/loading.gif" class="img-fluid text-center"
+								alt="Loading animation placeholder">
+						</div>
 					</div>
 				</section>
 				<!-- Cache screen -->
 				<section id="cache" class="row mx-auto d-none" aria-hidden="true">
 					<div class="col mx-auto">
-						<h1 class="my-4 text-center"><i class="bi bi-pin-map" aria-hidden="true"></i>&nbsp;Find the
-							cache</h1>
+						<h1 class="my-4 text-center">
+							<i class="bi bi-pin-map" aria-hidden="true"></i>&nbsp;Find the
+							cache
+						</h1>
 						<div id="cacheCard" class="card mb-3" aria-hidden="true">
 							<div class="row g-0">
 								<div class="col-md-4 text-center">
@@ -116,9 +137,9 @@
 											<span class="placeholder col-8"></span>
 										</p>
 										<a id="cacheMapsLink" href="#" tabindex="-1"
-											class="btn btn-primary disabled placeholder col-5"></a>
-										<a id="cacheFoundLink" href="#" tabindex="-1"
-											class="btn btn-outline-primary disabled placeholder col-4"></a>
+											class="btn btn-primary disabled placeholder col-5 my-3"></a>
+										<button id="cacheFoundLink"
+											class="btn btn-outline-primary disabled placeholder col-4 my-3"></button>
 									</div>
 								</div>
 							</div>
@@ -128,9 +149,14 @@
 				<!-- About screen -->
 				<section id="about" class="row mx-auto d-none" aria-hidden="true">
 					<div class="col mx-auto">
-						<h1 class="my-4 text-center"><i class="bi bi-info-circle" aria-hidden="true"></i>&nbsp;About the
-							Witham Scouts Geocaching app</h1>
-						<div id="aboutContainer"></div>
+						<h1 class="my-4 text-center">
+							<i class="bi bi-info-circle" aria-hidden="true"></i>&nbsp;About the
+							Witham Scouts Geocaching app
+						</h1>
+						<p>
+							This app displays the locations of geocaches around Witham. When you find a cache, you can
+							enter the unique 5 digit number to mark it as found (how many can you find?)
+						</p>
 					</div>
 				</section>
 				<!-- Disclaimer screen -->
@@ -167,8 +193,7 @@
 				<section id="404" class="row mx-auto d-none" aria-hidden="true">
 					<div class="container">
 						<div class="px-4 py-5 my-5 text-center">
-							<i class="fa-regular fa-exclamation-triangle fa-6x d-block mx-auto mb-4" aria-hidden="true"
-								role="img"></i>
+							<i class="bi bi-bug home-icon d-block mx-auto mb-4" aria-hidden="true" role="img"></i>
 							<h1 class="display-5 fw-bold">Page not found</h1>
 							<div class="col-lg-6 mx-auto">
 								<p class="lead mb-4">The page or link you're trying to get to doesn't exist.

@@ -1,35 +1,6 @@
 /* jshint esversion:9 */
-// Configuration for Microsoft Authentication Library
-const msalConfig = {
-	auth: {
-		clientId: 'c8267731-79a3-4f25-9631-86492b136a27',
-		authority: 'https://login.microsoftonline.com/withamscouts.onmicrosoft.com',
-		redirectUri: '/'
-	},
-	cache: {
-		cacheLocation: 'localStorage',
-		storeAuthStateInCookie: false
-	}
-};
-
-// Scope for MSAL login request
-const requestObj = {
-	scopes: ['User.Read']
-};
-
-const tokenRequest = {
-	scopes: ['https://withamscouts.onmicrosoft.com/c8267731-79a3-4f25-9631-86492b136a27/App.Access']
-};
-
-const msalInstance = new msal.PublicClientApplication(msalConfig);
-
 let mainMap;
 let router;
-
-// Redirect: once login is successful and redirects with tokens, call Graph API
-msalInstance.handleRedirectPromise().then(handleResponse).catch(err => {
-	console.error(err);
-});
 
 // Method for creating toast notifications
 const showToast = Swal.mixin({
@@ -44,46 +15,24 @@ const showToast = Swal.mixin({
 	}
 });
 
-function handleResponse(resp) {
-	if (resp !== null) {
-		username = resp.account.username;
-		loadApp();
-	} else {
-		const currentAccounts = msalInstance.getAllAccounts();
-		if (currentAccounts === null) {
-			return;
-		} else if (currentAccounts.length > 1) {
-			// Add choose account code here
-			console.warn('Multiple accounts detected.');
-		} else if (currentAccounts.length === 1) {
-			username = currentAccounts[0].username;
-			loadApp();
-		}
-	}
-}
-
-function signIn() {
-	msalInstance.loginRedirect(requestObj);
-}
-
-function signOut() {
-	const logoutRequest = {
-		account: msalInstance.getAccountByUsername(username)
-	};
-	msalInstance.logout(logoutRequest);
-}
-
-function getTokenRedirect(request) {
-	request.account = msalInstance.getAccountByUsername(username);
-	return msalInstance.acquireTokenSilent(request).catch(error => {
-		console.warn('silent token acquisition fails. acquiring token using redirect');
-		if (error instanceof msal.InteractionRequiredAuthError) {
-			// fallback to interaction when silent call fails
-			return msalInstance.acquireTokenRedirect(request);
-		} else {
-			console.warn(error);
-		}
+function getDeviceId() {
+	// Set up fingerprint agent
+	const fpPromise = FingerprintJS.load({
+		apiKey: 'a1ZJOENnGt4QCgAqBHHb',
+		region: 'eu',
+		endpoint: 'https://fp.withamscouts.org.uk'
 	});
+	// Get device ID and store in localStorage
+	fpPromise
+		.then(fp => fp.get())
+		.then(result => {
+			if (localStorage.getItem('deviceId') === null) {
+				localStorage.setItem('deviceId', result.visitorId);
+			}
+		})
+		.catch(error => {
+			console.warn(error);
+		});
 }
 
 // Error Message Function
@@ -96,7 +45,7 @@ function showError(error, button) {
 			icon: 'error',
 			buttonsStyling: false,
 			customClass: {
-				confirmButton: 'btn btn-secondary'
+				confirmButton: 'btn btn-primnary'
 			},
 			didOpen: () => {
 				Swal.hideLoading();
@@ -196,7 +145,7 @@ function loadCachesPage() {
 			lat: 51.80007,
 			lng: 0.64038
 		},
-		zoom: 13,
+		zoom: 14.3,
 		restriction: {
 			latLngBounds: {
 				north: 51.826601357825716,
@@ -208,7 +157,12 @@ function loadCachesPage() {
 		},
 		mapId: '6b8e857a992e95a7'
 	});
-	fetch('./api/get-caches')
+	fetch('./api/get-caches', {
+			method: 'GET',
+			headers: {
+				'Device-Id': localStorage.getItem('deviceId')
+			}
+		})
 		.then(response => response.json())
 		.then(handleErrors)
 		.then(data => {
@@ -240,7 +194,7 @@ function loadCachesPage() {
 				icon: 'error'
 			});
 		});
-	changePage('map');
+	changePage('map', 'View caches');
 }
 
 function loadCachePage(id) {
@@ -248,10 +202,11 @@ function loadCachePage(id) {
 	fetch('./api/get-cache', {
 			method: 'POST',
 			body: JSON.stringify({
-				cache: id
+				cache: id,
 			}),
 			headers: {
-				'Content-Type': 'application/json'
+				'Content-Type': 'application/json',
+				'Device-Id': localStorage.getItem('deviceId')
 			}
 		})
 		.then(response => response.json())
@@ -268,19 +223,28 @@ function loadCachePage(id) {
 			const w3wLink = document.getElementById('cacheW3WLink');
 			w3wLink.setAttribute('class', 'card-text');
 			const w3wAddress = String(DOMPurify.sanitize(data.location)).split('///')[1];
-			w3wLink.innerHTML = `what3words address: <a href="https://what3words.com/${w3wAddress}" target="_blank" translate="no">///${w3wAddress}</a>`;
+			w3wLink.innerHTML = `what3words address: <a href="https://what3words.com/${w3wAddress}" target="_blank" translate="no">///${w3wAddress}</a><br><br><strong id="cacheStats"></strong>`;
 			const mapBtn = document.getElementById('cacheMapsLink');
 			mapBtn.removeAttribute('tabindex');
-			mapBtn.setAttribute('class', 'btn btn-primary');
-			mapBtn.setAttribute('href', `https://www.google.com/maps/@?api=1&map_action=map&center=${DOMPurify.sanitize(data.coordinates)}&zoom=19&basemap=roadmap&layer=none`);
+			mapBtn.setAttribute('class', 'btn btn-primary my-3');
+			mapBtn.setAttribute('href', `https://www.google.com/maps/dir/?api=1&destination=${DOMPurify.sanitize(data.coordinates)}&travelmode=walking`);
 			mapBtn.setAttribute('target', '_blank');
 			mapBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in Google Maps';
 			const foundBtn = document.getElementById('cacheFoundLink');
-			foundBtn.removeAttribute('tabindex');
-			foundBtn.setAttribute('class', 'btn btn-outline-primary');
-			foundBtn.setAttribute('href', `foundCache-${id}`);
-			foundBtn.setAttribute('data-navigo',true);
-			foundBtn.innerHTML = '<i class="bi bi-123" aria-hidden="true"></i>&nbsp;Found this cache?';
+			const cacheStats = document.getElementById('cacheStats');
+			if (data.found) {
+				foundBtn.setAttribute('class', 'btn btn-outline-primary disabled my-3');
+				foundBtn.innerHTML = `<i class="bi bi-patch-check" aria-hidden="true"></i>&nbsp;You've already found this cache`;
+				cacheStats.innerText = `You ${Number(data.stats) === 1 ? 'are the only person that found this cache!' : `and ${Number(data.stats) - 1} other ${(Number(data.stats) - 1) === 1 ? 'person' : 'people'} have found this cache`}`;
+			} else {
+				foundBtn.setAttribute('class', 'btn btn-outline-primary my-3');
+				foundBtn.setAttribute('href', `foundCache-${id}`);
+				foundBtn.innerHTML = '<i class="bi bi-123" aria-hidden="true"></i>&nbsp;Found this cache?';
+				cacheStats.innerText = `${Number(data.stats) === 0 ? 'No one has found this cache yet. Can you find it?' : `${Number(data.stats)} ${Number(data.stats) === 1 ? 'person' : 'people'} have found this cache - can you find it?`}`;
+				foundBtn.onclick = function () {
+					router.navigate(`/foundCache-${id}`);
+				};
+			}
 		})
 		.catch(error => {
 			showToast.fire({
@@ -288,10 +252,10 @@ function loadCachePage(id) {
 				icon: 'error'
 			});
 		});
-	changePage('cache');
+	changePage('cache', `Cache ${id}`);
 }
 
-function changePage(page) {
+function changePage(page, title) {
 	// Update menu
 	document.querySelectorAll('a.nav-link').forEach(menuItem => {
 		if (menuItem.getAttribute('data-page') === page) {
@@ -312,6 +276,8 @@ function changePage(page) {
 	// Set page as active
 	document.getElementById(page).setAttribute('class', 'row mx-auto');
 	document.getElementById(page).setAttribute('aria-hidden', 'false');
+	// Change document title
+	document.title = `${title} | Witham Scouts Geocaching`;
 }
 
 function resetCachePage() {
@@ -329,24 +295,161 @@ function resetCachePage() {
 	mapBtn.removeAttribute('target');
 	mapBtn.setAttribute('href', '#');
 	mapBtn.setAttribute('tabindex', '-1');
-	mapBtn.setAttribute('class', 'btn btn-primary disabled placeholder col-5');
+	mapBtn.setAttribute('class', 'btn btn-primary disabled placeholder col-5 my-3');
 	mapBtn.innerHTML = '';
 	const foundBtn = document.getElementById('cacheFoundLink');
-	foundBtn.setAttribute('href', '#');
-	foundBtn.setAttribute('tabindex', '-1');
-	foundBtn.setAttribute('class', 'btn btn-outline-primary disabled placeholder col-4');
+	foundBtn.setAttribute('class', 'btn btn-outline-primary disabled placeholder col-4 my-3');
 	foundBtn.innerHTML = '';
+}
+
+function foundCachePage(id) {
+	changePage('cache', `Cache ${id}`);
+	Swal.fire({
+			title: `Found Cache ${id}?`,
+			text: "If you've found this cache, please enter the 5-digit code below to mark it as found:",
+			input: 'number',
+			showCancelButton: true,
+			buttonsStyling: false,
+			customClass: {
+				cancelButton: 'btn btn-outline-primary mx-2',
+				confirmButton: 'btn btn-primary mx-2',
+				loader: 'custom-loader'
+			},
+			loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Verifying code...</span></div>',
+			returnFocus: false,
+			confirmButtonText: 'Verify cache code',
+			backdrop: true,
+			showLoaderOnConfirm: true,
+			allowOutsideClick: () => !Swal.isLoading(),
+			inputValidator: (value) => {
+				if (!value) {
+					return 'You must enter the 5-digit code from the cache to confirm you have found it';
+				} else if (value.length !== 5 || (Number.isNaN(Number(value)))) {
+					return 'This code is invalid';
+				}
+			},
+			preConfirm: (data) => {
+				return fetch('./api/found-cache', {
+						method: 'POST',
+						body: JSON.stringify({
+							cache: id,
+							cacheCode: Number(data)
+						}),
+						headers: {
+							'Content-Type': 'application/json',
+							'Device-Id': localStorage.getItem('deviceId')
+						}
+					})
+					.then(response => response.json())
+					.then(handleErrors);
+			}
+		})
+		.then(result => {
+			if (result.isConfirmed) {
+				Swal.fire({
+					title: 'You did it!',
+					text: result.value.success,
+					icon: 'success',
+					buttonsStyling: false,
+					returnFocus: false,
+					showConfirmButton: true,
+					customClass: {
+						confirmButton: 'btn btn-primary'
+					},
+					didOpen: () => {
+						Swal.hideLoading();
+					},
+					didClose: () => {
+						router.navigate(`viewCache-${id}`);
+					}
+				});
+			} else {
+				router.navigate(`viewCache-${id}`);
+			}
+		})
+		.catch(error => {
+			Swal.fire({
+				title: error,
+				icon: 'error',
+				buttonsStyling: false,
+				customClass: {
+					confirmButton: 'btn btn-primary'
+				},
+				didOpen: () => {
+					Swal.hideLoading();
+				},
+				didClose: () => {
+					router.navigate(`viewCache-${id}`);
+				}
+			});
+		});
+}
+
+function foundCachesPage() {
+	const noneFound = `<div class="px-4 py-5 my-5 text-center">
+		<i class="bi bi-emoji-frown home-icon d-block mx-auto mb-4" aria-hidden="true"
+			role="img"></i>
+		<h1 class="display-5 fw-bold">You haven't found any geocaches (yet)</h1>
+		<div class="col-lg-6 mx-auto">
+			<p class="lead mb-4">Get outside and go find some!</p>
+			<div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+				<button id="findCachesBtn" class="btn btn-primary btn-lg px-4 gap-3">Find caches</button>
+			</div>
+		</div>
+	</div>`;
+	const placeholder = `<img src="./img/loading.gif" class="img-fluid text-center"	alt="Loading animation placeholder">`;
+	const foundContainer = document.getElementById('foundContainer');
+	foundContainer.innerHTML = placeholder;
+	fetch('./api/found-caches', {
+			method: 'GET',
+			headers: {
+				'Device-Id': localStorage.getItem('deviceId')
+			}
+		})
+		.then(response => response.json())
+		.then(data => {
+			if (data.found.length > 0) {
+				foundContainer.innerHTML = '<div id="wrapper"></div>';
+				new gridjs.Grid({
+					columns: [{
+							id: 'id',
+							name: 'Cache Number',
+							sort: true
+						},
+						{
+							id: 'date',
+							name: 'Found',
+							sort: true,
+							formatter: (date) => {
+								const time = new Date(date);
+								return `${time.toLocaleTimeString('en-GB',{
+									hour12: false
+								})} on ${prettyDate(date)}`;
+							}
+						}
+					],
+					data: data.found
+				}).render(document.getElementById('wrapper'));
+			} else {
+				foundContainer.innerHTML = noneFound;
+			}
+		})
+		.catch(error => {
+			showError(error, true);
+		});
 }
 
 // Function to start on page load
 window.onload = function () {
+	// Create router
 	router = new Navigo('/');
+	// Specify routes and resolve
 	router
 		.on('/', function () {
-			changePage('home');
+			changePage('home', 'Home');
 		})
 		.on('/home', function () {
-			changePage('home');
+			changePage('home', 'Home');
 		})
 		.on('/viewCaches', function () {
 			loadCachesPage();
@@ -354,18 +457,28 @@ window.onload = function () {
 		.on('/viewCache-:id', function (value) {
 			loadCachePage(value.data.id);
 		})
+		.on('/foundCaches', function () {
+			changePage('found', 'Found caches');
+		})
 		.on('/foundCache-:id', function (value) {
-			console.log(value.data.id);
-			console.log(value);
+			foundCachePage(value.data.id);
 		})
 		.on('/about', function () {
-			changePage('about');
+			changePage('about', 'About');
 		})
 		.on('/disclaimer', function () {
-			changePage('disclaimer');
+			window.scrollTo({
+				top: 0,
+				left: 0,
+				behavior: 'smooth'
+			});
+			changePage('disclaimer', 'Disclaimer');
 		})
 		.notFound(function () {
-			changePage('404');
+			changePage('404', 'Page not found');
 		})
 		.resolve();
+	if (localStorage.getItem('deviceId') === null) {
+		getDeviceId();
+	}
 };

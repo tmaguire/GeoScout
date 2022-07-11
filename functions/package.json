@@ -12,6 +12,6 @@
     "@azure/identity": "^2.1.0",
     "@microsoft/microsoft-graph-client": "^3.0.2",
     "isomorphic-fetch": "^3.0.0",
-    "validator": "^13.7.0"
+    "lambda-rate-limiter": "^3.0.1"
   }
 }

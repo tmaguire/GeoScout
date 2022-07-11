@@ -53,6 +53,7 @@ const client = Client.initWithMiddleware({
 });
 // SharePoint Site Details
 const listId = process.env.graphSiteListId;
+const deviceListId = process.env.graphUserListId;
 const siteId = process.env.graphSiteId;
 // Google Maps Secret
 const mapsSecret = process.env.mapsSecret;
@@ -72,10 +73,13 @@ export async function handler(event, context) {
 		};
 	}
 
-	let cacheGuid;
+	let cacheId;
+	let deviceId;
+	let returnObj;
 
 	try {
-		cacheGuid = JSON.parse(event.body).cache;
+		cacheId = JSON.parse(event.body).cache;
+		deviceId = event.headers['device-id'];
 	} catch {
 		return {
 			statusCode: 400,
@@ -89,7 +93,8 @@ export async function handler(event, context) {
 	}
 
 	// Get list items from library
-	return client.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields&$select=id,fields&filter=fields/Title eq '${cacheGuid}'`).get()
+	return client.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields&$select=id,fields&filter=fields/Title eq '${cacheId}'`)
+		.get()
 		.then(data => {
 			if (data.hasOwnProperty('error')) {
 				throw {
@@ -97,12 +102,31 @@ export async function handler(event, context) {
 				};
 			}
 			const fields = data.value[0].fields;
-			return {
+			returnObj = {
 				location: fields.W3WLocation,
 				coordinates: fields.Coordinates,
 				id: fields.Title,
-				image: sign(`https://maps.googleapis.com/maps/api/staticmap?center=${fields.Coordinates}&zoom=17&markers=color:0x7413DC|${fields.Coordinates}&size=400x400&scale=2&map_id=6b8e857a992e95a7&key=AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4`, mapsSecret)
+				image: sign(`https://maps.googleapis.com/maps/api/staticmap?center=${fields.Coordinates}&zoom=17&markers=color:0x7413DC|${fields.Coordinates}&size=400x400&scale=2&map_id=6b8e857a992e95a7&key=AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4`, mapsSecret),
+				stats: fields.Found,
+				found: false
 			};
+			return client.api(`/sites/${siteId}/lists/${deviceListId}/items?$expand=fields&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
+				.get();
+		})
+		.then(data => {
+			if (data.value.length === 0) {
+				return returnObj;
+			} else if (data.value.length === 1) {
+				const found = JSON.parse(data.value[0].fields.FoundCaches);
+				found.forEach(cache => {
+					if (cache.id === cacheId) {
+						returnObj.found = true;
+					}
+				});
+				return returnObj;
+			} else {
+				throw 'Duplicate device ID!';
+			}
 		})
 		.then(obj => {
 			return {
@@ -118,7 +142,7 @@ export async function handler(event, context) {
 			return {
 				statusCode: 500,
 				body: JSON.stringify({
-					error: 'Unable to get caches',
+					error: 'Unable to get cache information',
 					errorDebug: error
 				}),
 				headers: {
