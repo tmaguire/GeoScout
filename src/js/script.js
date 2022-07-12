@@ -183,13 +183,7 @@ function loadCachesPage() {
 						animation: google.maps.Animation.DROP,
 						icon: {
 							url: cache.found ? './img/found.png' : './img/notFound.png',
-							size: {
-								width: 95,
-								widthUnit: 'px',
-								height: 123,
-								heightUnit: 'px'
-							},
-							labelOrigin: new google.maps.Point(47.5, 50)
+							labelOrigin: new google.maps.Point(22, 20)
 						}
 					});
 					marker.addListener('click', () => {
