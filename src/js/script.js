@@ -155,7 +155,9 @@ function loadCachesPage() {
 			},
 			strictBounds: true
 		},
-		mapId: '6b8e857a992e95a7'
+		mapId: '6b8e857a992e95a7',
+		streetViewControl: false,
+		mapTypeControl: false
 	});
 	fetch('./api/get-caches', {
 			method: 'GET',
@@ -245,7 +247,7 @@ function loadCachePage(id) {
 			const foundBtn = document.getElementById('cacheFoundLink');
 			const cacheStats = document.getElementById('cacheStats');
 			if (data.found) {
-				foundBtn.setAttribute('class', 'btn btn-outline-primary disabled m-1');
+				foundBtn.setAttribute('class', 'btn btn-outline-primary m-1 disabled');
 				foundBtn.innerHTML = `<i class="bi bi-patch-check" aria-hidden="true"></i>&nbsp;You've already found this cache`;
 				cacheStats.innerText = `You ${Number(data.stats) === 1 ? 'are the only person that has found this cache!' : `and ${Number(data.stats) - 1} other ${(Number(data.stats) - 1) === 1 ? 'person has' : 'people have'} found this cache`}`;
 			} else {
@@ -307,16 +309,16 @@ function resetCachePage() {
 	w3wBtn.removeAttribute('target');
 	w3wBtn.setAttribute('href', '#');
 	w3wBtn.setAttribute('tabindex', '-1');
-	w3wBtn.setAttribute('class', 'btn btn-primary disabled placeholder col-5 m-1');
+	w3wBtn.setAttribute('class', 'btn btn-primary m-1 disabled placeholder col-5');
 	w3wBtn.innerHTML = '';
 	const mapBtn = document.getElementById('cacheMapsLink');
 	mapBtn.removeAttribute('target');
 	mapBtn.setAttribute('href', '#');
 	mapBtn.setAttribute('tabindex', '-1');
-	mapBtn.setAttribute('class', 'btn btn-primary disabled placeholder col-5 m-1');
+	mapBtn.setAttribute('class', 'btn btn-primary m-1 disabled placeholder col-5');
 	mapBtn.innerHTML = '';
 	const foundBtn = document.getElementById('cacheFoundLink');
-	foundBtn.setAttribute('class', 'btn btn-outline-primary disabled placeholder col-4 m-1');
+	foundBtn.setAttribute('class', 'btn btn-outline-primary m-1 disabled placeholder col-4');
 	foundBtn.innerHTML = '';
 }
 
