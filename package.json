@@ -1,6 +1,6 @@
 {
 	"name": "witham-scouts-geocache",
-	"version": "1.2.2",
+	"version": "1.2.3",
 	"description": "Witham Scouts Geocaching using What3Words",
 	"main": "index.js",
 	"scripts": {
