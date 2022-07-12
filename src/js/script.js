@@ -224,6 +224,12 @@ function loadCachePage(id) {
 			w3wLink.setAttribute('class', 'card-text');
 			const w3wAddress = String(DOMPurify.sanitize(data.location)).split('///')[1];
 			w3wLink.innerHTML = `what3words address: <a href="https://what3words.com/${w3wAddress}" target="_blank" translate="no">///${w3wAddress}</a><br><br><strong id="cacheStats"></strong>`;
+			const w3wBtn = document.getElementById('cacheW3WBtn');
+			w3wBtn.removeAttribute('tabindex');
+			w3wBtn.setAttribute('class', 'btn btn-primary m-1');
+			w3wBtn.setAttribute('href', `https://what3words.com/${w3wAddress}`);
+			w3wBtn.setAttribute('target', '_blank');
+			w3wBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in What3Words';
 			const mapBtn = document.getElementById('cacheMapsLink');
 			mapBtn.removeAttribute('tabindex');
 			mapBtn.setAttribute('class', 'btn btn-primary m-1');
@@ -291,6 +297,12 @@ function resetCachePage() {
 	const w3wLink = document.getElementById('cacheW3WLink');
 	w3wLink.setAttribute('class', 'card-text placeholder-glow');
 	w3wLink.innerHTML = '<span class="placeholder col-7"></span><span class="placeholder col-4"></span><span class="placeholder col-4"></span><span class="placeholder col-6"></span><span class="placeholder col-8"></span>';
+	const w3wBtn = document.getElementById('cacheW3WBtn');
+	w3wBtn.removeAttribute('target');
+	w3wBtn.setAttribute('href', '#');
+	w3wBtn.setAttribute('tabindex', '-1');
+	w3wBtn.setAttribute('class', 'btn btn-primary disabled placeholder col-5 m-1');
+	w3wBtn.innerHTML = '';
 	const mapBtn = document.getElementById('cacheMapsLink');
 	mapBtn.removeAttribute('target');
 	mapBtn.setAttribute('href', '#');
