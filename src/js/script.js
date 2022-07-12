@@ -167,9 +167,7 @@ function loadCachesPage() {
 		.then(handleErrors)
 		.then(data => {
 			if (data.hasOwnProperty('caches')) {
-				let count = 0;
 				data.caches.forEach(cache => {
-					count++;
 					const marker = new google.maps.Marker({
 						position: {
 							lat: Number(cache.coordinates.split(',')[0]),
@@ -177,8 +175,22 @@ function loadCachesPage() {
 						},
 						map: mainMap,
 						title: `Cache ${cache.id}`,
-						label: String(count),
-						animation: google.maps.Animation.DROP
+						label: {
+							text: cache.id,
+							color: '#ffffff',
+							fontSize: '16px'
+						},
+						animation: google.maps.Animation.DROP,
+						icon: {
+							url: cache.found ? './img/found.png' : './img/notFound.png',
+							size: {
+								width: 95,
+								widthUnit: 'px',
+								height: 123,
+								heightUnit: 'px'
+							},
+							labelOrigin: new google.maps.Point(47.5, 50)
+						}
 					});
 					marker.addListener('click', () => {
 						router.navigate(`/viewCache-${cache.id}`);

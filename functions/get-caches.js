@@ -25,6 +25,7 @@ const client = Client.initWithMiddleware({
 });
 // SharePoint Site Details
 const listId = process.env.graphSiteListId;
+const deviceListId = process.env.graphUserListId;
 const siteId = process.env.graphSiteId;
 
 // Start Lambda Function
@@ -42,6 +43,25 @@ export async function handler(event, context) {
 		};
 	}
 
+	const returnObj = {
+		caches: []
+	};
+	let deviceId;
+
+	try {
+		deviceId = event.headers['device-id'];
+	} catch {
+		return {
+			statusCode: 400,
+			body: JSON.stringify({
+				error: 'Invalid request'
+			}),
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		};
+	}
+
 	// Get list items from library
 	return client.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,Coordinates,W3WLocation)&$select=id,fields`)
 		.get()
@@ -51,23 +71,36 @@ export async function handler(event, context) {
 					error: data.error
 				};
 			}
-			const caches = [];
 			data.value.forEach(cache => {
 				const fields = cache.fields;
-				caches.push({
+				returnObj.caches.push({
 					location: fields.W3WLocation,
 					coordinates: fields.Coordinates,
-					id: fields.Title
+					id: fields.Title,
+					found: false
 				});
 			});
-			return caches;
+			return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
+				.get();
 		})
-		.then(array => {
+		.then(data => {
+			if (data.value.length === 0) {
+				return returnObj;
+			} else if (data.value.length === 1) {
+				const found = [...JSON.parse(data.value[0].fields.FoundCaches)];
+				found.forEach(item => {
+					const cache = returnObj.caches.find(cache => (cache.id === item.id));
+					cache.found = true;
+				});
+				return returnObj;
+			} else {
+				throw 'Duplicate device ID!';
+			}
+		})
+		.then(obj => {
 			return {
 				statusCode: 200,
-				body: JSON.stringify({
-					caches: array
-				}),
+				body: JSON.stringify(obj),
 				headers: {
 					'Content-Type': 'application/json'
 				}
