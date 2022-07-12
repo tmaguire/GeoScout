@@ -432,7 +432,43 @@ function foundCachesPage() {
 		.then(response => response.json())
 		.then(data => {
 			if (data.found.length > 0) {
-				foundContainer.innerHTML = '<div id="wrapper"></div>';
+				foundContainer.innerHTML = `<div class="row">
+					<div class="col-md-6">
+						<div class="card stat-card mb-2">
+							<div class="card-body">
+								<div class="row">
+									<div class="col">
+										<p class="card-title text-muted mb-0">Device ID</p>
+										<p class="h5 font-weight-bold mb-0" id="foundCachesDeviceId"></p>
+									</div>
+									<div class="col-auto">
+										<div class="icon icon-shape bg-primary text-white rounded-circle shadow">
+											<img id="foundCachesProfilePic" src="./img/loading.gif" alt="Loading placeholder...">
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="card stat-card mb-2">
+							<div class="card-body">
+								<div class="row">
+									<div class="col">
+										<p class="card-title text-muted mb-0">Caches found</p>
+										<p class="h5 font-weight-bold mb-0" id="foundCachesTotal"></p>
+									</div>
+									<div class="col-auto">
+										<div class="icon icon-shape bg-primary text-white rounded-circle shadow">
+											<i class="bi bi-geo" aria-hidden="true"></i>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div id="wrapper"></div>`;
 				new gridjs.Grid({
 					columns: [{
 							id: 'id',
@@ -453,6 +489,11 @@ function foundCachesPage() {
 					],
 					data: data.found
 				}).render(document.getElementById('wrapper'));
+				const deviceId = DOMPurify.sanitize(localStorage.getItem('deviceId'));
+				document.getElementById('foundCachesDeviceId').innerText = deviceId;
+				document.getElementById('foundCachesProfilePic').setAttribute('src', `./profilePic/${deviceId}/48`);
+				document.getElementById('foundCachesProfilePic').setAttribute('alt', `Profile picture for ${deviceId} (your device ID)`);
+				document.getElementById('foundCachesTotal').innerText = Number(data.found.length);
 			} else {
 				foundContainer.innerHTML = noneFound;
 				document.getElementById('findCachesBtn').onclick = function () {

@@ -107,9 +107,31 @@ body {
 	height: 400px;
 }
 
-input[type=number]::-webkit-inner-spin-button, 
-input[type=number]::-webkit-outer-spin-button { 
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none; 
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
+
+.icon {
+	width: 3rem;
+	height: 3rem;
+}
+
+.icon i {
+	font-size: 2.25rem;
+}
+
+.icon-shape {
+	display: inline-flex;
+	padding: 12px;
+	text-align: center;
+	border-radius: 50%;
+	align-items: center;
+	justify-content: center;
+}
+
+.stat-card {
+	height: 85%;
 }
