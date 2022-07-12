@@ -11,8 +11,12 @@
   "dependencies": {
     "@azure/identity": "^2.1.0",
     "@microsoft/microsoft-graph-client": "^3.0.2",
+    "@netlify/functions": "^1.0.0",
     "@what3words/api": "^4.0.7",
+    "boring-avatars": "^1.7.0",
     "isomorphic-fetch": "^3.0.0",
-    "lambda-rate-limiter": "^3.0.1"
+    "lambda-rate-limiter": "^3.0.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   }
 }

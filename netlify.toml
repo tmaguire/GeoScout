@@ -15,6 +15,11 @@ from = "/api/*"
 status = 200
 to = "/.netlify/functions/:splat"
 [[redirects]]
+force = true
+from = "/profilePic/*"
+status = 200
+to = "/.netlify/functions/get-avatar"
+[[redirects]]
 from = "/*"
 status = 200
 to = "/index.html"

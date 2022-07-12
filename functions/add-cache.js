@@ -121,7 +121,7 @@ export async function handler(event, context) {
 		})
 		.then(data => {
 			cacheCoordinates = `${data.coordinates.lat},${data.coordinates.lng}`;
-			return client.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields&$select=id,fields&$orderby=id%20desc&$top=1`)
+			return client.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title)&$select=id,fields&$orderby=id%20desc&$top=1`)
 				.get();
 		})
 		.then(data => {

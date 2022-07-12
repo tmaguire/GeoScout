@@ -60,7 +60,7 @@ export async function handler(event, context) {
 	}
 
 	// Get list items from library
-	return client.api(`/sites/${siteId}/lists/${deviceListId}/items?$expand=fields&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
+	return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
 		.get()
 		.then(data => {
 			if (data.value.length === 0) {

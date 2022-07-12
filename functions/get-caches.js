@@ -43,7 +43,8 @@ export async function handler(event, context) {
 	}
 
 	// Get list items from library
-	return client.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields&$select=id,fields`).get()
+	return client.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,Coordinates,W3WLocation)&$select=id,fields`)
+		.get()
 		.then(data => {
 			if (data.hasOwnProperty('error')) {
 				throw {
@@ -51,7 +52,6 @@ export async function handler(event, context) {
 				};
 			}
 			const caches = [];
-			console.log(data.value);
 			data.value.forEach(cache => {
 				const fields = cache.fields;
 				caches.push({
