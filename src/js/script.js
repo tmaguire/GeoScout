@@ -186,7 +186,8 @@ function loadCachesPage() {
 						icon: {
 							url: cache.found ? './img/found.png' : './img/notFound.png',
 							labelOrigin: new google.maps.Point(22, 20)
-						}
+						},
+						optimized: true
 					});
 					marker.addListener('click', () => {
 						router.navigate(`/viewCache-${cache.id}`);
@@ -261,10 +262,7 @@ function loadCachePage(id) {
 			}
 		})
 		.catch(error => {
-			showToast.fire({
-				title: error,
-				icon: 'error'
-			});
+			showError(error, false);
 		});
 	changePage('cache', `Cache ${id}`);
 }
