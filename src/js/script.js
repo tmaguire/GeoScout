@@ -140,36 +140,61 @@ function handleErrors(response) {
 }
 
 function loadCachesPage() {
-	mainMap = new google.maps.Map(document.getElementById('mapContainer'), {
-		center: {
-			lat: 51.80007,
-			lng: 0.64038
-		},
-		zoom: 14.3,
-		restriction: {
-			latLngBounds: {
-				north: 51.826601357825716,
-				east: 0.7474966992187326,
-				south: 51.773523020732,
-				west: 0.5332633007812326
-			},
-			strictBounds: true
-		},
-		mapId: '6b8e857a992e95a7',
-		streetViewControl: false,
-		mapTypeControl: false
+	const mapContainer = document.getElementById('mapContainer');
+	mapContainer.innerHTML = `<div class="text-center">
+			<img src="./img/loading.gif" class="img-fluid text-center"
+				alt="Loading animation placeholder">
+		</div>`;
+	const loader = new google.maps.plugins.loader.Loader({
+		apiKey: 'AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4',
+		version: 'quarterly',
+		libraries: ['drawing'],
+		language: 'en',
+		region: 'GB',
+		id: 'googleMapsScript'
 	});
+	let caches;
 	fetch('./api/get-caches', {
 			method: 'GET',
 			headers: {
 				'Device-Id': localStorage.getItem('deviceId')
 			}
-		})
-		.then(response => response.json())
+		}).then(response => response.json())
 		.then(handleErrors)
 		.then(data => {
 			if (data.hasOwnProperty('caches')) {
-				data.caches.forEach(cache => {
+				caches = data.caches;
+			} else {
+				throw 'No caches found';
+			}
+			return loader.load();
+		})
+		.then((google) => {
+			mapContainer.innerHTML = '';
+			mainMap = new google.maps.Map(mapContainer, {
+				center: {
+					lat: 51.80007,
+					lng: 0.64038
+				},
+				zoom: 14.3,
+				restriction: {
+					latLngBounds: {
+						north: 51.826601357825716,
+						east: 0.7474966992187326,
+						south: 51.773523020732,
+						west: 0.5332633007812326
+					},
+					strictBounds: true
+				},
+				mapId: '6b8e857a992e95a7',
+				streetViewControl: false,
+				mapTypeControl: false
+			});
+			return loader.load();
+		})
+		.then((google) => {
+			try {
+				caches.forEach(cache => {
 					const marker = new google.maps.Marker({
 						position: {
 							lat: Number(cache.coordinates.split(',')[0]),
@@ -193,8 +218,9 @@ function loadCachesPage() {
 						router.navigate(`/viewCache-${cache.id}`);
 					});
 				});
-			} else {
-				throw 'Invalid response received';
+			} catch (error) {
+				console.warn(error);
+				throw 'Unable to load caches';
 			}
 		})
 		.catch(error => {

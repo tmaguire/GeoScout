@@ -46,6 +46,7 @@ function bundledJs() {
 			'./node_modules/navigo/lib/navigo.min.js',
 			'./node_modules/@fingerprintjs/fingerprintjs-pro/dist/fp.min.js',
 			'./node_modules/gridjs/dist/gridjs.production.min.js',
+			'./node_modules/@googlemaps/js-api-loader/dist/index.min.js',
 			'./src/js/script.min.js'
 		])
 		.pipe(concat(`main-${version}.min.js`))
