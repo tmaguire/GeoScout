@@ -45,6 +45,7 @@ const transport = fetchTransport();
 const w3wService = what3words(apiKey, config, {
 	transport
 });
+const regex = new RegExp(/^\/{0,}[^0-9`~!@#$%^&*()+\-_=[{\]}\\|'<,.>?/";:£§º©®\s]{1,}[.｡。･・︒។։။۔።।][^0-9`~!@#$%^&*()+\-_=[{\]}\\|'<,.>?/";:£§º©®\s]{1,}[.｡。･・︒។։။۔።।][^0-9`~!@#$%^&*()+\-_=[{\]}\\|'<,.>?/";:£§º©®\s]{1,}$/);
 
 // Start Lambda Function
 export async function handler(event, context) {
@@ -89,8 +90,11 @@ export async function handler(event, context) {
 
 	try {
 		cacheLocation = JSON.parse(event.body).location;
-		cacheCode = JSON.parse(event.body).location;
+		cacheCode = JSON.parse(event.body).code;
 		requestPin = JSON.parse(event.body).pin;
+		if (!cacheLocation.startsWith('///') || !regex.test(cacheLocation.split('///')[1])) {
+			throw 'Not valid location';
+		}
 	} catch {
 		return {
 			statusCode: 400,
@@ -116,30 +120,27 @@ export async function handler(event, context) {
 	}
 
 	// Get coordinates from W3W
-	w3wService.convertToCoordinates({
+	return w3wService.convertToCoordinates({
 			words: cacheLocation
 		})
 		.then(data => {
 			cacheCoordinates = `${data.coordinates.lat},${data.coordinates.lng}`;
-			return client.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title)&$select=id,fields&$orderby=id%20desc&$top=1`)
+			return client.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title)&$select=id,fields&$orderby=fields/Title desc&$top=1`)
 				.get();
 		})
 		.then(data => {
-			if (data.hasOwnProperty('error')) {
-				throw {
-					error: data.error
-				};
-			}
+			console.log(data.value[0].fields.Title);
 			const currentNumber = Number(data.value[0].fields.Title);
+			console.log(currentNumber);
 			cacheNumber = String(currentNumber + 1).padStart(3, '0');
+			console.log(cacheNumber);
 			return client.api(`/sites/${siteId}/lists/${listId}/items`)
 				.post({
 					fields: {
-						Title: cacheNumber,
-						CableTieCode: Number(cacheCode),
-						W3WLocation: cacheLocation,
-						Coordinates: cacheCoordinates,
-						Found: 0
+						Title: String(cacheNumber),
+						CableTieCode: String(cacheCode),
+						W3WLocation: String(cacheLocation),
+						Coordinates: String(cacheCoordinates)
 					}
 				});
 		})
@@ -159,7 +160,7 @@ export async function handler(event, context) {
 			return {
 				statusCode: 500,
 				body: JSON.stringify({
-					error: 'Unable to check cache code',
+					error: 'Unable to add cache',
 					errorDebug: error
 				}),
 				headers: {
