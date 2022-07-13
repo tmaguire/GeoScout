@@ -47,6 +47,7 @@ function bundledJs() {
 			'./node_modules/@fingerprintjs/fingerprintjs-pro/dist/fp.min.js',
 			'./node_modules/gridjs/dist/gridjs.production.min.js',
 			'./node_modules/@googlemaps/js-api-loader/dist/index.min.js',
+			'./node_modules/@googlemaps/markerclusterer/dist/index.min.js',
 			'./src/js/script.min.js'
 		])
 		.pipe(concat(`main-${version}.min.js`))

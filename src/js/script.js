@@ -194,7 +194,7 @@ function loadCachesPage() {
 		})
 		.then((google) => {
 			try {
-				caches.forEach(cache => {
+				const markers = caches.map(cache => {
 					const marker = new google.maps.Marker({
 						position: {
 							lat: Number(cache.coordinates.split(',')[0]),
@@ -217,6 +217,11 @@ function loadCachesPage() {
 					marker.addListener('click', () => {
 						router.navigate(`/viewCache-${cache.id}`);
 					});
+					return marker;
+				});
+				new markerClusterer.MarkerClusterer({
+					map: mainMap,
+					markers
 				});
 			} catch (error) {
 				console.warn(error);
@@ -224,10 +229,7 @@ function loadCachesPage() {
 			}
 		})
 		.catch(error => {
-			showToast.fire({
-				title: error,
-				icon: 'error'
-			});
+			showError(error, false);
 		});
 	changePage('map', 'View caches');
 }
