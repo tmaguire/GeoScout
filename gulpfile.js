@@ -103,7 +103,7 @@ function sitePages() {
 
 function copySite() {
 	return src('./src/site/*')
-		.pipe(dest('/dist'));
+		.pipe(dest('dist/'));
 }
 
 exports.default = parallel(series(parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg, copySite), sri));
