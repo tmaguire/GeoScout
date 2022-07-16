@@ -57,6 +57,10 @@ const deviceListId = process.env.graphUserListId;
 const siteId = process.env.graphSiteId;
 // Google Maps Secret
 const mapsSecret = process.env.mapsSecret;
+// Grid reference library
+import {
+	LatLon
+} from 'geodesy/osgridref.js';
 
 // Start Lambda Function
 export async function handler(event, context) {
@@ -107,6 +111,7 @@ export async function handler(event, context) {
 				coordinates: fields.Coordinates,
 				id: fields.Title,
 				image: sign(`https://maps.googleapis.com/maps/api/staticmap?center=${fields.Coordinates}&zoom=17&markers=color:0x7413DC|${fields.Coordinates}&size=400x400&scale=2&map_id=6b8e857a992e95a7&key=AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4`, mapsSecret),
+				gridRef: new LatLon(Number(String(fields.Coordinates).split(',')[0]),Number(String(fields.Coordinates).split(',')[1])).toOsGrid().toString(),
 				stats: fields.Found,
 				found: false
 			};

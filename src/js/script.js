@@ -260,7 +260,7 @@ function loadCachePage(id) {
 			const w3wLink = document.getElementById('cacheW3WLink');
 			w3wLink.setAttribute('class', 'card-text');
 			const w3wAddress = String(DOMPurify.sanitize(data.location)).split('///')[1];
-			w3wLink.innerHTML = `what3words address: <a href="https://what3words.com/${w3wAddress}" target="_blank" translate="no">///${w3wAddress}</a><br><br><strong id="cacheStats"></strong>`;
+			w3wLink.innerHTML = `What3Words address: <a href="https://what3words.com/${w3wAddress}" target="_blank" translate="no">///${w3wAddress}</a><br>Grid reference: ${DOMPurify.sanitize(data.gridRef)}&nbsp;<i><a href="https://getoutside.ordnancesurvey.co.uk/guides/beginners-guide-to-grid-references/">Learn how to use this</a></i><br><br><strong id="cacheStats"></strong>`;
 			const w3wBtn = document.getElementById('cacheW3WBtn');
 			w3wBtn.removeAttribute('tabindex');
 			w3wBtn.setAttribute('class', 'btn btn-primary m-1');
@@ -270,7 +270,7 @@ function loadCachePage(id) {
 			const mapBtn = document.getElementById('cacheMapsLink');
 			mapBtn.removeAttribute('tabindex');
 			mapBtn.setAttribute('class', 'btn btn-primary m-1');
-			mapBtn.setAttribute('href', `https://www.google.com/maps/dir/?api=1&destination=${DOMPurify.sanitize(data.coordinates)}&travelmode=walking`);
+			mapBtn.setAttribute('href', `https://www.google.com/maps/search/?api=1&query=${DOMPurify.sanitize(data.coordinates)}`);
 			mapBtn.setAttribute('target', '_blank');
 			mapBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in Google Maps';
 			const foundBtn = document.getElementById('cacheFoundLink');
