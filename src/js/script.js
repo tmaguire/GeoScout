@@ -192,7 +192,7 @@ function loadCachesPage() {
 			});
 			return loader.load();
 		})
-		.then((google) => {
+		.then(() => {
 			try {
 				const markers = caches.map(cache => {
 					const marker = new google.maps.Marker({
@@ -205,7 +205,8 @@ function loadCachesPage() {
 						label: {
 							text: cache.id,
 							color: '#ffffff',
-							fontSize: '16px'
+							fontSize: '16px',
+							className: cache.found ? 'marker-found' : 'marker-notFound'
 						},
 						animation: google.maps.Animation.DROP,
 						icon: {
@@ -223,10 +224,14 @@ function loadCachesPage() {
 					map: mainMap,
 					markers
 				});
+				return markers;
 			} catch (error) {
 				console.warn(error);
 				throw 'Unable to load caches';
 			}
+		})
+		.then(markers => {
+
 		})
 		.catch(error => {
 			showError(error, false);
@@ -260,7 +265,9 @@ function loadCachePage(id) {
 			const w3wLink = document.getElementById('cacheW3WLink');
 			w3wLink.setAttribute('class', 'card-text');
 			const w3wAddress = String(DOMPurify.sanitize(data.location)).split('///')[1];
-			w3wLink.innerHTML = `What3Words address: <a href="https://what3words.com/${w3wAddress}" target="_blank" translate="no">///${w3wAddress}</a><br>Grid reference: ${DOMPurify.sanitize(data.gridRef)}&nbsp;<i><a href="https://getoutside.ordnancesurvey.co.uk/guides/beginners-guide-to-grid-references/">Learn how to use this</a></i><br><br><strong id="cacheStats"></strong>`;
+			w3wLink.innerHTML = `<p><strong>What3Words address:</strong> <a href="https://what3words.com/${w3wAddress}" target="_blank" translate="no">///${w3wAddress}</a></p>
+			<p><strong>Grid reference:</strong> <a href="https://explore.osmaps.com/pin?lat=${String(DOMPurify.sanitize(data.coordinates)).split(',')[0]}&lon=${String(DOMPurify.sanitize(data.coordinates)).split(',')[1]}&zoom=18.0000&overlays=&style=Standard&type=2d&placesCategory=" target="_blank">${DOMPurify.sanitize(data.gridRef)}</a><br><a class="text-decoration-none" href="https://getoutside.ordnancesurvey.co.uk/guides/beginners-guide-to-grid-references/" target="_blank">Learn more about grid references&nbsp;<i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a></p>
+			<p><br><strong id="cacheStats"></strong></p>`;
 			const w3wBtn = document.getElementById('cacheW3WBtn');
 			w3wBtn.removeAttribute('tabindex');
 			w3wBtn.setAttribute('class', 'btn btn-primary m-1');
@@ -278,12 +285,12 @@ function loadCachePage(id) {
 			if (data.found) {
 				foundBtn.setAttribute('class', 'btn btn-outline-primary m-1 disabled');
 				foundBtn.innerHTML = `<i class="bi bi-patch-check" aria-hidden="true"></i>&nbsp;You've already found this cache`;
-				cacheStats.innerText = `You ${Number(data.stats) === 1 ? 'are the only person that has found this cache!' : `and ${Number(data.stats) - 1} other ${(Number(data.stats) - 1) === 1 ? 'person has' : 'people have'} found this cache`}`;
+				cacheStats.innerText = `You ${Number(data.stats) === 1 ? 'are the only person that has found this cache! 😮' : `and ${Number(data.stats) - 1} other ${(Number(data.stats) - 1) === 1 ? 'person has' : 'people have'} found this cache 😊`}`;
 			} else {
 				foundBtn.setAttribute('class', 'btn btn-outline-primary m-1');
 				foundBtn.setAttribute('href', `foundCache-${id}`);
 				foundBtn.innerHTML = '<i class="bi bi-123" aria-hidden="true"></i>&nbsp;Found this cache?';
-				cacheStats.innerText = `${Number(data.stats) === 0 ? 'No one has found this cache yet. Can you find it?' : `${Number(data.stats)} ${Number(data.stats) === 1 ? 'person has' : 'people have'} found this cache - can you find it?`}`;
+				cacheStats.innerText = `${Number(data.stats) === 0 ? 'No one has found this cache yet 😢 can you find it?' : `${Number(data.stats)} ${Number(data.stats) === 1 ? 'person has' : 'people have'} found this cache - can you find it?`}`;
 				foundBtn.onclick = function () {
 					router.navigate(`/foundCache-${id}`);
 				};
@@ -500,7 +507,8 @@ function foundCachesPage() {
 					columns: [{
 							id: 'id',
 							name: 'Cache Number',
-							sort: true
+							sort: true,
+							formatter: (cell) => gridjs.html(`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo>${DOMPurify.sanitize(cell)}</a>`)
 						},
 						{
 							id: 'date',
@@ -509,7 +517,9 @@ function foundCachesPage() {
 							formatter: (date) => {
 								const time = new Date(date);
 								return `${time.toLocaleTimeString('en-GB',{
-									hour12: false
+									hour: 'numeric',
+									minute: 'numeric',
+									hour12: true
 								})} on ${prettyDate(date)}`;
 							}
 						}
