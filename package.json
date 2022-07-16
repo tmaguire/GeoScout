@@ -1,23 +1,23 @@
 {
-	"name": "witham-scouts-geocache",
+	"name": "geoscout",
+	"appName": "GeoScout",
 	"version": "1.2.8",
-	"description": "Witham Scouts Geocaching using What3Words",
-	"main": "index.js",
+	"description": "Witham Scouts Geocaching project (GeoScout) using What3Words, Google Maps and SharePoint Online",
 	"scripts": {
 		"build": "npm run license-check && gulp",
 		"dev": "npm run license-check && gulp dev",
-		"license-check": "npx license-checker --relativeLicensePath --production --excludePrivatePackages --direct --json --customPath ./license-types.json > thirdparty-licenses.json"
+		"license-check": "npx license-checker --relativeLicensePath --production --excludePrivatePackages --direct --json --customPath ./thirdparty-licenses-template.json > thirdparty-licenses.json"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/tmaguire/Witham-Scouts-Geocache.git"
+		"url": "git+https://github.com/tmaguire/GeoScout.git"
 	},
-	"author": "Tom Maguire",
+	"author": "Tom Maguire (1st Witham Scout Group)",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/tmaguire/Witham-Scouts-Geocache/issues"
+		"url": "https://github.com/tmaguire/GeoScout/issues"
 	},
-	"homepage": "https://github.com/tmaguire/Witham-Scouts-Geocache#readme",
+	"homepage": "https://github.com/tmaguire/GeoScout#readme",
 	"dependencies": {
 		"@googlemaps/js-api-loader": "^1.14.3",
 		"@googlemaps/markerclusterer": "^2.0.8",

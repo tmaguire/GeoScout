@@ -1,2 +1,2 @@
-# Witham Scouts Geocaching
-Geocaching for Witham Scouts using What3Words
+# GeoScout
+Witham Scouts Geocaching project (GeoScout) using What3Words, Google Maps and SharePoint Online

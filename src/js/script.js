@@ -20,7 +20,7 @@ function getDeviceId() {
 	const fpPromise = FingerprintJS.load({
 		apiKey: 'a1ZJOENnGt4QCgAqBHHb',
 		region: 'eu',
-		endpoint: 'https://fp.withamscouts.org.uk'
+		endpoint: 'https://login.geoscout.uk'
 	});
 	// Get device ID and store in localStorage
 	fpPromise
@@ -317,7 +317,7 @@ function changePage(page, title) {
 	document.getElementById(page).setAttribute('class', 'row mx-auto');
 	document.getElementById(page).setAttribute('aria-hidden', 'false');
 	// Change document title
-	document.title = `${title} | Witham Scouts Geocaching`;
+	document.title = `${title} | GeoScout`;
 }
 
 function resetCachePage() {

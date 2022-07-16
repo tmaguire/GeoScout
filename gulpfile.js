@@ -11,6 +11,7 @@ const fileInclude = require('gulp-file-include');
 const sriHash = require('gulp-sri-hash');
 const htmlmin = require('gulp-html-minifier-terser');
 const version = require('./package.json').version;
+const appName = require('./package.json').appName;
 const sass = require('gulp-sass')(require('sass'));
 
 function licensePrep() {
@@ -87,8 +88,9 @@ function sitePages() {
 			prefix: '@@',
 			basepath: '@root',
 			context: {
-				version: version,
-				licenses: licenses
+				version,
+				licenses,
+				appName
 			}
 		}))
 		.pipe(htmlmin({
