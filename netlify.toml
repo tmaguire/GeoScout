@@ -18,7 +18,7 @@ to = "https://www.geoscout.uk/:splat"
 [[redirects]]
 force = true
 from = "https://geocaching.withamscouts.org.uk/*"
-status = 301
+status = 302
 to = "https://www.geoscout.uk/:splat"
 [[redirects]]
 force = true
