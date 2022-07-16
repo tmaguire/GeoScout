@@ -101,5 +101,10 @@ function sitePages() {
 		.pipe(dest('dist/'));
 }
 
-exports.default = parallel(series(parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg), sri));
-exports.dev = parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg);
+function copySite() {
+	return src('./src/site/*')
+		.pipe(dest('/dist'));
+}
+
+exports.default = parallel(series(parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg, copySite), sri));
+exports.dev = parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg, copySite);

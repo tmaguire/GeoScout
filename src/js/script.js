@@ -192,7 +192,7 @@ function loadCachesPage() {
 			});
 			return loader.load();
 		})
-		.then(() => {
+		.then((google) => {
 			try {
 				const markers = caches.map(cache => {
 					const marker = new google.maps.Marker({
@@ -236,7 +236,7 @@ function loadCachesPage() {
 		.catch(error => {
 			showError(error, false);
 		});
-	changePage('map', 'View caches');
+	changePage('viewCaches', 'View caches', false);
 }
 
 function loadCachePage(id) {
@@ -299,10 +299,12 @@ function loadCachePage(id) {
 		.catch(error => {
 			showError(error, false);
 		});
-	changePage('cache', `Cache ${id}`);
+	changePage('viewCache', `Cache ${id}`, id);
 }
 
-function changePage(page, title) {
+function changePage(page, title, id) {
+	// Update Canonical tag
+	document.querySelector("link[rel='canonical']").setAttribute('href', page === '404' ? 'https://www.geoscout.uk' : (id ? `https://www.geoscout.uk/${page}-${id}` : `https://www.geoscout.uk/${page}`));
 	// Update menu
 	document.querySelectorAll('a.nav-link').forEach(menuItem => {
 		if (menuItem.getAttribute('data-page') === page) {
@@ -356,7 +358,7 @@ function resetCachePage() {
 }
 
 function foundCachePage(id) {
-	changePage('cache', `Cache ${id}`);
+	changePage('viewCache', `Cache ${id}`, id);
 	Swal.fire({
 			title: `Found Cache ${id}?`,
 			text: "If you've found this cache, please enter the 5-digit code below to mark it as found:",
@@ -541,7 +543,7 @@ function foundCachesPage() {
 		.catch(error => {
 			showError(error, true);
 		});
-	changePage('found', 'Found caches');
+	changePage('foundCaches', 'Found caches', false);
 }
 
 // Function to start on page load
@@ -551,10 +553,10 @@ window.onload = function () {
 	// Specify routes and resolve
 	router
 		.on('/', function () {
-			changePage('home', 'Home');
+			changePage('home', 'Home', false);
 		})
 		.on('/home', function () {
-			changePage('home', 'Home');
+			changePage('home', 'Home', false);
 		})
 		.on('/viewCaches', function () {
 			loadCachesPage();
@@ -569,7 +571,7 @@ window.onload = function () {
 			foundCachePage(value.data.id);
 		})
 		.on('/about', function () {
-			changePage('about', 'About');
+			changePage('about', 'About', false);
 		})
 		.on('/disclaimer', function () {
 			window.scrollTo({
@@ -577,7 +579,7 @@ window.onload = function () {
 				left: 0,
 				behavior: 'smooth'
 			});
-			changePage('disclaimer', 'Disclaimer');
+			changePage('disclaimer', 'Disclaimer', false);
 		})
 		.on('/terms', function () {
 			window.scrollTo({
@@ -585,7 +587,7 @@ window.onload = function () {
 				left: 0,
 				behavior: 'smooth'
 			});
-			changePage('terms', 'Terms and Conditions');
+			changePage('terms', 'Terms and Conditions', false);
 		})
 		.on('/privacy', function () {
 			window.scrollTo({
@@ -593,7 +595,7 @@ window.onload = function () {
 				left: 0,
 				behavior: 'smooth'
 			});
-			changePage('privacy', 'Privacy Policy');
+			changePage('privacy', 'Privacy Policy', false);
 		})
 		.on('/openSourceLicenses', function () {
 			window.scrollTo({
@@ -601,10 +603,10 @@ window.onload = function () {
 				left: 0,
 				behavior: 'smooth'
 			});
-			changePage('osl', 'Open Source Licenses');
+			changePage('openSourceLicenses', 'Open Source Licenses', false);
 		})
 		.notFound(function () {
-			changePage('404', 'Page not found');
+			changePage('404', 'Page not found', false);
 		})
 		.resolve();
 	if (localStorage.getItem('deviceId') === null) {
