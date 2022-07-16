@@ -197,20 +197,20 @@ function loadCachesPage() {
 				const markers = caches.map(cache => {
 					const marker = new google.maps.Marker({
 						position: {
-							lat: Number(cache.coordinates.split(',')[0]),
-							lng: Number(cache.coordinates.split(',')[1])
+							lat: Number(DOMPurify.sanitize(cache.coordinates).split(',')[0]),
+							lng: Number(DOMPurify.sanitize(cache.coordinates).split(',')[1])
 						},
 						map: mainMap,
-						title: `Cache ${cache.id}`,
+						title: `Cache ${DOMPurify.sanitize(cache.id)}`,
 						label: {
-							text: cache.id,
+							text: DOMPurify.sanitize(cache.id),
 							color: '#ffffff',
 							fontSize: '16px',
-							className: cache.found ? 'marker-found' : 'marker-notFound'
+							className: Boolean(cache.found) ? 'marker-found' : 'marker-notFound'
 						},
 						animation: google.maps.Animation.DROP,
 						icon: {
-							url: cache.found ? './img/found.png' : './img/notFound.png',
+							url: Boolean(cache.found) ? './img/found.png' : './img/notFound.png',
 							labelOrigin: new google.maps.Point(22, 20)
 						},
 						optimized: true
@@ -220,18 +220,18 @@ function loadCachesPage() {
 					});
 					return marker;
 				});
-				new markerClusterer.MarkerClusterer({
+				const cluster = new markerClusterer.MarkerClusterer({
 					map: mainMap,
 					markers
 				});
-				return markers;
+				return cluster;
 			} catch (error) {
 				console.warn(error);
 				throw 'Unable to load caches';
 			}
 		})
-		.then(markers => {
-
+		.then(cluster => {
+			// cluster.clearMarkers();
 		})
 		.catch(error => {
 			showError(error, false);
