@@ -315,7 +315,7 @@ function changePage(page, title) {
 	});
 	// Set page as active
 	document.getElementById(page).setAttribute('class', 'row mx-auto');
-	document.getElementById(page).setAttribute('aria-hidden', 'false');
+	document.getElementById(page).removeAttribute('aria-hidden');
 	// Change document title
 	document.title = `${title} | GeoScout`;
 }
@@ -534,54 +534,6 @@ function foundCachesPage() {
 	changePage('found', 'Found caches');
 }
 
-function addCache() {
-	const fields = ['editorPin', 'editorCacheLocation', 'editorCacheCode'];
-	const saveBtn = document.getElementById('saveBtn');
-	saveBtn.setAttribute('disabled', true);
-	saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;Adding cache...';
-	const record = {};
-	fields.forEach(field => {
-		record[field] = document.getElementById(field).value;
-		document.getElementById(field).setAttribute('disabled', true);
-	});
-
-	function unlockForm(clear) {
-		fields.forEach(field => {
-			document.getElementById(field).removeAttribute('disabled');
-			if (clear) {
-				document.getElementById(field).value = '';
-			}
-		});
-		saveBtn.removeAttribute('disabled');
-		saveBtn.innerText = 'Add cache';
-	}
-	fetch('./api/add-cache', {
-			method: 'POST',
-			body: JSON.stringify({
-				location: record.editorCacheLocation,
-				code: record.editorCacheCode,
-				pin: record.editorPin
-			}),
-			headers: {
-				'Content-Type': 'application/json',
-				'Device-Id': localStorage.getItem('deviceId')
-			}
-		})
-		.then(response => response.json())
-		.then(handleErrors)
-		.then(data => {
-			unlockForm(true);
-			showToast.fire({
-				title: data.success,
-				icon: 'success'
-			});
-		})
-		.catch(error => {
-			unlockForm(false);
-			showError(error, true);
-		});
-}
-
 // Function to start on page load
 window.onload = function () {
 	// Create router
@@ -641,9 +593,6 @@ window.onload = function () {
 			});
 			changePage('osl', 'Open Source Licenses');
 		})
-		.on('/editor', function () {
-			changePage('editor', 'Cache editor');
-		})
 		.notFound(function () {
 			changePage('404', 'Page not found');
 		})
@@ -651,14 +600,4 @@ window.onload = function () {
 	if (localStorage.getItem('deviceId') === null) {
 		getDeviceId();
 	}
-	const form = document.getElementById('editorForm');
-	form.addEventListener('submit', function (event) {
-		event.preventDefault();
-		if (!form.checkValidity()) {
-			event.stopPropagation();
-		} else {
-			addCache();
-		}
-		form.classList.add('was-validated');
-	}, false);
 };
