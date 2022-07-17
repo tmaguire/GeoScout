@@ -16,22 +16,35 @@ const showToast = Swal.mixin({
 });
 
 function getDeviceId() {
-	// Set up fingerprint agent
-	const fpPromise = FingerprintJS.load({
-		apiKey: 'a1ZJOENnGt4QCgAqBHHb',
-		region: 'eu',
-		endpoint: 'https://login.geoscout.uk'
-	});
-	// Get device ID and store in localStorage
-	fpPromise
+	FingerprintJS.load({
+			apiKey: 'a1ZJOENnGt4QCgAqBHHb',
+			region: 'eu',
+			endpoint: 'https://login.geoscout.uk'
+		})
 		.then(fp => fp.get())
 		.then(result => {
-			if (localStorage.getItem('deviceId') === null) {
-				localStorage.setItem('deviceId', result.visitorId);
-			}
+			localStorage.setItem('deviceId', result.visitorId);
 		})
 		.catch(error => {
 			console.warn(error);
+		});
+}
+
+function getApiAuth() {
+	return FingerprintJS.load({
+			apiKey: 'a1ZJOENnGt4QCgAqBHHb',
+			region: 'eu',
+			endpoint: 'https://login.geoscout.uk'
+		})
+		.then(fp => fp.get())
+		.then(result => {
+			return {
+				requestId: result.requestId,
+				deviceId: result.visitorId
+			};
+		})
+		.catch(error => {
+			showError(error, false);
 		});
 }
 
@@ -301,7 +314,7 @@ function loadCachePage(id) {
 	fetch('./api/get-cache', {
 			method: 'POST',
 			body: JSON.stringify({
-				cache: id,
+				cache: id
 			}),
 			headers: {
 				'Content-Type': 'application/json',
@@ -444,16 +457,20 @@ function foundCachePage(id) {
 				}
 			},
 			preConfirm: (data) => {
-				return fetch('./api/found-cache', {
-						method: 'POST',
-						body: JSON.stringify({
-							cache: id,
-							cacheCode: Number(data)
-						}),
-						headers: {
-							'Content-Type': 'application/json',
-							'Device-Id': localStorage.getItem('deviceId')
-						}
+				return getApiAuth()
+					.then(auth => {
+						return fetch('./api/found-cache', {
+							method: 'POST',
+							body: JSON.stringify({
+								cache: id,
+								cacheCode: Number(data)
+							}),
+							headers: {
+								'Content-Type': 'application/json',
+								'Device-Id': auth.deviceId,
+								'Request-Id': auth.requestId
+							}
+						});
 					})
 					.then(response => response.json())
 					.then(handleErrors);

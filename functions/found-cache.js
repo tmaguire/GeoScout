@@ -30,6 +30,16 @@ const siteId = process.env.graphSiteId;
 // Imports for rate limiting
 import crypto from 'crypto';
 import limiterFactory from 'lambda-rate-limiter';
+// Import validation module for deviceId
+import {
+	FingerprintJsServerApiClient,
+	Region
+} from '@fingerprintjs/fingerprintjs-pro-server-api';
+const fingerprintSecret = process.env.fingerprintSecret;
+const fingerprintClient = new FingerprintJsServerApiClient({
+	region: Region.EU,
+	apiKey: fingerprintSecret
+});
 
 // Start Lambda Function
 export async function handler(event, context) {
@@ -69,12 +79,14 @@ export async function handler(event, context) {
 	let cacheId;
 	let cacheCode;
 	let deviceId;
+	let requestId;
 	let currentStats;
 
 	try {
 		cacheId = JSON.parse(event.body).cache;
 		cacheCode = JSON.parse(event.body).cacheCode;
 		deviceId = event.headers['device-id'];
+		requestId = event.headers['request-id'];
 		const check = new RegExp('^[0-9]{5}$');
 		if (!check.test(cacheCode)) {
 			return {
@@ -99,9 +111,21 @@ export async function handler(event, context) {
 		};
 	}
 
-	// Get list items from library
-	return client.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,CableTieCode,Found)&$select=id,fields&filter=fields/Title eq '${cacheId}'`)
-		.get()
+	return fingerprintClient.getVisitorHistory(deviceId, {
+			request_id: requestId
+		})
+		.then(sessionData => {
+			const requestIp = crypto.createHash('SHA256').update(sessionData.visits[0].ip).digest('hex');
+			if (requestIp === ip || event.headers['client-ip'] === '::1') {
+				return true;
+			} else {
+				throw 'Session mismatch';
+			}
+		})
+		.then(() => {
+			return client.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,CableTieCode,Found)&$select=id,fields&filter=fields/Title eq '${cacheId}'`)
+				.get();
+		})
 		.then(data => {
 			if (data.hasOwnProperty('error')) {
 				throw {
@@ -170,6 +194,16 @@ export async function handler(event, context) {
 					statusCode: 403,
 					body: JSON.stringify({
 						error: error
+					}),
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				};
+			} else if (error === 'Session mismatch') {
+				return {
+					statusCode: 401,
+					body: JSON.stringify({
+						error: 'Unable to validate your Device ID'
 					}),
 					headers: {
 						'Content-Type': 'application/json'
