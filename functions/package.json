@@ -1,21 +1,19 @@
 {
   "name": "functions",
   "version": "1.0.0",
-  "description": "Serverless functions used for backend services that power the Witham Scouts Geocaching app",
+  "description": "Serverless functions used for backend services that power the GeoScout website/app",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Tom Maguire",
-  "license": "MIT",
+  "author": "Tom Maguire (1st Witham Scout Group)",
+  "license": "ISC",
   "dependencies": {
     "@azure/identity": "^2.1.0",
     "@googlemaps/url-signature": "^1.0.25",
     "@microsoft/microsoft-graph-client": "^3.0.2",
     "@netlify/functions": "^1.0.0",
-    "@what3words/api": "^4.0.7",
     "boring-avatars": "^1.7.0",
-    "cross-fetch": "^3.1.5",
     "geodesy": "^2.4.0",
     "isomorphic-fetch": "^3.0.0",
     "lambda-rate-limiter": "^3.0.1",
