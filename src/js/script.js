@@ -170,8 +170,8 @@ function loadCachesPage() {
 			return loader.load();
 		})
 		.then((google) => {
-			mapContainer.innerHTML = '';
-			mainMap = new google.maps.Map(mapContainer, {
+			mapContainer.innerHTML = '<div id="mapFilter"></div><div id="mainMap"></div>';
+			mainMap = new google.maps.Map(document.getElementById('mainMap'), {
 				center: {
 					lat: 51.80007,
 					lng: 0.64038
@@ -205,8 +205,7 @@ function loadCachesPage() {
 						label: {
 							text: DOMPurify.sanitize(cache.id),
 							color: '#ffffff',
-							fontSize: '16px',
-							className: Boolean(cache.found) ? 'marker-found' : 'marker-notFound'
+							fontSize: '16px'
 						},
 						animation: google.maps.Animation.DROP,
 						icon: {
@@ -231,7 +230,65 @@ function loadCachesPage() {
 			}
 		})
 		.then(cluster => {
-			// cluster.clearMarkers();
+			let currentFilter = 'all';
+			document.getElementById('mapFilter').innerHTML = `<div class="btn-group mb-3" role="group" aria-label="Filter control for the map to toggle which caches are visible">
+				<input type="radio" class="btn-check" name="filterBtn" id="filterAll" autocomplete="off" value="all" checked>
+				<label class="btn btn-outline-primary" for="filterAll">All caches</label>
+				<input type="radio" class="btn-check" name="filterBtn" id="filterNotFound" autocomplete="off" value="notFound">
+				<label class="btn btn-outline-primary" for="filterNotFound">Caches you haven't found</label>
+				<input type="radio" class="btn-check" name="filterBtn" id="filterFound" autocomplete="off" value="found">
+				<label class="btn btn-outline-primary" for="filterFound">Caches you've found</label>
+			</div>`;
+
+			function changeFilter(filter) {
+				if (currentFilter !== filter) {
+					cluster.clearMarkers();
+					currentFilter = filter;
+					const filterMode = (filter === 'all') ? {
+						found: true,
+						notFound: true
+					} : {
+						found: (filter === 'found'),
+						notFound: (filter === 'notFound')
+					};
+					const markers = [];
+					caches.forEach(cache => {
+						if (cache.found && filterMode.found || !cache.found && filterMode.notFound) {
+							const marker = new google.maps.Marker({
+								position: {
+									lat: Number(DOMPurify.sanitize(cache.coordinates).split(',')[0]),
+									lng: Number(DOMPurify.sanitize(cache.coordinates).split(',')[1])
+								},
+								map: mainMap,
+								title: `Cache ${DOMPurify.sanitize(cache.id)}`,
+								label: {
+									text: DOMPurify.sanitize(cache.id),
+									color: '#ffffff',
+									fontSize: '16px'
+								},
+								animation: google.maps.Animation.DROP,
+								icon: {
+									url: Boolean(cache.found) ? './img/found.png' : './img/notFound.png',
+									labelOrigin: new google.maps.Point(22, 20)
+								},
+								optimized: true
+							});
+							marker.addListener('click', () => {
+								router.navigate(`/viewCache-${cache.id}`);
+							});
+							markers.push(marker);
+						}
+					});
+					cluster.addMarkers(markers);
+				}
+
+			}
+			['filterAll', 'filterNotFound', 'filterFound'].forEach(element => {
+				document.getElementById(element).addEventListener('click', function () {
+					changeFilter(document.querySelector('input[name="filterBtn"]:checked').value);
+				});
+			});
+
 		})
 		.catch(error => {
 			showError(error, false);
