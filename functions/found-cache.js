@@ -115,7 +115,13 @@ export async function handler(event, context) {
 			request_id: requestId
 		})
 		.then(sessionData => {
-			const requestIp = crypto.createHash('SHA256').update(sessionData.visits[0].ip).digest('hex');
+			let sessionIp;
+			try {
+				sessionIp = sessionData.visits[0].ip;
+			} catch {
+				throw 'Session mismatch';
+			}
+			const requestIp = crypto.createHash('SHA256').update(sessionIp).digest('hex');
 			if (requestIp === ip || event.headers['client-ip'] === '::1') {
 				return true;
 			} else {

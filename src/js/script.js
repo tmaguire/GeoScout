@@ -432,9 +432,12 @@ function foundCachePage(id) {
 	Swal.fire({
 			title: `Found Cache ${id}?`,
 			text: "If you've found this cache, please enter the 5-digit code below to mark it as found:",
-			input: 'number',
+			input: 'text',
 			inputAttributes: {
-				autocomplete: 'off'
+				autocomplete: 'off',
+				inputmode: 'numeric',
+				pattern: '[0-9]*',
+				maxlength: 5
 			},
 			showCancelButton: true,
 			buttonsStyling: false,
