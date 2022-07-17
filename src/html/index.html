@@ -105,7 +105,7 @@
                     <span class="home-caption">View caches</span>
                   </a>
                 </div>
-                <div class="col-sm-4">
+                <div class="col-md-4">
                   <a
                     href="foundCaches"
                     class="btn btn-sq-lg btn-primary"
@@ -1354,19 +1354,39 @@
         </div>
       </main>
       <!-- Page footer -->
-      <footer class="container pt-5 my-5 text-muted border-top">
-        <p>
-          @@appName v@@version | All content &copy;
-          <a href="https://www.withamscouts.org.uk">Witham Scout Groups</a> and
-          <a href="https://www.scouts.org.uk/">The Scout Association</a>. All
-          Rights Reserved.
-        </p>
-        <p>
-          <a href="terms" data-navigo>Terms and Conditions</a> |
-          <a href="privacy" data-navigo>Privacy Policy</a> |
-          <a href="disclaimer" data-navigo>Disclaimer</a> |
-          <a href="openSourceLicenses" data-navigo>Open Source Licenses</a>
-        </p>
+      <footer class="container my-5 text-muted border-top">
+        <div class="row pt-3">
+          <div class="col-md-10">
+            <p>
+              @@appName v@@version | All content &copy;
+              <a href="https://www.scouts.org.uk/">The Scout Association</a>.
+              All Rights Reserved.
+            </p>
+            <p>
+              <a href="terms" data-navigo>Terms and Conditions</a> |
+              <a href="privacy" data-navigo>Privacy Policy</a> |
+              <a href="disclaimer" data-navigo>Disclaimer</a> |
+              <a href="openSourceLicenses" data-navigo>Open Source Licenses</a>
+              |
+              <a href="https://www.scouts.org.uk/about-us/strategy/"
+                >#SkillsForLife</a
+              >
+            </p>
+          </div>
+          <div class="col-md-2 text-center">
+            <a href="https://www.withamscouts.org.uk">
+              <picture>
+                <source srcset="./img/group.webp" type="image/webp" />
+                <source srcset="./img/group.png" type="image/png" />
+                <img
+                  src="./img/group.png"
+                  class="footer-img"
+                  alt="Witham Scouts logo"
+                />
+              </picture>
+            </a>
+          </div>
+        </div>
       </footer>
     </div>
     <script src="./js/main-@@version.min.js"></script>
