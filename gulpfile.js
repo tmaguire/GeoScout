@@ -61,7 +61,8 @@ function bundledCss() {
 			'./src/css/style.scss',
 			'./node_modules/bootstrap-icons/font/bootstrap-icons.scss',
 			'./node_modules/sweetalert2/dist/sweetalert2.min.css',
-			'./node_modules/gridjs/dist/theme/mermaid.min.css'
+			'./node_modules/gridjs/dist/theme/mermaid.min.css',
+			'./node_modules/outdated-browser-rework/dist/style.css'
 		])
 		.pipe(concat(`bundle-${version}.min.css`))
 		.pipe(sass.sync({
@@ -106,5 +107,14 @@ function copySite() {
 		.pipe(dest('dist/'));
 }
 
-exports.default = parallel(series(parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg, copySite), sri));
-exports.dev = parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg, copySite);
+function browserCompat() {
+	return src([
+			'./node_modules/outdated-browser-rework/dist/outdated-browser-rework.min.js',
+			'./src/js/browser-compat.min.js'
+		])
+		.pipe(concat(`browser-compat.min.js`))
+		.pipe(dest('dist/js/'));
+}
+
+exports.default = parallel(series(parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg, copySite, browserCompat), sri));
+exports.dev = parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg, copySite, browserCompat);

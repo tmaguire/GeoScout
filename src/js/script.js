@@ -610,6 +610,7 @@ function foundCachesPage() {
 				document.getElementById('foundCachesProfilePic').setAttribute('src', `./profilePic/${deviceId}/48`);
 				document.getElementById('foundCachesProfilePic').setAttribute('alt', `Profile picture for ${deviceId} (your device ID)`);
 				document.getElementById('foundCachesTotal').innerText = Number(data.found.length);
+				router.updatePageLinks();
 			} else {
 				foundContainer.innerHTML = noneFound;
 				document.getElementById('findCachesBtn').onclick = function () {

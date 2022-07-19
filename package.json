@@ -27,6 +27,7 @@
 		"boring-avatars": "^1.7.0",
 		"gridjs": "^5.0.2",
 		"navigo": "^8.11.1",
+		"outdated-browser-rework": "^3.0.1",
 		"sweetalert2": "^11.4.23",
 		"validator": "^13.7.0"
 	},
