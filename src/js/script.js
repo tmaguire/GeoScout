@@ -397,6 +397,12 @@ function changePage(page, title, id) {
 	document.getElementById(page).removeAttribute('aria-hidden');
 	// Change document title
 	document.title = `${title} | GeoScout`;
+	// Scroll to top
+	window.scrollTo({
+		top: 0,
+		left: 0,
+		behavior: 'smooth'
+	});
 }
 
 function resetCachePage() {
@@ -654,35 +660,15 @@ window.onload = function () {
 			changePage('about', 'About', false);
 		})
 		.on('/disclaimer', function () {
-			window.scrollTo({
-				top: 0,
-				left: 0,
-				behavior: 'smooth'
-			});
 			changePage('disclaimer', 'Disclaimer', false);
 		})
 		.on('/terms', function () {
-			window.scrollTo({
-				top: 0,
-				left: 0,
-				behavior: 'smooth'
-			});
 			changePage('terms', 'Terms and Conditions', false);
 		})
 		.on('/privacy', function () {
-			window.scrollTo({
-				top: 0,
-				left: 0,
-				behavior: 'smooth'
-			});
 			changePage('privacy', 'Privacy Policy', false);
 		})
 		.on('/openSourceLicenses', function () {
-			window.scrollTo({
-				top: 0,
-				left: 0,
-				behavior: 'smooth'
-			});
 			changePage('openSourceLicenses', 'Open Source Licenses', false);
 		})
 		.notFound(function () {
