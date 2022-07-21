@@ -1,6 +1,7 @@
 /* jshint esversion:9 */
 let mainMap;
 let router;
+const loadingGif = '<div class="text-center"><img src="./img/loading.gif" class="img-fluid text-center" alt="Loading animation placeholder"></div>';
 
 // Method for creating toast notifications
 const showToast = Swal.mixin({
@@ -154,10 +155,7 @@ function handleErrors(response) {
 
 function loadCachesPage() {
 	const mapContainer = document.getElementById('mapContainer');
-	mapContainer.innerHTML = `<div class="text-center">
-			<img src="./img/loading.gif" class="img-fluid text-center"
-				alt="Loading animation placeholder">
-		</div>`;
+	mapContainer.innerHTML = loadingGif;
 	const loader = new google.maps.plugins.loader.Loader({
 		apiKey: 'AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4',
 		version: 'quarterly',
@@ -189,7 +187,9 @@ function loadCachesPage() {
 					lat: 51.80007,
 					lng: 0.64038
 				},
-				zoom: 14.3,
+				zoom: 13,
+				minZoom: 13,
+				maxZoom: 18,
 				restriction: {
 					latLngBounds: {
 						north: 51.826601357825716,
@@ -201,7 +201,8 @@ function loadCachesPage() {
 				},
 				mapId: '6b8e857a992e95a7',
 				streetViewControl: false,
-				mapTypeControl: false
+				mapTypeControl: false,
+				fullscreenControl: true
 			});
 			return loader.load();
 		})
@@ -244,14 +245,15 @@ function loadCachesPage() {
 		})
 		.then(cluster => {
 			let currentFilter = 'all';
-			document.getElementById('mapFilter').innerHTML = `<div class="btn-group mb-3" role="group" aria-label="Filter control for the map to toggle which caches are visible">
+			document.getElementById('mapFilter').innerHTML = `<fieldset class="btn-group mb-3">
+				<legend class="visually-hidden">Filter control for the map to toggle which caches are visible</legend>
 				<input type="radio" class="btn-check" name="filterBtn" id="filterAll" autocomplete="off" value="all" checked>
 				<label class="btn btn-outline-primary" for="filterAll">All caches</label>
 				<input type="radio" class="btn-check" name="filterBtn" id="filterNotFound" autocomplete="off" value="notFound">
 				<label class="btn btn-outline-primary" for="filterNotFound">Caches you haven't found</label>
 				<input type="radio" class="btn-check" name="filterBtn" id="filterFound" autocomplete="off" value="found">
 				<label class="btn btn-outline-primary" for="filterFound">Caches you've found</label>
-			</div>`;
+			</fieldset>`;
 
 			function changeFilter(filter) {
 				if (currentFilter !== filter) {
@@ -335,7 +337,7 @@ function loadCachePage(id) {
 			const w3wLink = document.getElementById('cacheW3WLink');
 			w3wLink.setAttribute('class', 'card-text');
 			const w3wAddress = String(DOMPurify.sanitize(data.location)).split('///')[1];
-			w3wLink.innerHTML = `<p><strong>What3Words address:</strong> <a href="https://what3words.com/${w3wAddress}" target="_blank" translate="no">///${w3wAddress}</a></p>
+			w3wLink.innerHTML = `<p><strong>what3words address:</strong> <a href="https://what3words.com/${w3wAddress}" target="_blank" translate="no">///${w3wAddress}</a></p>
 			<p><strong>Grid reference:</strong> <a href="https://explore.osmaps.com/pin?lat=${String(DOMPurify.sanitize(data.coordinates)).split(',')[0]}&lon=${String(DOMPurify.sanitize(data.coordinates)).split(',')[1]}&zoom=18.0000&overlays=&style=Standard&type=2d&placesCategory=" target="_blank">${DOMPurify.sanitize(data.gridRef)}</a><br><a class="text-decoration-none" href="https://getoutside.ordnancesurvey.co.uk/guides/beginners-guide-to-grid-references/" target="_blank">Learn more about grid references&nbsp;<i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a></p>
 			<p><br><strong id="cacheStats"></strong></p>`;
 			const w3wBtn = document.getElementById('cacheW3WBtn');
@@ -343,7 +345,7 @@ function loadCachePage(id) {
 			w3wBtn.setAttribute('class', 'btn btn-primary m-1');
 			w3wBtn.setAttribute('href', `https://what3words.com/${w3wAddress}`);
 			w3wBtn.setAttribute('target', '_blank');
-			w3wBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in What3Words';
+			w3wBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in what3words';
 			const mapBtn = document.getElementById('cacheMapsLink');
 			mapBtn.removeAttribute('tabindex');
 			mapBtn.setAttribute('class', 'btn btn-primary m-1');
@@ -538,7 +540,7 @@ function foundCachesPage() {
 			</div>
 		</div>
 	</div>`;
-	const placeholder = `<div class="text-center"><img src="./img/loading.gif" class="img-fluid text-center" alt="Loading animation placeholder"></div>`;
+	const placeholder = loadingGif;
 	const foundContainer = document.getElementById('foundContainer');
 	foundContainer.innerHTML = placeholder;
 	fetch('./api/found-caches', {
@@ -552,13 +554,13 @@ function foundCachesPage() {
 		.then(data => {
 			if (data.found.length > 0) {
 				foundContainer.innerHTML = `<div class="row">
-					<div class="col-md-6">
+					<div class="col-md-12 col-xl-4">
 						<div class="card stat-card mb-2">
 							<div class="card-body">
 								<div class="row">
 									<div class="col">
 										<p class="card-title text-muted mb-0">Device ID</p>
-										<p class="h5 font-weight-bold mb-0" id="foundCachesDeviceId"></p>
+										<p class="font-weight-bold mb-0"><strong id="foundCachesDeviceId"></strong></p>
 									</div>
 									<div class="col-auto">
 										<div class="icon rounded-circle">
@@ -569,17 +571,34 @@ function foundCachesPage() {
 							</div>
 						</div>
 					</div>
-					<div class="col-md-6">
+					<div class="col-md-6 col-xl-4">
 						<div class="card stat-card mb-2">
 							<div class="card-body">
 								<div class="row">
 									<div class="col">
 										<p class="card-title text-muted mb-0">Caches found</p>
-										<p class="h5 font-weight-bold mb-0" id="foundCachesTotal"></p>
+										<p class="font-weight-bold mb-0"><strong id="foundCachesTotal"></strong></p>
 									</div>
 									<div class="col-auto">
 										<div class="icon icon-shape bg-primary text-white rounded-circle">
 											<i class="bi bi-geo" aria-hidden="true"></i>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-xl-4">
+						<div class="card stat-card mb-2">
+							<div class="card-body">
+								<div class="row">
+									<div class="col">
+										<p class="card-title text-muted mb-0">Ranking</p>
+										<p class="font-weight-bold mb-0"><strong id="foundCacheRanking"></strong></p>
+									</div>
+									<div class="col-auto">
+										<div class="icon icon-shape bg-primary text-white rounded-circle">
+											<i class="bi bi-trophy" aria-hidden="true"></i>
 										</div>
 									</div>
 								</div>
@@ -655,6 +674,9 @@ window.onload = function () {
 		})
 		.on('/foundCache-:id', function (value) {
 			foundCachePage(value.data.id);
+		})
+		.on('/leaderboard', function () {
+			changePage('leaderboard', 'Leaderboard', false);
 		})
 		.on('/about', function () {
 			changePage('about', 'About', false);

@@ -59,24 +59,29 @@ export async function handler(event, context) {
 	}
 
 	// Get list items from library
-	return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
+	return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,Total)&$select=id,fields&$orderby=fields/Total desc`)
 		.get()
 		.then(data => {
 			if (data.value.length === 0) {
 				return [];
-			} else if (data.value.length === 1) {
-				const found = JSON.parse(data.value[0].fields.FoundCaches);
-				return [...found];
 			} else {
-				throw 'Duplicate device ID!';
+				const array = [];
+				let counter = 0;
+				data.value.forEach(device => {
+					const fields = device.fields;
+					counter++;
+					array.push({
+						deviceId: fields.Title,
+						score: fields.Total,
+						position: counter
+					});
+				});
 			}
 		})
 		.then(array => {
 			return {
 				statusCode: 200,
-				body: JSON.stringify({
-					found: array
-				}),
+				body: JSON.stringify(array),
 				headers: {
 					'Content-Type': 'application/json'
 				}

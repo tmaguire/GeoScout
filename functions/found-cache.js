@@ -159,7 +159,8 @@ export async function handler(event, context) {
 							FoundCaches: JSON.stringify([{
 								id: cacheId,
 								date: currentTime.toISOString()
-							}])
+							}]),
+							Total: 1
 						}
 					});
 			} else if (data.value.length === 1) {
@@ -170,7 +171,8 @@ export async function handler(event, context) {
 				});
 				return client.api(`/sites/${siteId}/lists/${deviceListId}/items/${data.value[0].id}/fields`)
 					.patch({
-						FoundCaches: JSON.stringify(found)
+						FoundCaches: JSON.stringify(found),
+						Total: (Number(data.value[0].fields.Total) + 1)
 					});
 			} else {
 				throw 'Duplicate device ID!';
