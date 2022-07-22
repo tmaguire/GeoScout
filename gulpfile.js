@@ -13,6 +13,9 @@ const htmlmin = require('gulp-html-minifier-terser');
 const version = require('./package.json').version;
 const appName = require('./package.json').appName;
 const sass = require('gulp-sass')(require('sass'));
+const {
+	marked
+} = require('marked');
 
 function licensePrep() {
 	const licenses = require('./thirdparty-licenses.json');
@@ -92,6 +95,9 @@ function sitePages() {
 				version,
 				licenses,
 				appName
+			},
+			filters: {
+				markdown: marked.parse
 			}
 		}))
 		.pipe(htmlmin({

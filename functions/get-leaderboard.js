@@ -24,7 +24,6 @@ const client = Client.initWithMiddleware({
 	authProvider: authProvider
 });
 // SharePoint Site Details
-const listId = process.env.graphSiteListId;
 const deviceListId = process.env.graphUserListId;
 const siteId = process.env.graphSiteId;
 
@@ -43,9 +42,6 @@ export async function handler(event, context) {
 		};
 	}
 
-	const returnObj = {
-		caches: []
-	};
 	let deviceId;
 
 	try {
@@ -63,45 +59,30 @@ export async function handler(event, context) {
 	}
 
 	// Get list items from library
-	return client.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,Coordinates,W3WLocation,Found)&$select=id,fields`)
+	return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,Total)&$select=id,fields&$orderby=fields/Total desc`)
 		.get()
 		.then(data => {
-			if (data.hasOwnProperty('error')) {
-				throw {
-					error: data.error
-				};
-			}
-			data.value.forEach(cache => {
-				const fields = cache.fields;
-				returnObj.caches.push({
-					location: fields.W3WLocation,
-					coordinates: fields.Coordinates,
-					id: fields.Title,
-					found: false,
-					stats: fields.Found
-				});
-			});
-			return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
-				.get();
-		})
-		.then(data => {
 			if (data.value.length === 0) {
-				return returnObj;
-			} else if (data.value.length === 1) {
-				const found = [...JSON.parse(data.value[0].fields.FoundCaches)];
-				found.forEach(item => {
-					const cache = returnObj.caches.find(cache => (cache.id === item.id));
-					cache.found = true;
-				});
-				return returnObj;
+				return [];
 			} else {
-				throw 'Duplicate device ID!';
+				const array = [];
+				let counter = 0;
+				data.value.forEach(device => {
+					const fields = device.fields;
+					counter++;
+					array.push({
+						deviceId: fields.Title,
+						found: fields.Total,
+						position: counter
+					});
+				});
+				return array;
 			}
 		})
-		.then(obj => {
+		.then(array => {
 			return {
 				statusCode: 200,
-				body: JSON.stringify(obj),
+				body: JSON.stringify(array),
 				headers: {
 					'Content-Type': 'application/json'
 				}
@@ -112,7 +93,7 @@ export async function handler(event, context) {
 			return {
 				statusCode: 500,
 				body: JSON.stringify({
-					error: 'Unable to get caches',
+					error: 'Unable to get found caches',
 					errorDebug: error
 				}),
 				headers: {

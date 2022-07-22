@@ -24,9 +24,19 @@ const client = Client.initWithMiddleware({
 	authProvider: authProvider
 });
 // SharePoint Site Details
-const listId = process.env.graphSiteListId;
 const deviceListId = process.env.graphUserListId;
 const siteId = process.env.graphSiteId;
+// Import validation module for deviceId
+import {
+	FingerprintJsServerApiClient,
+	Region
+} from '@fingerprintjs/fingerprintjs-pro-server-api';
+import crypto from 'crypto';
+const fingerprintSecret = process.env.fingerprintSecret;
+const fingerprintClient = new FingerprintJsServerApiClient({
+	region: Region.EU,
+	apiKey: fingerprintSecret
+});
 
 // Start Lambda Function
 export async function handler(event, context) {
@@ -43,10 +53,13 @@ export async function handler(event, context) {
 		};
 	}
 
+	const ip = crypto.createHash('SHA256').update((event.headers['client-ip'] || event.headers['x-nf-client-connection-ip'])).digest('hex');
 	let deviceId;
+	let requestId;
 
 	try {
 		deviceId = event.headers['device-id'];
+		requestId = event.headers['request-id'];
 	} catch {
 		return {
 			statusCode: 400,
@@ -59,25 +72,57 @@ export async function handler(event, context) {
 		};
 	}
 
-	// Get list items from library
-	return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
-		.get()
-		.then(data => {
-			if (data.value.length === 0) {
-				return [];
-			} else if (data.value.length === 1) {
-				const found = JSON.parse(data.value[0].fields.FoundCaches);
-				return [...found];
+	return fingerprintClient.getVisitorHistory(deviceId, {
+			request_id: requestId
+		})
+		.then(sessionData => {
+			let sessionIp;
+			let requestIp;
+			try {
+				sessionIp = sessionData.visits[0].ip;
+				requestIp = crypto.createHash('SHA256').update(sessionIp).digest('hex');
+			} catch {
+				throw 'Session mismatch';
+			}
+			if (requestIp === ip || event.headers['client-ip'] === '::1') {
+				return true;
 			} else {
-				throw 'Duplicate device ID!';
+				throw 'Session mismatch';
 			}
 		})
-		.then(array => {
+		.then(() => {
+			return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,Total,FoundCaches)&$select=id,fields&$orderby=fields/Total desc,fields/Title`)
+				.get();
+		})
+		.then(data => {
+			if (data.value.length === 0) {
+				return {
+					found: []
+				};
+			} else {
+				let counter = 0;
+				const obj = {
+					found: '',
+					position: '',
+					total: ''
+				};
+				data.value.every(device => {
+					counter++;
+					if (device.fields.Title === deviceId) {
+						obj.found = [...JSON.parse(device.fields.FoundCaches)];
+						obj.position = counter;
+						obj.total = data.value.length;
+						return false;
+					}
+					return true;
+				});
+				return obj;
+			}
+		})
+		.then(obj => {
 			return {
 				statusCode: 200,
-				body: JSON.stringify({
-					found: array
-				}),
+				body: JSON.stringify(obj),
 				headers: {
 					'Content-Type': 'application/json'
 				}
@@ -85,15 +130,27 @@ export async function handler(event, context) {
 		})
 		.catch(error => {
 			console.log(error);
-			return {
-				statusCode: 500,
-				body: JSON.stringify({
-					error: 'Unable to get found caches',
-					errorDebug: error
-				}),
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			};
+			if (error === 'Session mismatch') {
+				return {
+					statusCode: 401,
+					body: JSON.stringify({
+						error: 'Unable to validate your Device ID'
+					}),
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				};
+			} else {
+				return {
+					statusCode: 500,
+					body: JSON.stringify({
+						error: 'Unable to get found caches',
+						errorDebug: error
+					}),
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				};
+			}
 		});
 }
