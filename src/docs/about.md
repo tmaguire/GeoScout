@@ -25,6 +25,20 @@ trees, fences, signposts - just about anywhere! Using your smart
 phone, our web-app, and what3words or Google Maps. Navigate,
 find and validate any number of geocaches.
 </p>
+<div class="text-center">
+<figure class="figure">
+<picture>
+<source srcset="./img/cabletie-thumbnail.webp" type="image/webp" />
+<source srcset="./img/cabletie-thumbnail.png" type="image/png" />
+<img
+src="./img/cabletie-thumbnail.png"
+class="figure-img img-thumbnail logo-img"
+alt="Photo showing two cable ties which have been used for the GeoScout project"
+/>
+</picture>
+<figcaption class="figure-caption"><a href="./img/cabletie-example.png" class="text-decoration-none"><i class="bi bi-zoom-in" aria-hidden="true"></i> Need a larger version of this image?</a></figcaption>
+</figure>
+</div>
 <p>
 Find the cache, enter the five-digit code from the cable tie
 into the webpage and see where you are on the score

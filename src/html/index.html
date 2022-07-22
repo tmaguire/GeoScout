@@ -158,8 +158,32 @@
             <div class="col mx-auto">
               <h1 class="my-4 text-center">
                 <i class="bi bi-map" aria-hidden="true"></i>&nbsp;View caches
+                <span class="visually-hidden">as an interactive map</span>
               </h1>
               <div id="mapContainer">
+                <div class="text-center">
+                  <img
+                    src="./img/loading.gif"
+                    class="img-fluid text-center"
+                    alt="Loading animation placeholder"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+          <!-- Table screen -->
+          <section
+            id="viewCachesTable"
+            class="row mx-auto d-none"
+            aria-hidden="true"
+          >
+            <div class="col mx-auto">
+              <h1 class="my-4 text-center">
+                <i class="bi bi-table" aria-hidden="true"></i>&nbsp;View caches
+                <span class="visually-hidden">as a table</span>
+              </h1>
+              <div id="tableContainer">
                 <div class="text-center">
                   <img
                     src="./img/loading.gif"
@@ -215,6 +239,7 @@
                   <div class="col-md-8">
                     <div class="card-body">
                       <h2 id="cacheHeader" class="card-title placeholder-glow">
+                        <span class="visually-hidden">Loading cache page</span>
                         <span class="placeholder col-6"></span>
                       </h2>
                       <p id="cacheW3WLink" class="card-text placeholder-glow">
@@ -227,20 +252,19 @@
                       <div class="d-grid gap-2 d-md-block">
                         <a
                           id="cacheW3WBtn"
-                          href="#"
                           tabindex="-1"
                           class="btn btn-primary m-1 disabled placeholder col-5"
                         ></a>
                         <a
                           id="cacheMapsLink"
-                          href="#"
                           tabindex="-1"
                           class="btn btn-primary m-1 disabled placeholder col-5"
                         ></a>
-                        <button
+                        <a
                           id="cacheFoundLink"
+                          tabindex="-1"
                           class="btn btn-outline-primary m-1 disabled placeholder col-4"
-                        ></button>
+                        ></a>
                       </div>
                     </div>
                   </div>

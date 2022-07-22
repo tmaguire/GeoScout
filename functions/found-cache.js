@@ -116,12 +116,13 @@ export async function handler(event, context) {
 		})
 		.then(sessionData => {
 			let sessionIp;
+			let requestIp;
 			try {
 				sessionIp = sessionData.visits[0].ip;
+				requestIp = crypto.createHash('SHA256').update(sessionIp).digest('hex');
 			} catch {
 				throw 'Session mismatch';
 			}
-			const requestIp = crypto.createHash('SHA256').update(sessionIp).digest('hex');
 			if (requestIp === ip || event.headers['client-ip'] === '::1') {
 				return true;
 			} else {
@@ -146,7 +147,7 @@ export async function handler(event, context) {
 				id: data.value[0].id
 			};
 
-			return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
+			return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches,Total)&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
 				.get();
 		})
 		.then(data => {
@@ -172,7 +173,7 @@ export async function handler(event, context) {
 				return client.api(`/sites/${siteId}/lists/${deviceListId}/items/${data.value[0].id}/fields`)
 					.patch({
 						FoundCaches: JSON.stringify(found),
-						Total: (Number(data.value[0].fields.Total) + 1)
+						Total: Number(Number(data.value[0].fields.Total) + 1)
 					});
 			} else {
 				throw 'Duplicate device ID!';
