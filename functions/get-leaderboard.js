@@ -72,10 +72,11 @@ export async function handler(event, context) {
 					counter++;
 					array.push({
 						deviceId: fields.Title,
-						score: fields.Total,
+						found: fields.Total,
 						position: counter
 					});
 				});
+				return array;
 			}
 		})
 		.then(array => {

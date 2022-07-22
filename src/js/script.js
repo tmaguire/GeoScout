@@ -1,4 +1,4 @@
-/* jshint esversion:9 */
+/* jshint esversion:10 */
 let mainMap;
 let router;
 const loadingGif = '<div class="text-center"><img src="./img/loading.gif" class="img-fluid text-center" alt="Loading animation placeholder"></div>';
@@ -660,7 +660,7 @@ function loadFoundCachesPage() {
 		<div class="col-lg-6 mx-auto">
 			<p class="lead mb-4">Get outside and go find some!</p>
 			<div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-				<button id="findCachesBtn" class="btn btn-primary btn-lg px-4 gap-3">Find caches</button>
+				<a href="viewCaches" class="btn btn-primary btn-lg px-4 gap-3" data-navigo>Find caches</a>
 			</div>
 		</div>
 	</div>`;
@@ -734,7 +734,7 @@ function loadFoundCachesPage() {
 						</div>
 					</div>
 				</div>
-				<div id="wrapper"></div>`;
+				<div id="foundWrapper"></div>`;
 				const grid = new gridjs.Grid({
 					columns: [{
 							id: 'id',
@@ -761,13 +761,18 @@ function loadFoundCachesPage() {
 						}
 					],
 					sort: true,
+					style: {
+						table: {
+							'white-space': 'nowrap'
+						}
+					},
 					pagination: {
 						enabled: true,
 						limit: 15,
 						summary: true
 					},
 					data: data.found
-				}).render(document.getElementById('wrapper'));
+				}).render(document.getElementById('foundWrapper'));
 				grid.on('ready', function () {
 					router.updatePageLinks();
 				});
@@ -779,9 +784,7 @@ function loadFoundCachesPage() {
 				document.getElementById('foundCacheRanking').innerText = `${data.position}/${data.total}`;
 			} else {
 				foundContainer.innerHTML = noneFound;
-				document.getElementById('findCachesBtn').onclick = function () {
-					router.navigate('/viewCaches');
-				};
+				router.updatePageLinks();
 			}
 		})
 		.catch(error => {
@@ -791,6 +794,100 @@ function loadFoundCachesPage() {
 }
 
 function loadLeaderboardPage() {
+	const emptyLeaderboard = `<div class="p-3 text-center">
+		<i class="bi bi-emoji-frown home-icon d-block mx-auto mb-4" aria-hidden="true"
+			role="img"></i>
+		<h1 class="display-6 fw-bold">No one has found any geocaches (yet)</h1>
+		<div class="col-lg-6 mx-auto">
+			<p class="lead mb-4">Get outside and go find some!</p>
+			<div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+				<button id="findCachesBtn" class="btn btn-primary btn-lg px-4 gap-3">Find caches</button>
+			</div>
+		</div>
+	</div>`;
+	const placeholder = loadingGif;
+	const leaderboardContainer = document.getElementById('leaderboardContainer');
+	leaderboardContainer.innerHTML = placeholder;
+	fetch('./api/get-leaderboard', {
+			method: 'GET',
+			headers: {
+				'Device-Id': localStorage.getItem('deviceId')
+			}
+		})
+		.then(response => response.json())
+		.then(handleErrors)
+		.then(data => {
+			if (data.length > 0) {
+				leaderboardContainer.innerHTML = '<div id="leaderboardWrapper"></div>';
+				const grid = new gridjs.Grid({
+					columns: [{
+							id: 'position',
+							name: 'Position',
+							sort: {
+								enabled: true
+							},
+							attributes: (cell, row) => {
+								if (cell) {
+									return {
+										'data-ranking': cell,
+										'data-match': String(Boolean(row.cells[1].data === localStorage.getItem('deviceId')))
+									};
+								}
+							}
+						},
+						{
+							id: 'deviceId',
+							name: 'Device ID',
+							sort: {
+								enabled: true
+							},
+							formatter: (deviceId) => {
+								const name = DOMPurify.sanitize(deviceId);
+								return gridjs.html(`<div class="row"><div class="col-md-4"><div class="icon rounded-circle"><img src="./profilePic/${name}/48" alt="Profile picture for ${name}"></div></div><div class="col-md-8 my-auto text-break">${name}${name === localStorage.getItem('deviceId') ? '&nbsp;<strong>(You)</strong>' : ''}</div></div>`);
+							}
+						},
+						{
+							id: 'found',
+							name: 'Number of caches found',
+							sort: {
+								enabled: true
+							}
+						}
+					],
+					sort: true,
+					style: {
+						table: {
+							'white-space': 'nowrap'
+						}
+					},
+					pagination: {
+						enabled: true,
+						limit: 10,
+						summary: true
+					},
+					data: data
+				}).render(document.getElementById('leaderboardWrapper'));
+				grid.on('ready', function () {
+					try {
+						[...document.querySelector('td[data-ranking="1"]').parentElement.children].forEach(child => {
+							child.classList.add('gold');
+						});
+						[...document.querySelector('td[data-ranking="2"]').parentElement.children].forEach(child => {
+							child.classList.add('silver');
+						});
+						[...document.querySelector('td[data-ranking="3"]').parentElement.children].forEach(child => {
+							child.classList.add('bronze');
+						});
+					} catch {}
+				});
+			} else {
+				leaderboardContainer.innerHTML = emptyLeaderboard;
+				router.updatePageLinks();
+			}
+		})
+		.catch(error => {
+			showError(error, true);
+		});
 	changePage('leaderboard', 'Leaderboard', false);
 }
 
