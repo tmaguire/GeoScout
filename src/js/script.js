@@ -692,7 +692,7 @@ function loadFoundCachesPage() {
 										<p class="font-weight-bold mb-0"><strong id="foundCachesDeviceId"></strong></p>
 									</div>
 									<div class="col-auto">
-										<div class="icon rounded-circle">
+										<div class="icon rounded-circle my-3 my-sm-auto">
 											<img id="foundCachesProfilePic" src="./img/loading.gif" alt="Loading placeholder...">
 										</div>
 									</div>
