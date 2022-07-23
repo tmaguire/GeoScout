@@ -1,6 +1,7 @@
 /* jshint esversion:10 */
-let mainMap;
-let router;
+let mainMap = null;
+let router = null;
+let newWorker = false;
 const loadingGif = '<div class="text-center"><img src="./img/loading.gif" class="img-fluid text-center" alt="Loading animation placeholder"></div>';
 
 // Method for creating toast notifications
@@ -943,5 +944,43 @@ window.onload = function () {
 		.resolve();
 	if (localStorage.getItem('deviceId') === null) {
 		getDeviceId();
+	}
+	// Load service worker if supported
+	if ('serviceWorker' in navigator) {
+		const updateBtn = document.getElementById('updateBtn');
+		// Register service worker
+		navigator.serviceWorker
+			.register('service-worker.js')
+			.then(function (registration) {
+				// Trigger update
+				registration.update();
+				// Listen for updates
+				registration.addEventListener('updatefound', () => {
+					newWorker = registration.installing;
+					if (newWorker === null) {
+						newWorker = registration.waiting;
+					}
+					// Listen for when the new worker is ready
+					newWorker.addEventListener('statechange', () => {
+						if (newWorker.state === 'installed') {
+							if (navigator.serviceWorker.controller) {
+								updateBtn.classList.remove('d-none');
+								updateBtn.removeAttribute('disabled');
+							}
+						}
+					});
+				});
+			})
+			.catch(error => {
+				console.log(error);
+			});
+		// Set event handler for refresh app button
+		updateBtn.addEventListener('click', (event) => {
+			event.preventDefault();
+			newWorker.postMessage({
+				action: 'skipWaiting'
+			});
+			window.location.reload();
+		});
 	}
 };

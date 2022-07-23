@@ -7,6 +7,10 @@
       name="viewport"
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
+    <meta
+      name="description"
+      content="Grab your smartphone and get Geocaching over the summer holidays with our geocache challenge. Geocaching is a fantastic way to enjoy the outdoors exploring new areas and keeping fit."
+    />
     <meta name="author" content="Tom Maguire (1st Witham Scouts)" />
     <!-- Bundled CSS -->
     <link
@@ -14,8 +18,11 @@
       type="text/css"
       href="./css/bundle-@@version.min.css"
     />
-    <link rel="icon" href="./img/icon.png" />
+    <link rel="icon" href="./img/favicon.png" />
+    <link rel="apple-touch-icon" sizes="196x196" href="./img/favicon.png" />
     <link rel="canonical" href="https://www.geoscout.uk" />
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="./app.webmanifest" />
     <!-- Theme colour -->
     <meta name="theme-color" content="#7413DC" />
   </head>
@@ -90,6 +97,16 @@
                 >
               </li>
             </ul>
+            <div class="d-flex">
+              <button
+                id="updateBtn"
+                type="button"
+                class="btn btn-secondary d-none"
+                disabled
+              >
+                Update app
+              </button>
+            </div>
           </div>
         </div>
       </nav>
@@ -203,7 +220,7 @@
           >
             <div class="col mx-auto">
               <h1 class="my-4 text-center">
-                <i class="bi bi-pin-map" aria-hidden="true"></i>&nbsp;Found
+                <i class="bi bi-pin-map" aria-hidden="true"></i>&nbsp;Your found
                 caches
               </h1>
               <div id="foundContainer">
@@ -421,6 +438,7 @@
         </div>
       </footer>
     </div>
+    <script src="./js/browser-compat-@@version.min.js"></script>
     <script src="./js/main-@@version.min.js"></script>
   </body>
 </html>

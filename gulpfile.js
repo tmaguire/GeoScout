@@ -16,6 +16,7 @@ const sass = require('gulp-sass')(require('sass'));
 const {
 	marked
 } = require('marked');
+const preprocess = require('gulp-preprocess');
 
 function licensePrep() {
 	const licenses = require('./thirdparty-licenses.json');
@@ -118,9 +119,23 @@ function browserCompat() {
 			'./node_modules/outdated-browser-rework/dist/outdated-browser-rework.min.js',
 			'./src/js/browser-compat.min.js'
 		])
-		.pipe(concat(`browser-compat.min.js`))
+		.pipe(concat(`browser-compat-${version}.min.js`))
 		.pipe(dest('dist/js/'));
 }
 
-exports.default = parallel(series(parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg, copySite, browserCompat), sri));
-exports.dev = parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg, copySite, browserCompat);
+function serviceWorker() {
+	return src([
+			'./src/js/service-worker.js'
+		])
+		.pipe(preprocess({
+			context: {
+				VERSION: version
+			}
+		}))
+		.pipe(concat('service-worker.js'))
+		.pipe(uglify())
+		.pipe(dest('dist/'));
+}
+
+exports.default = parallel(series(parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg, copySite, browserCompat, serviceWorker), sri));
+exports.dev = parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg, copySite, browserCompat, serviceWorker);
