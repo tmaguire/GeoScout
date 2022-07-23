@@ -163,5 +163,5 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 .your-device {
-	border: $secondary;
+	border: 3px solid $secondary !important;
 }
