@@ -216,6 +216,7 @@ function loadCachesPage() {
 		.then((google) => {
 			mapContainer.innerHTML = '<div id="mapFilter"></div><div id="mainMap"></div><div class="my-3 text-center"><a href="viewCachesTable" class="text-decoration-none" data-navigo><i class="bi bi-table" aria-hidden="true"></i>&nbsp;View map data as a table</a></div>';
 			router.updatePageLinks();
+			mainMap = null;
 			mainMap = new google.maps.Map(document.getElementById('mainMap'), {
 				center: {
 					lat: 51.80007,
@@ -242,7 +243,7 @@ function loadCachesPage() {
 		})
 		.then((google) => {
 			try {
-				const markers = caches.map(cache => {
+				const markers = caches.flatMap(cache => {
 					if (!cache.suspended) {
 						const marker = new google.maps.Marker({
 							position: {
@@ -266,7 +267,9 @@ function loadCachesPage() {
 						marker.addListener('click', () => {
 							router.navigate(`/viewCache-${cache.id}`);
 						});
-						return marker;
+						return [marker];
+					} else {
+						return [];
 					}
 				});
 				const cluster = new markerClusterer.MarkerClusterer({
@@ -413,15 +416,7 @@ function loadCachesTablePage() {
 					limit: 15,
 					summary: true
 				},
-				data: () => {
-					const filteredData = [];
-					data.forEach(cache => {
-						if (!cache.suspended) {
-							filteredData.push(cache);
-						}
-					});
-					return filteredData;
-				}
+				data: () => data.flatMap(cache => cache.suspended ? [] : [cache])
 			}).render(document.getElementById('table'));
 			table.on('ready', function () {
 				router.updatePageLinks();

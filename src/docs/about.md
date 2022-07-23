@@ -21,8 +21,8 @@ keeping fit.
 We have hidden 100 codes around Witham, get out there and start
 searching for the hidden caches. These are blue, and red
 coloured cable ties that could be fixed to street furniture,
-trees, fences, signposts - just about anywhere! Using your smart
-phone, our web-app, and what3words or Google Maps. Navigate,
+trees, fences, signposts - just about anywhere! Using your smartphone,
+our web-app, and what3words or Google Maps. Navigate,
 find and validate any number of geocaches.
 </p>
 <div class="text-center">
@@ -41,7 +41,7 @@ alt="Photo showing two cable ties which have been used for the GeoScout project"
 </div>
 <p>
 Find the cache, enter the five-digit code from the cable tie
-into the webpage and see where you are on the score
+into the web-app and see where you are on the score
 <a href="leaderboard" data-navigo>leaderboard</a>.
 </p>
 <p>
@@ -61,7 +61,7 @@ connection.
 <p>
 There is no sign up or log in needed and no personal information
 is supplied from you to the organisers and no personal
-information will be requested from this website/app. We only
+information will be requested from this web-app. We only
 hold very little information about the device used to verify the
 caches found by the finder. Please refer to our
 <a href="privacy" data-navigo>Privacy Policy</a> for more
@@ -84,13 +84,14 @@ email <a href="mailto:inbox@geoscout.uk">inbox@geoscout.uk</a>.
 All media enquiries please use
 <a href="mailto:inbox@geoscout.uk">inbox@geoscout.uk</a>.
 </p>
+<hr>
 <p>
-<em>
+<strong>
 Witham Scouts, the Organisers, The Scout Association, and any
 other party associated with organising this activity, either
 commercially or personally take no responsibility for those
 taking part in this activity. Persons undertaking the
 geocaching do so at their own risk and are solely accountable
 for their own actions while searching for geocaches.
-</em>
+</strong>
 </p>
