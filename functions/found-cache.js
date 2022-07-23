@@ -120,12 +120,12 @@ export async function handler(event, context) {
 			request_id: requestId
 		})
 		.then(sessionData => {
-			let sessionIp;
 			let requestIp;
 			try {
-				sessionIp = sessionData.visits[0].ip;
+				const sessionIp = sessionData.visits[0].ip;
 				requestIp = crypto.createHash('SHA256').update(sessionIp).digest('hex');
-			} catch {
+			} catch (error) {
+				console.log(error);
 				throw 'Session mismatch';
 			}
 			if (ipCheck) {
