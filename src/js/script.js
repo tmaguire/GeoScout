@@ -794,7 +794,7 @@ function loadFoundCachesPage() {
 				document.getElementById('foundCachesProfilePic').setAttribute('src', `./profilePic/${deviceId}/48`);
 				document.getElementById('foundCachesProfilePic').setAttribute('alt', `Profile picture for ${deviceId} (your device ID)`);
 				document.getElementById('foundCachesTotal').innerText = Number(data.found.length);
-				document.getElementById('foundCacheRanking').innerText = `${data.position}/${data.total}`;
+				document.getElementById('foundCacheRanking').innerHTML = `${Number(data.position)}/${Number(data.total)}${Number(data.position) === 1 ? '&nbsp;🥇' : Number(data.position) === 2 ? '&nbsp;🥈' : Number(data.position) === 3 ? '&nbsp;🥉' : ''}`;
 			} else {
 				foundContainer.innerHTML = noneFound;
 				router.updatePageLinks();
