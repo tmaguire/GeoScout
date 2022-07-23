@@ -3,7 +3,7 @@
 
 // Overrides
 $primary: #7413DC;
-$secondary: #707070;
+$secondary: #003982;
 
 // Required
 @import "./node_modules/bootstrap/scss/variables";
@@ -160,4 +160,8 @@ input[type=number]::-webkit-outer-spin-button {
 .bronze {
 	background-color: $orange-600 !important;
 	color: #000;
+}
+
+.your-device {
+	border: $secondary;
 }

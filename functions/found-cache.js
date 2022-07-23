@@ -40,6 +40,10 @@ const fingerprintClient = new FingerprintJsServerApiClient({
 	region: Region.EU,
 	apiKey: fingerprintSecret
 });
+// Import validator for IPv4
+import {
+	isIPv4
+} from 'net';
 
 // Start Lambda Function
 export async function handler(event, context) {
@@ -48,8 +52,7 @@ export async function handler(event, context) {
 		interval: 6000,
 		uniqueTokenPerInterval: 500,
 	});
-	// Debugging line
-	console.log((event.headers['x-nf-client-connection-ip'] || event.headers['client-ip']));
+	const ipCheck = isIPv4(event.headers['x-nf-client-connection-ip'] || event.headers['client-ip']);
 	const ip = crypto.createHash('SHA256').update((event.headers['x-nf-client-connection-ip'] || event.headers['client-ip'])).digest('hex');
 	limiter
 		.check(10, ip)
@@ -125,10 +128,15 @@ export async function handler(event, context) {
 			} catch {
 				throw 'Session mismatch';
 			}
-			if (requestIp === ip || event.headers['client-ip'] === '::1') {
-				return true;
+			if (ipCheck) {
+				if (requestIp === ip) {
+					return true;
+				} else {
+					throw 'Session mismatch';
+				}
 			} else {
-				throw 'Session mismatch';
+				console.log('IPv6 - unable to validate (at the moment)');
+				return true;
 			}
 		})
 		.then(() => {

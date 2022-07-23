@@ -826,6 +826,9 @@ function loadLeaderboardPage() {
 							sort: {
 								enabled: true
 							},
+							formatter: (position) => {
+								return (position === 1 ? '1st 🥇' : position === 2 ? '2nd 🥈' : position === 3 ? '3rd 🥉' : position);
+							},
 							attributes: (cell, row) => {
 								if (cell) {
 									return {
@@ -860,11 +863,6 @@ function loadLeaderboardPage() {
 							'white-space': 'nowrap'
 						}
 					},
-					pagination: {
-						enabled: true,
-						limit: 10,
-						summary: true
-					},
 					data: data
 				}).render(document.getElementById('leaderboardWrapper'));
 				grid.on('ready', function () {
@@ -877,6 +875,9 @@ function loadLeaderboardPage() {
 						});
 						[...document.querySelector('td[data-ranking="3"]').parentElement.children].forEach(child => {
 							child.classList.add('bronze');
+						});
+						[...document.querySelector('td[data-match="true"]').parentElement.children].forEach(child => {
+							child.classList.add('your-device');
 						});
 					} catch {}
 				});
