@@ -59,7 +59,7 @@ export async function handler(event, context) {
 	}
 
 	// Get list items from library
-	return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,Total)&$select=id,fields&$orderby=fields/Total desc,Title`)
+	return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,Total)&$select=id,fields&$orderby=fields/Total desc,fields/Title`)
 		.get()
 		.then(data => {
 			if (data.value.length === 0) {
