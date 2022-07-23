@@ -53,7 +53,9 @@ export async function handler(event, context) {
 		};
 	}
 
-	const ip = crypto.createHash('SHA256').update((event.headers['client-ip'] || event.headers['x-nf-client-connection-ip'])).digest('hex');
+	// Debugging line
+	console.log((event.headers['x-nf-client-connection-ip'] || event.headers['client-ip']));
+	const ip = crypto.createHash('SHA256').update((event.headers['x-nf-client-connection-ip'] || event.headers['client-ip'])).digest('hex');
 	let deviceId;
 	let requestId;
 
