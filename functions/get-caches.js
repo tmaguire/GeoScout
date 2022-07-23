@@ -63,7 +63,7 @@ export async function handler(event, context) {
 	}
 
 	// Get list items from library
-	return client.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,Coordinates,W3WLocation,Found)&$select=id,fields`)
+	return client.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields`)
 		.get()
 		.then(data => {
 			if (data.hasOwnProperty('error')) {
@@ -78,7 +78,8 @@ export async function handler(event, context) {
 					coordinates: fields.Coordinates,
 					id: fields.Title,
 					found: false,
-					stats: fields.Found
+					stats: fields.Found,
+					suspended: fields.Suspended
 				});
 			});
 			return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${deviceId}'`)

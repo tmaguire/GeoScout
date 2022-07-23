@@ -73,7 +73,7 @@ export async function handler(event, context) {
 	}
 
 	// Get list items from library
-	return client.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,W3WLocation,Coordinates,Found)&$select=id,fields&filter=fields/Title eq '${cacheId}'`)
+	return client.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,W3WLocation,Coordinates,Found,Suspended)&$select=id,fields&filter=fields/Title eq '${cacheId}'`)
 		.get()
 		.then(data => {
 			if (data.hasOwnProperty('error')) {
@@ -89,7 +89,8 @@ export async function handler(event, context) {
 				image: signUrl(`https://maps.googleapis.com/maps/api/staticmap?center=${fields.Coordinates}&zoom=17&markers=color:0x7413DC|${fields.Coordinates}&size=400x400&scale=2&map_id=6b8e857a992e95a7&key=AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4`, mapsSecret).href,
 				gridRef: new LatLon(Number(String(fields.Coordinates).split(',')[0]), Number(String(fields.Coordinates).split(',')[1])).toOsGrid().toString(),
 				stats: fields.Found,
-				found: false
+				found: false,
+				suspended: fields.Suspended
 			};
 			return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
 				.get();

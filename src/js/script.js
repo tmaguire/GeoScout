@@ -1,6 +1,7 @@
 /* jshint esversion:10 */
-let mainMap;
-let router;
+let mainMap = null;
+let router = null;
+let newWorker = false;
 const loadingGif = '<div class="text-center"><img src="./img/loading.gif" class="img-fluid text-center" alt="Loading animation placeholder"></div>';
 
 // Method for creating toast notifications
@@ -54,8 +55,7 @@ function showError(error, button) {
 	console.log(`Showing error message: ${error}`);
 	if (button) {
 		Swal.fire({
-			title: 'Application error',
-			text: error,
+			title: error,
 			icon: 'error',
 			buttonsStyling: false,
 			customClass: {
@@ -67,8 +67,7 @@ function showError(error, button) {
 		});
 	} else {
 		Swal.fire({
-			title: 'Application error',
-			text: error,
+			title: error,
 			icon: 'error',
 			showConfirmButton: false,
 			allowOutsideClick: false,
@@ -244,29 +243,31 @@ function loadCachesPage() {
 		.then((google) => {
 			try {
 				const markers = caches.map(cache => {
-					const marker = new google.maps.Marker({
-						position: {
-							lat: Number(DOMPurify.sanitize(cache.coordinates).split(',')[0]),
-							lng: Number(DOMPurify.sanitize(cache.coordinates).split(',')[1])
-						},
-						map: mainMap,
-						title: `Cache ${DOMPurify.sanitize(cache.id)}`,
-						label: {
-							text: DOMPurify.sanitize(cache.id),
-							color: '#ffffff',
-							fontSize: '16px'
-						},
-						animation: google.maps.Animation.DROP,
-						icon: {
-							url: Boolean(cache.found) ? './img/found.png' : './img/notFound.png',
-							labelOrigin: new google.maps.Point(22, 20)
-						},
-						optimized: true
-					});
-					marker.addListener('click', () => {
-						router.navigate(`/viewCache-${cache.id}`);
-					});
-					return marker;
+					if (!cache.suspended) {
+						const marker = new google.maps.Marker({
+							position: {
+								lat: Number(DOMPurify.sanitize(cache.coordinates).split(',')[0]),
+								lng: Number(DOMPurify.sanitize(cache.coordinates).split(',')[1])
+							},
+							map: mainMap,
+							title: `Cache ${DOMPurify.sanitize(cache.id)}`,
+							label: {
+								text: DOMPurify.sanitize(cache.id),
+								color: '#ffffff',
+								fontSize: '16px'
+							},
+							animation: google.maps.Animation.DROP,
+							icon: {
+								url: Boolean(cache.found) ? './img/found.png' : './img/notFound.png',
+								labelOrigin: new google.maps.Point(22, 20)
+							},
+							optimized: true
+						});
+						marker.addListener('click', () => {
+							router.navigate(`/viewCache-${cache.id}`);
+						});
+						return marker;
+					}
 				});
 				const cluster = new markerClusterer.MarkerClusterer({
 					map: mainMap,
@@ -303,7 +304,7 @@ function loadCachesPage() {
 					};
 					const markers = [];
 					caches.forEach(cache => {
-						if (cache.found && filterMode.found || !cache.found && filterMode.notFound) {
+						if ((cache.found && filterMode.found || !cache.found && filterMode.notFound) && !cache.suspended) {
 							const marker = new google.maps.Marker({
 								position: {
 									lat: Number(DOMPurify.sanitize(cache.coordinates).split(',')[0]),
@@ -412,7 +413,15 @@ function loadCachesTablePage() {
 					limit: 15,
 					summary: true
 				},
-				data
+				data: () => {
+					const filteredData = [];
+					data.forEach(cache => {
+						if (!cache.suspended) {
+							filteredData.push(cache);
+						}
+					});
+					return filteredData;
+				}
 			}).render(document.getElementById('table'));
 			table.on('ready', function () {
 				router.updatePageLinks();
@@ -443,7 +452,7 @@ function loadCachesTablePage() {
 					};
 					const cacheList = [];
 					caches.forEach(cache => {
-						if (cache.found && filterMode.found || !cache.found && filterMode.notFound) {
+						if ((cache.found && filterMode.found || !cache.found && filterMode.notFound) && !cache.suspended) {
 							cacheList.push(cache);
 						}
 					});
@@ -479,47 +488,51 @@ function loadCachePage(id) {
 		.then(response => response.json())
 		.then(handleErrors)
 		.then(data => {
-			document.getElementById('cacheCard').removeAttribute('aria-hidden');
-			const img = document.getElementById('cacheMapImg');
-			img.setAttribute('src', `${DOMPurify.sanitize(data.image)}`);
-			img.setAttribute('alt', `Map for Cache ${id}`);
-			const header = document.getElementById('cacheHeader');
-			header.setAttribute('class', 'card-title');
-			header.innerHTML = '';
-			header.innerText = `Cache ${id}`;
-			const w3wLink = document.getElementById('cacheW3WLink');
-			w3wLink.setAttribute('class', 'card-text');
-			const w3wAddress = String(DOMPurify.sanitize(data.location)).split('///')[1];
-			w3wLink.innerHTML = `<p><strong>what3words address:</strong>&nbsp;<a href="https://what3words.com/${w3wAddress}" target="_blank" translate="no">///${w3wAddress}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a></p>
-			<p><strong>Grid reference:</strong>&nbsp;<a href="https://explore.osmaps.com/pin?lat=${String(DOMPurify.sanitize(data.coordinates)).split(',')[0]}&lon=${String(DOMPurify.sanitize(data.coordinates)).split(',')[1]}&zoom=18.0000&overlays=&style=Standard&type=2d&placesCategory=" target="_blank">${DOMPurify.sanitize(data.gridRef)}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a><br><a class="text-decoration-none" href="https://getoutside.ordnancesurvey.co.uk/guides/beginners-guide-to-grid-references/" target="_blank">Learn more about grid references&nbsp;<i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a></p>
-			<p><br><strong id="cacheStats"></strong></p>`;
-			const w3wBtn = document.getElementById('cacheW3WBtn');
-			w3wBtn.removeAttribute('tabindex');
-			w3wBtn.setAttribute('class', 'btn btn-primary m-1');
-			w3wBtn.setAttribute('href', `https://what3words.com/${w3wAddress}`);
-			w3wBtn.setAttribute('target', '_blank');
-			w3wBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in what3words';
-			const mapBtn = document.getElementById('cacheMapsLink');
-			mapBtn.removeAttribute('tabindex');
-			mapBtn.setAttribute('class', 'btn btn-primary m-1');
-			mapBtn.setAttribute('href', `https://www.google.com/maps/search/?api=1&query=${DOMPurify.sanitize(data.coordinates)}`);
-			mapBtn.setAttribute('target', '_blank');
-			mapBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in Google Maps';
-			const foundBtn = document.getElementById('cacheFoundLink');
-			const cacheStats = document.getElementById('cacheStats');
-			if (data.found) {
-				foundBtn.setAttribute('class', 'btn btn-outline-primary m-1 disabled');
-				foundBtn.removeAttribute('tabindex');
-				foundBtn.innerHTML = `<i class="bi bi-patch-check" aria-hidden="true"></i>&nbsp;You've already found this cache`;
-				cacheStats.innerText = `You ${Number(data.stats) === 1 ? 'are the only person that has found this cache! 😮' : `and ${Number(data.stats) - 1} other ${(Number(data.stats) - 1) === 1 ? 'person has' : 'people have'} found this cache 😊`}`;
+			if (!data.suspended) {
+				document.getElementById('cacheCard').removeAttribute('aria-hidden');
+				const img = document.getElementById('cacheMapImg');
+				img.setAttribute('src', `${DOMPurify.sanitize(data.image)}`);
+				img.setAttribute('alt', `Map for Cache ${id}`);
+				const header = document.getElementById('cacheHeader');
+				header.setAttribute('class', 'card-title');
+				header.innerHTML = '';
+				header.innerText = `Cache ${id}`;
+				const w3wLink = document.getElementById('cacheW3WLink');
+				w3wLink.setAttribute('class', 'card-text');
+				const w3wAddress = String(DOMPurify.sanitize(data.location)).split('///')[1];
+				w3wLink.innerHTML = `<p><strong>what3words address:</strong>&nbsp;<a href="https://what3words.com/${w3wAddress}" target="_blank" translate="no">///${w3wAddress}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a></p>
+				<p><strong>Grid reference:</strong>&nbsp;<a href="https://explore.osmaps.com/pin?lat=${String(DOMPurify.sanitize(data.coordinates)).split(',')[0]}&lon=${String(DOMPurify.sanitize(data.coordinates)).split(',')[1]}&zoom=18.0000&overlays=&style=Standard&type=2d&placesCategory=" target="_blank">${DOMPurify.sanitize(data.gridRef)}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a><br><a class="text-decoration-none" href="https://getoutside.ordnancesurvey.co.uk/guides/beginners-guide-to-grid-references/" target="_blank">Learn more about grid references&nbsp;<i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a></p>
+				<p><br><strong id="cacheStats"></strong></p>`;
+				const w3wBtn = document.getElementById('cacheW3WBtn');
+				w3wBtn.removeAttribute('tabindex');
+				w3wBtn.setAttribute('class', 'btn btn-primary m-1');
+				w3wBtn.setAttribute('href', `https://what3words.com/${w3wAddress}`);
+				w3wBtn.setAttribute('target', '_blank');
+				w3wBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in what3words';
+				const mapBtn = document.getElementById('cacheMapsLink');
+				mapBtn.removeAttribute('tabindex');
+				mapBtn.setAttribute('class', 'btn btn-primary m-1');
+				mapBtn.setAttribute('href', `https://www.google.com/maps/search/?api=1&query=${DOMPurify.sanitize(data.coordinates)}`);
+				mapBtn.setAttribute('target', '_blank');
+				mapBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in Google Maps';
+				const foundBtn = document.getElementById('cacheFoundLink');
+				const cacheStats = document.getElementById('cacheStats');
+				if (data.found) {
+					foundBtn.setAttribute('class', 'btn btn-outline-primary m-1 disabled');
+					foundBtn.removeAttribute('tabindex');
+					foundBtn.innerHTML = `<i class="bi bi-patch-check" aria-hidden="true"></i>&nbsp;You've already found this cache`;
+					cacheStats.innerText = `You ${Number(data.stats) === 1 ? 'are the only person that has found this cache! 😮' : `and ${Number(data.stats) - 1} other ${(Number(data.stats) - 1) === 1 ? 'person has' : 'people have'} found this cache 😊`}`;
+				} else {
+					foundBtn.setAttribute('class', 'btn btn-outline-primary m-1');
+					foundBtn.setAttribute('href', `foundCache-${id}`);
+					foundBtn.setAttribute('data-navigo', true);
+					foundBtn.removeAttribute('tabindex');
+					foundBtn.innerHTML = '<i class="bi bi-123" aria-hidden="true"></i>&nbsp;Found this cache?';
+					cacheStats.innerText = `${Number(data.stats) === 0 ? 'No one has found this cache yet 😢 can you find it?' : `${Number(data.stats)} ${Number(data.stats) === 1 ? 'person has' : 'people have'} found this cache - can you find it?`}`;
+					router.updatePageLinks();
+				}
 			} else {
-				foundBtn.setAttribute('class', 'btn btn-outline-primary m-1');
-				foundBtn.setAttribute('href', `foundCache-${id}`);
-				foundBtn.setAttribute('data-navigo', true);
-				foundBtn.removeAttribute('tabindex');
-				foundBtn.innerHTML = '<i class="bi bi-123" aria-hidden="true"></i>&nbsp;Found this cache?';
-				cacheStats.innerText = `${Number(data.stats) === 0 ? 'No one has found this cache yet 😢 can you find it?' : `${Number(data.stats)} ${Number(data.stats) === 1 ? 'person has' : 'people have'} found this cache - can you find it?`}`;
-				router.updatePageLinks();
+				throw "This cache is temporarily unavailable";
 			}
 		})
 		.catch(error => {
@@ -691,7 +704,7 @@ function loadFoundCachesPage() {
 										<p class="font-weight-bold mb-0"><strong id="foundCachesDeviceId"></strong></p>
 									</div>
 									<div class="col-auto">
-										<div class="icon rounded-circle">
+										<div class="icon rounded-circle my-3 my-sm-auto">
 											<img id="foundCachesProfilePic" src="./img/loading.gif" alt="Loading placeholder...">
 										</div>
 									</div>
@@ -943,5 +956,43 @@ window.onload = function () {
 		.resolve();
 	if (localStorage.getItem('deviceId') === null) {
 		getDeviceId();
+	}
+	// Load service worker if supported
+	if ('serviceWorker' in navigator) {
+		const updateBtn = document.getElementById('updateBtn');
+		// Register service worker
+		navigator.serviceWorker
+			.register('service-worker.js')
+			.then(function (registration) {
+				// Trigger update
+				registration.update();
+				// Listen for updates
+				registration.addEventListener('updatefound', () => {
+					newWorker = registration.installing;
+					if (newWorker === null) {
+						newWorker = registration.waiting;
+					}
+					// Listen for when the new worker is ready
+					newWorker.addEventListener('statechange', () => {
+						if (newWorker.state === 'installed') {
+							if (navigator.serviceWorker.controller) {
+								updateBtn.classList.remove('d-none');
+								updateBtn.removeAttribute('disabled');
+							}
+						}
+					});
+				});
+			})
+			.catch(error => {
+				console.log(error);
+			});
+		// Set event handler for refresh app button
+		updateBtn.addEventListener('click', (event) => {
+			event.preventDefault();
+			newWorker.postMessage({
+				action: 'skipWaiting'
+			});
+			window.location.reload();
+		});
 	}
 };
