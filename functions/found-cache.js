@@ -40,10 +40,6 @@ const fingerprintClient = new FingerprintJsServerApiClient({
 	region: Region.EU,
 	apiKey: fingerprintSecret
 });
-// Import validator for IPv4
-import {
-	isIPv4
-} from 'net';
 
 // Start Lambda Function
 export async function handler(event, context) {
@@ -52,7 +48,6 @@ export async function handler(event, context) {
 		interval: 6000,
 		uniqueTokenPerInterval: 500,
 	});
-	const ipCheck = isIPv4(event.headers['x-nf-client-connection-ip'] || event.headers['client-ip']);
 	const ip = crypto.createHash('SHA256').update((event.headers['x-nf-client-connection-ip'] || event.headers['client-ip'])).digest('hex');
 	limiter
 		.check(10, ip)
@@ -104,6 +99,9 @@ export async function handler(event, context) {
 				}
 			};
 		}
+		if (!deviceId || !requestId) {
+			throw 'Missing required headers';
+		}
 	} catch {
 		return {
 			statusCode: 400,
@@ -120,22 +118,9 @@ export async function handler(event, context) {
 			request_id: requestId
 		})
 		.then(sessionData => {
-			let requestIp;
-			try {
-				const sessionIp = sessionData.visits[0].ip;
-				requestIp = crypto.createHash('SHA256').update(sessionIp).digest('hex');
-			} catch (error) {
-				console.log(error);
-				throw 'Session mismatch';
-			}
-			if (ipCheck) {
-				if (requestIp === ip) {
-					return true;
-				} else {
-					throw 'Session mismatch';
-				}
+			if (sessionData.visits.length === 0) {
+				throw 'Invalid session';
 			} else {
-				console.log('IPv6 - unable to validate (at the moment)');
 				return true;
 			}
 		})
@@ -218,11 +203,12 @@ export async function handler(event, context) {
 						'Content-Type': 'application/json'
 					}
 				};
-			} else if (error === 'Session mismatch') {
+			} else if (error === 'Invalid session') {
 				return {
 					statusCode: 401,
 					body: JSON.stringify({
-						error: 'Unable to validate your Device ID'
+						error: 'Unable to validate your Device ID',
+						errorDebug: 'No valid sessions were provided for this device ID...'
 					}),
 					headers: {
 						'Content-Type': 'application/json'
