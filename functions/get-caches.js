@@ -47,10 +47,24 @@ export async function handler(event, context) {
 		caches: []
 	};
 	let deviceId;
+	let deviceObj;
+	let caches;
 
 	try {
 		deviceId = event.headers['device-id'];
-	} catch {
+		if (!deviceId) {
+			return {
+				statusCode: 400,
+				body: JSON.stringify({
+					error: 'Invalid request'
+				}),
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			};
+		}
+	} catch (error) {
+		console.log(error);
 		return {
 			statusCode: 400,
 			body: JSON.stringify({
@@ -62,16 +76,41 @@ export async function handler(event, context) {
 		};
 	}
 
-	// Get list items from library
-	return client.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields&filter=fields/Suspended eq 0`)
-		.get()
+	// Use batch request
+	return client.api('/$batch')
+		.post({
+			requests: [{
+				id: 'caches',
+				method: 'GET',
+				url: `/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields&filter=fields/Suspended eq 0`
+			}, {
+				id: 'device',
+				method: 'GET',
+				url: `/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${deviceId}'`
+			}]
+		})
 		.then(data => {
 			if (data.hasOwnProperty('error')) {
 				throw {
 					error: data.error
 				};
 			}
-			data.value.forEach(cache => {
+			data.responses.forEach(response => {
+				if (response.status !== 200) {
+					throw {
+						error: response.body.error
+					};
+				}
+				if (response.id === 'device') {
+					deviceObj = response.body.value;
+				} else if (response.id === 'caches') {
+					caches = response.body.value;
+				}
+			});
+			return caches;
+		})
+		.then(data => {
+			data.forEach(cache => {
 				const fields = cache.fields;
 				returnObj.caches.push({
 					location: fields.W3WLocation,
@@ -82,14 +121,13 @@ export async function handler(event, context) {
 					suspended: fields.Suspended
 				});
 			});
-			return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
-				.get();
+			return deviceObj;
 		})
-		.then(data => {
-			if (data.value.length === 0) {
+		.then(device => {
+			if (device.length === 0) {
 				return returnObj;
-			} else if (data.value.length === 1) {
-				const found = [...JSON.parse(data.value[0].fields.FoundCaches)];
+			} else if (device.length === 1) {
+				const found = [...JSON.parse(device[0].fields.FoundCaches)];
 				found.forEach(item => {
 					const cache = returnObj.caches.find(cache => (cache.id === item.id));
 					cache.found = true;

@@ -53,19 +53,20 @@ age of the young person and parental/guardian discretion should
 be used.
 </p>
 <p>
-The background behind Geocaching is to find using GPS small
+The background behind Geocaching is to find (using GPS) small
 hidden items in the urban or rural environment hidden by a
 Geocacher. We have simplified this for this summer activity to
-ensure its available to all. The only equipment requirement to
-take part is the use of a smartphone or tablet with 4G data
+ensure it's available to all. The only equipment required to
+take part is the use of a smartphone or tablet with a 4G data
 connection.
 </p>
 <p>
-There is no sign up or log in needed and no personal information
-is supplied from you to the organisers and no personal
-information will be requested from this web-app. We only
-hold very little information about the device used to verify the
-caches found by the finder. Please refer to our
+There is no need to sign up or log in and no personal information
+is supplied from you to the organisers (and no personal
+information will be requested from this web-app). 
+We use the information provided by your device to generate a unique Device ID which is used to allow you to track your <a href="foundCaches" data-navigo>found caches</a> and see your position on the <a href="leaderboard" data-navigo>leaderboard</a>. 
+We only store the Device ID and found caches (cache ID and timestamp when found). No personally identifiable information is stored.
+Please refer to our
 <a href="privacy" data-navigo>Privacy Policy</a> for more
 information.
 </p>
@@ -75,7 +76,7 @@ We are Beaver and Explorer Scout leaders based in Witham and
 wanted something extra for the young people of Witham to do over
 the summer holidays, the GeoScout project has been solely created by
 us for use in Witham over this summer holiday. Caches will be
-collected the week 12th of September 2022.
+collected from the week beginning 12th of September 2022.
 </p>
 <p>
 If you find a problem with a cache, a cache is missing, or you

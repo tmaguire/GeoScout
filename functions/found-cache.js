@@ -48,14 +48,17 @@ export async function handler(event, context) {
 		interval: 6000,
 		uniqueTokenPerInterval: 500,
 	});
+	// Hash IP address before storing it in the limiter (to comply with GDPR)
 	const ip = crypto.createHash('SHA256').update((event.headers['x-nf-client-connection-ip'] || event.headers['client-ip'])).digest('hex');
 	limiter
 		.check(10, ip)
-		.catch(() => {
+		.catch((error) => {
+			console.log(error);
 			return {
 				statusCode: 429,
 				body: JSON.stringify({
-					error: 'Too many attempts'
+					error: 'Too many attempts',
+					errorDebug: 'Please contact support@geoscout.uk if you believe this is a mistake.'
 				}),
 				headers: {
 					'Content-Type': 'application/json'
@@ -100,9 +103,18 @@ export async function handler(event, context) {
 			};
 		}
 		if (!deviceId || !requestId) {
-			throw 'Missing required headers';
+			return {
+				statusCode: 400,
+				body: JSON.stringify({
+					error: 'Missing required headers'
+				}),
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			};
 		}
-	} catch {
+	} catch (error) {
+		console.log(error);
 		return {
 			statusCode: 400,
 			body: JSON.stringify({
@@ -141,7 +153,6 @@ export async function handler(event, context) {
 				count: Number(data.value[0].fields.Found),
 				id: data.value[0].id
 			};
-
 			return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches,Total)&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
 				.get();
 		})

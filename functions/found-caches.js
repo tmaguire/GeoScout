@@ -59,9 +59,18 @@ export async function handler(event, context) {
 		deviceId = event.headers['device-id'];
 		requestId = event.headers['request-id'];
 		if (!deviceId || !requestId) {
-			throw 'Missing required headers';
+			return {
+				statusCode: 400,
+				body: JSON.stringify({
+					error: 'Missing required headers'
+				}),
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			};
 		}
-	} catch {
+	} catch (error) {
+		console.log(error);
 		return {
 			statusCode: 400,
 			body: JSON.stringify({
@@ -140,7 +149,7 @@ export async function handler(event, context) {
 					statusCode: 401,
 					body: JSON.stringify({
 						error: 'Unable to validate your Device ID',
-						errorDebug: 'No valid sessions were provided for this device ID...'
+						errorDebug: 'No valid sessions were found for this device ID - contact support@geoscout.uk'
 					}),
 					headers: {
 						'Content-Type': 'application/json'

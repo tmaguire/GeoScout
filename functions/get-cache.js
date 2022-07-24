@@ -60,7 +60,30 @@ export async function handler(event, context) {
 	try {
 		cacheId = JSON.parse(event.body).cache;
 		deviceId = event.headers['device-id'];
-	} catch {
+		if (!cacheId || cacheId.length !== 3) {
+			return {
+				statusCode: 400,
+				body: JSON.stringify({
+					error: 'Invalid cache ID'
+				}),
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			};
+		}
+		if (!deviceId) {
+			return {
+				statusCode: 400,
+				body: JSON.stringify({
+					error: 'Missing required header'
+				}),
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			};
+		}
+	} catch (error) {
+		console.log(error);
 		return {
 			statusCode: 400,
 			body: JSON.stringify({

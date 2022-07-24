@@ -199,6 +199,12 @@ function changePage(page, title, id) {
 		left: 0,
 		behavior: 'smooth'
 	});
+	// Close the navbar menu (if it is open)
+	const menuToggle = document.getElementById('navbarToggler');
+	const bsCollapse = new bootstrap.Collapse(menuToggle, {
+		toggle: false
+	});
+	bsCollapse.hide();
 }
 
 function loadCachesPage() {

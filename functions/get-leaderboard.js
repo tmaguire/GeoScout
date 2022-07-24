@@ -42,11 +42,13 @@ export async function handler(event, context) {
 		};
 	}
 
-	let deviceId;
-
 	try {
-		deviceId = event.headers['device-id'];
-	} catch {
+		const deviceId = event.headers['device-id'];
+		if (!deviceId) {
+			throw 'Missing required header';
+		}
+	} catch (error) {
+		console.log(error);
 		return {
 			statusCode: 400,
 			body: JSON.stringify({
