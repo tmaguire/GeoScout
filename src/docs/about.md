@@ -6,6 +6,7 @@
 src="./img/geoscout-logo.png"
 class="img-fluid logo-img m-3"
 alt="GeoScout logo"
+loading="lazy"
 />
 </picture>
 </div>
@@ -34,6 +35,7 @@ find and validate any number of geocaches.
 src="./img/cabletie-thumbnail.png"
 class="figure-img img-thumbnail logo-img"
 alt="Photo showing two cable ties which have been used for the GeoScout project"
+loading="lazy"
 />
 </picture>
 <figcaption class="figure-caption"><a href="./img/cabletie-example.png" class="text-decoration-none"><i class="bi bi-zoom-in" aria-hidden="true"></i> Need a larger version of this image?</a></figcaption>

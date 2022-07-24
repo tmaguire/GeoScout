@@ -93,22 +93,34 @@ export async function handler(event, context) {
 					found: []
 				};
 			} else {
-				let counter = 0;
+				const array = [];
 				const obj = {
 					found: '',
-					position: '',
-					total: ''
+					total: '',
+					position: ''
 				};
-				data.value.every(device => {
-					counter++;
-					if (device.fields.Title === deviceId) {
-						obj.found = [...JSON.parse(device.fields.FoundCaches)];
-						obj.position = counter;
-						obj.total = data.value.length;
-						return false;
-					}
-					return true;
+				data.value.forEach(device => {
+					array.push({
+						found: [...JSON.parse(device.fields.FoundCaches)],
+						total: device.fields.Total,
+						deviceId: device.fields.Title
+					});
 				});
+				array.sort(function (a, b) {
+					return b.total - a.total;
+				});
+				let position = 1;
+				for (var i = 0; i < array.length; i++) {
+					if (i > 0 && array[i].found < array[i - 1].found) {
+						position++;
+					}
+					array[i].position = position;
+					if (array[i].deviceId === deviceId) {
+						obj.found = array[i].found;
+						obj.total = array[i].total;
+						obj.position = array[i].position;
+					}
+				}
 				return obj;
 			}
 		})

@@ -2,7 +2,7 @@
 let mainMap = null;
 let router = null;
 let newWorker = false;
-const loadingGif = '<div class="text-center"><img src="./img/loading.gif" class="img-fluid text-center" alt="Loading animation placeholder"></div>';
+const loadingGif = '<div class="text-center"><img src="./img/loading.gif" height="200" width="200" class="img-fluid text-center" alt="Loading animation placeholder"></div>';
 
 // Method for creating toast notifications
 const showToast = Swal.mixin({
@@ -134,6 +134,21 @@ function prettyDate(inputDate) {
 	const date = String(inputDateObj.getDate());
 	const prettyDate = `${date}${(date === '1') || (date === '21') || (date === '31') ? 'st' : (date === '2') || (date === '22') ? 'nd' : (date === '3') || (date === '23') ? 'rd' : 'th'}`;
 	return `${day} ${prettyDate} of ${month} ${inputDateObj.getFullYear()}`;
+}
+
+function appendSuffix(number) {
+	const firstPass = number % 10;
+	const secondPass = number % 100;
+	if (firstPass === 1 && secondPass !== 11) {
+		return `${number}st`;
+	}
+	if (firstPass === 2 && secondPass !== 12) {
+		return `${number}nd`;
+	}
+	if (firstPass === 3 && secondPass !== 13) {
+		return `${number}rd`;
+	}
+	return `${number}th`;
 }
 
 // Function to handle errors from serverless functions
@@ -488,6 +503,8 @@ function loadCachePage(id) {
 				const img = document.getElementById('cacheMapImg');
 				img.setAttribute('src', `${DOMPurify.sanitize(data.image)}`);
 				img.setAttribute('alt', `Map for Cache ${id}`);
+				img.removeAttribute('height');
+				img.removeAttribute('width');
 				const header = document.getElementById('cacheHeader');
 				header.setAttribute('class', 'card-title');
 				header.innerHTML = '';
@@ -541,6 +558,8 @@ function resetCachePage() {
 	const img = document.getElementById('cacheMapImg');
 	img.setAttribute('src', './img/loading.gif');
 	img.setAttribute('alt', 'Loading animation placeholder');
+	img.setAttribute('height', '200');
+	img.setAttribute('width', '200');
 	const header = document.getElementById('cacheHeader');
 	header.setAttribute('class', 'card-title placeholder-glow');
 	header.innerHTML = '<span class="placeholder col-6"></span>';
@@ -700,7 +719,7 @@ function loadFoundCachesPage() {
 									</div>
 									<div class="col-auto">
 										<div class="icon rounded-circle my-3 my-sm-auto">
-											<img id="foundCachesProfilePic" src="./img/loading.gif" alt="Loading placeholder...">
+											<img id="foundCachesProfilePic" src="./img/loading.gif" height="200" width="200" alt="Loading placeholder...">
 										</div>
 									</div>
 								</div>
@@ -786,10 +805,13 @@ function loadFoundCachesPage() {
 				});
 				const deviceId = DOMPurify.sanitize(localStorage.getItem('deviceId'));
 				document.getElementById('foundCachesDeviceId').innerText = deviceId;
-				document.getElementById('foundCachesProfilePic').setAttribute('src', `./profilePic/${deviceId}/48`);
+				document.getElementById('foundCachesProfilePic').setAttribute('src', `./profilePic/${deviceId}/96`);
+				document.getElementById('foundCachesProfilePic').setAttribute('height', '48');
+				document.getElementById('foundCachesProfilePic').setAttribute('width', '48');
 				document.getElementById('foundCachesProfilePic').setAttribute('alt', `Profile picture for ${deviceId} (your device ID)`);
 				document.getElementById('foundCachesTotal').innerText = Number(data.found.length);
-				document.getElementById('foundCacheRanking').innerHTML = `${Number(data.position)}/${Number(data.total)}${Number(data.position) === 1 ? '&nbsp;🥇' : Number(data.position) === 2 ? '&nbsp;🥈' : Number(data.position) === 3 ? '&nbsp;🥉' : ''}`;
+				const positionString = appendSuffix(Number(data.position));
+				document.getElementById('foundCacheRanking').innerHTML = `${positionString}${positionString === '1st' ? '&nbsp;🥇' : positionString === '2nd' ? '&nbsp;🥈' : positionString === '3rd' ? '&nbsp;🥉' : ''}`;
 			} else {
 				foundContainer.innerHTML = noneFound;
 				router.updatePageLinks();
@@ -835,7 +857,8 @@ function loadLeaderboardPage() {
 								enabled: true
 							},
 							formatter: (position) => {
-								return (position === 1 ? '1st 🥇' : position === 2 ? '2nd 🥈' : position === 3 ? '3rd 🥉' : position);
+								const positionString = appendSuffix(Number(position));
+								return gridjs.html(`${positionString}${positionString === '1st' ? '&nbsp;🥇' : positionString === '2nd' ? '&nbsp;🥈' : positionString === '3rd' ? '&nbsp;🥉' : ''}`);
 							},
 							attributes: (cell, row) => {
 								if (cell) {
@@ -854,7 +877,7 @@ function loadLeaderboardPage() {
 							},
 							formatter: (deviceId) => {
 								const name = DOMPurify.sanitize(deviceId);
-								return gridjs.html(`<div class="row"><div class="col-md-4"><div class="icon rounded-circle"><img src="./profilePic/${name}/48" alt="Profile picture for ${name}"></div></div><div class="col-md-8 my-auto text-break">${name}${name === localStorage.getItem('deviceId') ? '&nbsp;<strong>(You)</strong>' : ''}</div></div>`);
+								return gridjs.html(`<div class="row"><div class="col-md-4"><div class="icon rounded-circle"><img src="./profilePic/${name}/96" alt="Profile picture for ${name}" height="48" width="48"></div></div><div class="col-md-8 my-auto text-break">${name}${name === localStorage.getItem('deviceId') ? '&nbsp;<strong>(You)</strong>' : ''}</div></div>`);
 							}
 						},
 						{
@@ -875,15 +898,15 @@ function loadLeaderboardPage() {
 				}).render(document.getElementById('leaderboardWrapper'));
 				grid.on('ready', function () {
 					try {
-						[...document.querySelector('td[data-ranking="1"]').parentElement.children].forEach(child => {
+						document.querySelectorAll('td[data-ranking="1"]').forEach(element => [...element.parentElement.children].forEach(child => {
 							child.classList.add('gold');
-						});
-						[...document.querySelector('td[data-ranking="2"]').parentElement.children].forEach(child => {
+						}));
+						document.querySelectorAll('td[data-ranking="2"]').forEach(element => [...element.parentElement.children].forEach(child => {
 							child.classList.add('silver');
-						});
-						[...document.querySelector('td[data-ranking="3"]').parentElement.children].forEach(child => {
+						}));
+						document.querySelectorAll('td[data-ranking="3"]').forEach(element => [...element.parentElement.children].forEach(child => {
 							child.classList.add('bronze');
-						});
+						}));
 						[...document.querySelector('td[data-match="true"]').parentElement.children].forEach(child => {
 							child.classList.add('your-device');
 						});

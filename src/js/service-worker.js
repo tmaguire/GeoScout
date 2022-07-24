@@ -15,11 +15,18 @@ let resourcesToCache = [
 	// Navbar icon
 	'./img/logo.webp',
 	'./img/logo.png',
+	// Footer icon
+	'./img/group.png',
+	'./img/group.webp',
 	// Web app icons
 	'./img/favicon.png',
 	'./img/icon.png',
 	'./img/maskable.png',
 	'./img/splash.png',
+	// Map icons
+	'./img/found.png',
+	'./img/notFound.png',
+
 ];
 
 self.addEventListener('install', event => {

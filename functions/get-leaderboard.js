@@ -66,18 +66,30 @@ export async function handler(event, context) {
 				return [];
 			} else {
 				const array = [];
-				let counter = 0;
 				data.value.forEach(device => {
 					const fields = device.fields;
-					counter++;
 					array.push({
 						deviceId: fields.Title,
-						found: fields.Total,
-						position: counter
+						found: fields.Total
 					});
 				});
 				return array;
 			}
+		})
+		.then(array => {
+			return array.sort(function (a, b) {
+				return b.found - a.found;
+			});
+		})
+		.then(array => {
+			let position = 1;
+			for (var i = 0; i < array.length; i++) {
+				if (i > 0 && array[i].found < array[i - 1].found) {
+					position++;
+				}
+				array[i].position = position;
+			}
+			return array;
 		})
 		.then(array => {
 			return {

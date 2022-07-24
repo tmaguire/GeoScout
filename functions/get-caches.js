@@ -63,7 +63,7 @@ export async function handler(event, context) {
 	}
 
 	// Get list items from library
-	return client.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields`)
+	return client.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields&filter=fields/Suspended eq 0`)
 		.get()
 		.then(data => {
 			if (data.hasOwnProperty('error')) {
