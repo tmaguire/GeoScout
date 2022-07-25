@@ -37,18 +37,39 @@
 	"shortcuts": [
 		{
 			"name": "View caches",
-			"url": "/viewCaches",
-			"description": "View an interactive map to see the location of caches"
+			"short_name": "View caches",
+			"url": "https://www.geoscout.uk/viewCaches",
+			"description": "View an interactive map to see the location of caches",
+			"icons": [
+				{
+					"src": "https://www.geoscout.uk/img/viewCaches.png",
+					"sizes": "192x192"
+				}
+			]
 		},
 		{
 			"name": "Found caches",
-			"url": "/foundCaches",
-			"description": "See the caches you have found so far"
+			"short_name": "Found caches",
+			"url": "https://www.geoscout.uk/foundCaches",
+			"description": "See the caches you have found so far",
+			"icons": [
+				{
+					"src": "https://www.geoscout.uk/img/foundCaches.png",
+					"sizes": "192x192"
+				}
+			]
 		},
 		{
 			"name": "Leaderboard",
-			"url": "/leaderboard",
-			"description": "See how many caches everyone has found - and see if you're near the top of the rankings!"
+			"short_name": "Leaderboard",
+			"url": "https://www.geoscout.uk/leaderboard",
+			"description": "See how many caches everyone has found - and see if you're near the top of the rankings!",
+			"icons": [
+				{
+					"src": "https://www.geoscout.uk/img/leaderboard.png",
+					"sizes": "192x192"
+				}
+			]
 		}
 	],
 	"display": "standalone",
