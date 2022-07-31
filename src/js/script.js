@@ -437,7 +437,16 @@ function loadCachesTablePage() {
 					limit: 15,
 					summary: true
 				},
-				data: () => data.flatMap(cache => cache.suspended ? [] : [cache])
+				data: () => data.flatMap(cache => cache.suspended ? [] : [cache]),
+				search: {
+					enabled: true,
+					selector: (cell, rowIndex, cellIndex) => cellIndex === 0 ? cell : null
+				},
+				language: {
+					search: {
+						placeholder: 'Search by Cache ID'
+					}
+				},
 			}).render(document.getElementById('table'));
 			table.on('ready', function () {
 				router.updatePageLinks();
