@@ -2,7 +2,7 @@
 	"name": "GeoScout",
 	"short_name": "GeoScout",
 	"description": "Witham Scouts Geocaching project (GeoScout)",
-	"scope": "/",
+	"scope": "https://www.geoscout.uk/",
 	"start_url": "https://www.geoscout.uk/",
 	"background_color": "#ffffff",
 	"theme_color": "#7413DC",
@@ -73,7 +73,6 @@
 		}
 	],
 	"display": "standalone",
-	"orientation": "any",
 	"lang": "en-GB",
 	"dir": "ltr"
 }
