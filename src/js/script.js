@@ -611,6 +611,8 @@ function loadFoundCachePage(id) {
 				autocomplete: 'off',
 				inputmode: 'numeric',
 				pattern: '[0-9]*',
+				'data-lpignore': true,
+				'data-form-type': 'other',
 				maxlength: 5
 			},
 			showCancelButton: true,
