@@ -245,7 +245,7 @@ function loadCachesPage() {
 				},
 				zoom: 13,
 				minZoom: 13,
-				maxZoom: 18,
+				maxZoom: 20,
 				restriction: {
 					latLngBounds: {
 						north: 51.826601357825716,
