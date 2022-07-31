@@ -2,7 +2,7 @@
 let mainMap = null;
 let router = null;
 let newWorker = false;
-const loadingGif = '<div class="text-center"><img src="./img/loading.gif" height="200" width="200" class="img-fluid text-center" alt="Loading animation placeholder"></div>';
+const loadingGif = '<div class="text-center"><img src="./img/loading.gif" height="175" width="175" class="img-fluid text-center" alt="Loading animation placeholder"></div>';
 
 // Method for creating toast notifications
 const showToast = Swal.mixin({
@@ -564,8 +564,8 @@ function resetCachePage() {
 	const img = document.getElementById('cacheMapImg');
 	img.setAttribute('src', './img/loading.gif');
 	img.setAttribute('alt', 'Loading animation placeholder');
-	img.setAttribute('height', '200');
-	img.setAttribute('width', '200');
+	img.setAttribute('height', '175');
+	img.setAttribute('width', '175');
 	const header = document.getElementById('cacheHeader');
 	header.setAttribute('class', 'card-title placeholder-glow');
 	header.innerHTML = '<span class="placeholder col-6"></span>';
@@ -725,7 +725,7 @@ function loadFoundCachesPage() {
 									</div>
 									<div class="col-auto">
 										<div class="icon rounded-circle my-3 my-sm-auto">
-											<img id="foundCachesProfilePic" src="./img/loading.gif" height="200" width="200" alt="Loading placeholder...">
+											<img id="foundCachesProfilePic" src="./img/loading.gif" height="175" width="175" alt="Loading placeholder...">
 										</div>
 									</div>
 								</div>
