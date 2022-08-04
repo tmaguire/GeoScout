@@ -20,7 +20,7 @@
 	"homepage": "https://github.com/tmaguire/GeoScout#readme",
 	"dependencies": {
 		"@googlemaps/js-api-loader": "^1.14.3",
-		"@googlemaps/markerclusterer": "^2.0.8",
+		"@googlemaps/markerclusterer": "^2.0.10",
 		"@popperjs/core": "^2.11.5",
 		"bootstrap": "^5.2.0",
 		"bootstrap-icons": "^1.9.1",
