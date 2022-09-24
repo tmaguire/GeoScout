@@ -129,8 +129,12 @@ export async function handler(event, context) {
 			} else if (device.length === 1) {
 				const found = [...JSON.parse(device[0].fields.FoundCaches)];
 				found.forEach(item => {
-					const cache = returnObj.caches.find(cache => (cache.id === item.id));
-					cache.found = true;
+					try {
+						const cache = returnObj.caches.find(cache => (cache.id === item.id));
+						cache.found = true;
+					} catch {
+						console.log('Found cache is suspended - skipping over it');
+					}
 				});
 				return returnObj;
 			} else {
