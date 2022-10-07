@@ -43,7 +43,7 @@
 	},
 	"devDependencies": {
 		"@fingerprintjs/fingerprintjs-pro": "^3.7.1",
-		"@types/google.maps": "^3.50.2",
+		"@types/google.maps": "^3.50.3",
 		"dompurify": "^2.4.0",
 		"gulp": "^4.0.2",
 		"gulp-concat": "^2.6.1",
