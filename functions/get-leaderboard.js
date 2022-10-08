@@ -3,7 +3,6 @@
 import 'isomorphic-fetch';
 // Microsoft Graph API details
 const clientId = process.env.graphClientId;
-const clientSecret = process.env.graphClientSecret;
 const tenantId = process.env.tenantId;
 // Graph SDK Preparation
 import {
@@ -13,9 +12,13 @@ import {
 	TokenCredentialAuthenticationProvider
 } from '@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials';
 import {
-	ClientSecretCredential
+	ClientCertificateCredential
 } from '@azure/identity';
-const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+import path from 'path';
+const credential = new ClientCertificateCredential(tenantId, clientId, {
+	certificatePath: path.join(__dirname, 'cert.pem'),
+	certificatePassword: process.env.graphCertKey
+});
 const authProvider = new TokenCredentialAuthenticationProvider(credential, {
 	scopes: ['.default']
 });
@@ -61,7 +64,8 @@ export async function handler(event, context) {
 	}
 
 	// Get list items from library
-	return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,Total)&$select=id,fields&$orderby=fields/Total desc,fields/Title`)
+	return client
+		.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,Total)&$select=id,fields&$orderby=fields/Total desc,fields/Title`)
 		.get()
 		.then(data => {
 			if (data.value.length === 0) {

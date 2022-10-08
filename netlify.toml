@@ -10,6 +10,7 @@ X-Content-Type-Options = "nosniff"
 X-Frame-Options = "DENY"
 X-XSS-Protection = "0"
 [functions]
+included_files = ["functions/cert.pem"]
 node_bundler = "esbuild"
 [[redirects]]
 force = true

@@ -3,7 +3,6 @@
 import 'isomorphic-fetch';
 // Microsoft Graph API details
 const clientId = process.env.graphClientId;
-const clientSecret = process.env.graphClientSecret;
 const tenantId = process.env.tenantId;
 // Graph SDK Preparation
 import {
@@ -13,9 +12,14 @@ import {
 	TokenCredentialAuthenticationProvider
 } from '@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials';
 import {
-	ClientSecretCredential
+	ClientCertificateCredential
 } from '@azure/identity';
-const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+import path from 'path';
+const credential = new ClientCertificateCredential(tenantId, clientId, {
+	certificatePath: path.join(__dirname, 'cert.pem'),
+	certificatePassword: process.env.graphCertKey
+});
+
 const authProvider = new TokenCredentialAuthenticationProvider(credential, {
 	scopes: ['.default']
 });
@@ -49,7 +53,10 @@ export async function handler(event, context) {
 		uniqueTokenPerInterval: 500,
 	});
 	// Hash IP address before storing it in the limiter (to comply with GDPR)
-	const ip = crypto.createHash('SHA256').update((event.headers['x-nf-client-connection-ip'] || event.headers['client-ip'])).digest('hex');
+	const ip = crypto
+		.createHash('SHA256')
+		.update((event.headers['x-nf-client-connection-ip'] || event.headers['client-ip']))
+		.digest('hex');
 	limiter
 		.check(10, ip)
 		.catch((error) => {
@@ -126,7 +133,8 @@ export async function handler(event, context) {
 		};
 	}
 
-	return fingerprintClient.getVisitorHistory(deviceId, {
+	return fingerprintClient
+		.getVisitorHistory(deviceId, {
 			request_id: requestId
 		})
 		.then(sessionData => {
@@ -137,7 +145,8 @@ export async function handler(event, context) {
 			}
 		})
 		.then(() => {
-			return client.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,CableTieCode,Found)&$select=id,fields&filter=fields/Title eq '${cacheId}'`)
+			return client
+				.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,CableTieCode,Found)&$select=id,fields&filter=fields/Title eq '${cacheId}'`)
 				.get();
 		})
 		.then(data => {
@@ -153,13 +162,15 @@ export async function handler(event, context) {
 				count: Number(data.value[0].fields.Found),
 				id: data.value[0].id
 			};
-			return client.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches,Total)&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
+			return client
+				.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches,Total)&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
 				.get();
 		})
 		.then(data => {
 			const currentTime = new Date();
 			if (data.value.length === 0) {
-				return client.api(`/sites/${siteId}/lists/${deviceListId}/items`)
+				return client
+					.api(`/sites/${siteId}/lists/${deviceListId}/items`)
 					.post({
 						fields: {
 							Title: deviceId,
@@ -176,7 +187,8 @@ export async function handler(event, context) {
 					id: cacheId,
 					date: currentTime.toISOString()
 				});
-				return client.api(`/sites/${siteId}/lists/${deviceListId}/items/${data.value[0].id}/fields`)
+				return client
+					.api(`/sites/${siteId}/lists/${deviceListId}/items/${data.value[0].id}/fields`)
 					.patch({
 						FoundCaches: JSON.stringify(found),
 						Total: Number(Number(data.value[0].fields.Total) + 1)
@@ -186,7 +198,8 @@ export async function handler(event, context) {
 			}
 		})
 		.then(() => {
-			return client.api(`/sites/${siteId}/lists/${listId}/items/${currentStats.id}/fields`)
+			return client
+				.api(`/sites/${siteId}/lists/${listId}/items/${currentStats.id}/fields`)
 				.patch({
 					Found: Number(Number(currentStats.count) + 1)
 				});

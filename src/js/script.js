@@ -224,7 +224,8 @@ function loadCachesPage() {
 			headers: {
 				'Device-Id': localStorage.getItem('deviceId')
 			}
-		}).then(response => response.json())
+		})
+		.then(response => response.json())
 		.then(handleErrors)
 		.then(data => {
 			if (data.hasOwnProperty('caches')) {
@@ -379,7 +380,8 @@ function loadCachesTablePage() {
 			headers: {
 				'Device-Id': localStorage.getItem('deviceId')
 			}
-		}).then(response => response.json())
+		})
+		.then(response => response.json())
 		.then(handleErrors)
 		.then(data => {
 			if (data.hasOwnProperty('caches')) {
@@ -867,68 +869,70 @@ function loadLeaderboardPage() {
 			if (data.length > 0) {
 				leaderboardContainer.innerHTML = '<div id="leaderboardWrapper"></div>';
 				const grid = new gridjs.Grid({
-					columns: [{
-							id: 'position',
-							name: 'Position',
-							sort: {
-								enabled: true
+						columns: [{
+								id: 'position',
+								name: 'Position',
+								sort: {
+									enabled: true
+								},
+								formatter: (position) => {
+									const positionString = appendSuffix(Number(position));
+									return gridjs.html(`${positionString}${positionString === '1st' ? '&nbsp;🥇' : positionString === '2nd' ? '&nbsp;🥈' : positionString === '3rd' ? '&nbsp;🥉' : ''}`);
+								},
+								attributes: (cell, row) => {
+									if (cell) {
+										return {
+											'data-ranking': cell,
+											'data-match': String(Boolean(row.cells[1].data === localStorage.getItem('deviceId')))
+										};
+									}
+								}
 							},
-							formatter: (position) => {
-								const positionString = appendSuffix(Number(position));
-								return gridjs.html(`${positionString}${positionString === '1st' ? '&nbsp;🥇' : positionString === '2nd' ? '&nbsp;🥈' : positionString === '3rd' ? '&nbsp;🥉' : ''}`);
+							{
+								id: 'deviceId',
+								name: 'Device ID',
+								sort: {
+									enabled: true
+								},
+								formatter: (deviceId) => {
+									const name = DOMPurify.sanitize(deviceId);
+									return gridjs.html(`<div class="row"><div class="col-md-4"><div class="icon rounded-circle"><img src="./profilePic/${name}/96" alt="Profile picture for ${name}" height="48" width="48"></div></div><div class="col-md-8 my-auto text-break">${name}${name === localStorage.getItem('deviceId') ? '&nbsp;<strong>(You)</strong>' : ''}</div></div>`);
+								}
 							},
-							attributes: (cell, row) => {
-								if (cell) {
-									return {
-										'data-ranking': cell,
-										'data-match': String(Boolean(row.cells[1].data === localStorage.getItem('deviceId')))
-									};
+							{
+								id: 'found',
+								name: 'Number of caches found',
+								sort: {
+									enabled: true
 								}
 							}
-						},
-						{
-							id: 'deviceId',
-							name: 'Device ID',
-							sort: {
-								enabled: true
-							},
-							formatter: (deviceId) => {
-								const name = DOMPurify.sanitize(deviceId);
-								return gridjs.html(`<div class="row"><div class="col-md-4"><div class="icon rounded-circle"><img src="./profilePic/${name}/96" alt="Profile picture for ${name}" height="48" width="48"></div></div><div class="col-md-8 my-auto text-break">${name}${name === localStorage.getItem('deviceId') ? '&nbsp;<strong>(You)</strong>' : ''}</div></div>`);
+						],
+						sort: true,
+						style: {
+							table: {
+								'white-space': 'nowrap'
 							}
 						},
-						{
-							id: 'found',
-							name: 'Number of caches found',
-							sort: {
-								enabled: true
-							}
-						}
-					],
-					sort: true,
-					style: {
-						table: {
-							'white-space': 'nowrap'
-						}
-					},
-					data: data
-				}).render(document.getElementById('leaderboardWrapper'));
-				grid.on('ready', function () {
-					try {
-						document.querySelectorAll('td[data-ranking="1"]').forEach(element => [...element.parentElement.children].forEach(child => {
-							child.classList.add('gold');
-						}));
-						document.querySelectorAll('td[data-ranking="2"]').forEach(element => [...element.parentElement.children].forEach(child => {
-							child.classList.add('silver');
-						}));
-						document.querySelectorAll('td[data-ranking="3"]').forEach(element => [...element.parentElement.children].forEach(child => {
-							child.classList.add('bronze');
-						}));
-						[...document.querySelector('td[data-match="true"]').parentElement.children].forEach(child => {
-							child.classList.add('your-device');
-						});
-					} catch {}
-				});
+						data: data
+					})
+					.render(document.getElementById('leaderboardWrapper'));
+				grid
+					.on('ready', function () {
+						try {
+							document.querySelectorAll('td[data-ranking="1"]').forEach(element => [...element.parentElement.children].forEach(child => {
+								child.classList.add('gold');
+							}));
+							document.querySelectorAll('td[data-ranking="2"]').forEach(element => [...element.parentElement.children].forEach(child => {
+								child.classList.add('silver');
+							}));
+							document.querySelectorAll('td[data-ranking="3"]').forEach(element => [...element.parentElement.children].forEach(child => {
+								child.classList.add('bronze');
+							}));
+							[...document.querySelector('td[data-match="true"]').parentElement.children].forEach(child => {
+								child.classList.add('your-device');
+							});
+						} catch {}
+					});
 			} else {
 				leaderboardContainer.innerHTML = emptyLeaderboard;
 				router.updatePageLinks();
@@ -996,7 +1000,8 @@ window.onload = function () {
 	if ('serviceWorker' in navigator) {
 		const updateBtn = document.getElementById('updateBtn');
 		// Register service worker
-		navigator.serviceWorker
+		navigator
+			.serviceWorker
 			.register('service-worker.js')
 			.then(function (registration) {
 				// Trigger update

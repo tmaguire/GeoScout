@@ -3,7 +3,6 @@
 import 'isomorphic-fetch';
 // Microsoft Graph API details
 const clientId = process.env.graphClientId;
-const clientSecret = process.env.graphClientSecret;
 const tenantId = process.env.tenantId;
 // Graph SDK Preparation
 import {
@@ -13,9 +12,13 @@ import {
 	TokenCredentialAuthenticationProvider
 } from '@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials';
 import {
-	ClientSecretCredential
+	ClientCertificateCredential
 } from '@azure/identity';
-const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+import path from 'path';
+const credential = new ClientCertificateCredential(tenantId, clientId, {
+	certificatePath: path.join(__dirname, 'cert.pem'),
+	certificatePassword: process.env.graphCertKey
+});
 const authProvider = new TokenCredentialAuthenticationProvider(credential, {
 	scopes: ['.default']
 });
@@ -77,7 +80,8 @@ export async function handler(event, context) {
 	}
 
 	// Use batch request
-	return client.api('/$batch')
+	return client
+		.api('/$batch')
 		.post({
 			requests: [{
 				id: 'caches',
