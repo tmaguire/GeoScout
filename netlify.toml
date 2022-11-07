@@ -31,7 +31,7 @@ to = "/.netlify/functions/:splat"
 force = true
 from = "/profilePic/*"
 status = 200
-to = "/.netlify/functions/get-avatar"
+to = "/.netlify/builders/get-avatar"
 [[redirects]]
 from = "/*"
 status = 200
