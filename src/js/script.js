@@ -19,10 +19,10 @@ const showToast = Swal.mixin({
 
 function getDeviceId() {
 	FingerprintJS.load({
-			apiKey: 'a1ZJOENnGt4QCgAqBHHb',
-			region: 'eu',
-			endpoint: 'https://login.geoscout.uk'
-		})
+		apiKey: 'a1ZJOENnGt4QCgAqBHHb',
+		region: 'eu',
+		endpoint: 'https://login.geoscout.uk'
+	})
 		.then(fp => fp.get())
 		.then(result => {
 			localStorage.setItem('deviceId', result.visitorId);
@@ -34,10 +34,10 @@ function getDeviceId() {
 
 function getApiAuth() {
 	return FingerprintJS.load({
-			apiKey: 'a1ZJOENnGt4QCgAqBHHb',
-			region: 'eu',
-			endpoint: 'https://login.geoscout.uk'
-		})
+		apiKey: 'a1ZJOENnGt4QCgAqBHHb',
+		region: 'eu',
+		endpoint: 'https://login.geoscout.uk'
+	})
 		.then(fp => fp.get())
 		.then(result => {
 			return {
@@ -173,11 +173,11 @@ function changePage(page, title, id) {
 	document.querySelector("link[rel='canonical']").setAttribute('href', page === '404' ? 'https://www.geoscout.uk' : (id ? `https://www.geoscout.uk/${page}-${id}` : `https://www.geoscout.uk/${page}`));
 	// Update menu
 	document.querySelectorAll('a.nav-link').forEach(menuItem => {
-		if (menuItem.getAttribute('data-page') === page) {
-			menuItem.setAttribute('class', 'nav-link active');
+		if (menuItem.getAttribute('href') === page) {
+			menuItem.classList.add('active');
 			menuItem.setAttribute('aria-current', 'page');
 		} else {
-			menuItem.setAttribute('class', 'nav-link');
+			menuItem.classList.remove('active');
 			menuItem.removeAttribute('aria-current');
 		}
 	});
@@ -220,11 +220,11 @@ function loadCachesPage() {
 	});
 	let caches;
 	fetch('./api/get-caches', {
-			method: 'GET',
-			headers: {
-				'Device-Id': localStorage.getItem('deviceId')
-			}
-		})
+		method: 'GET',
+		headers: {
+			'Device-Id': localStorage.getItem('deviceId')
+		}
+	})
 		.then(response => response.json())
 		.then(handleErrors)
 		.then(data => {
@@ -376,11 +376,11 @@ function loadCachesTablePage() {
 	tableContainer.innerHTML = loadingGif;
 	let caches;
 	fetch('./api/get-caches', {
-			method: 'GET',
-			headers: {
-				'Device-Id': localStorage.getItem('deviceId')
-			}
-		})
+		method: 'GET',
+		headers: {
+			'Device-Id': localStorage.getItem('deviceId')
+		}
+	})
 		.then(response => response.json())
 		.then(handleErrors)
 		.then(data => {
@@ -395,42 +395,42 @@ function loadCachesTablePage() {
 			tableContainer.innerHTML = '<div id="tableFilter"></div><div id="table"></div><div class="my-3 text-center"><a href="viewCaches" class="text-decoration-none" data-navigo><i class="bi bi-map" aria-hidden="true"></i>&nbsp;View table data in a map</a></div>';
 			const table = new gridjs.Grid({
 				columns: [{
-						id: 'id',
-						name: 'Cache ID',
-						sort: {
-							enabled: true
-						},
-						formatter: (cell) => gridjs.html(`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo>${DOMPurify.sanitize(cell)}</a>`)
+					id: 'id',
+					name: 'Cache ID',
+					sort: {
+						enabled: true
 					},
-					{
-						id: 'location',
-						name: 'what3words location',
-						sort: {
-							enabled: true
-						},
-						formatter: (location) => {
-							const locationString = String(DOMPurify.sanitize(location)).split('///')[1];
-							return gridjs.html(`<a href="https://what3words.com/${locationString}" target="_blank" translate="no">///${locationString}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a>`);
-						}
+					formatter: (cell) => gridjs.html(`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo>${DOMPurify.sanitize(cell)}</a>`)
+				},
+				{
+					id: 'location',
+					name: 'what3words location',
+					sort: {
+						enabled: true
 					},
-					{
-						id: 'found',
-						name: gridjs.html('Found<span class="visually-hidden"> this cache</span>?'),
-						sort: {
-							enabled: true
-						},
-						formatter: (cell) => {
-							return (cell ? 'Yes 😊' : 'No ☹️');
-						}
-					},
-					{
-						id: 'stats',
-						name: 'Stats',
-						sort: {
-							enabled: true
-						},
-						formatter: (count) => `${Number(count) > 0 ? `Found by ${Number(count)} ${Number(count) > 1 ? 'people 😊' : 'person 😮'}` : 'No one has found this cache yet 😢'}`
+					formatter: (location) => {
+						const locationString = String(DOMPurify.sanitize(location)).split('///')[1];
+						return gridjs.html(`<a href="https://what3words.com/${locationString}" target="_blank" translate="no">///${locationString}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a>`);
 					}
+				},
+				{
+					id: 'found',
+					name: gridjs.html('Found<span class="visually-hidden"> this cache</span>?'),
+					sort: {
+						enabled: true
+					},
+					formatter: (cell) => {
+						return (cell ? 'Yes 😊' : 'No ☹️');
+					}
+				},
+				{
+					id: 'stats',
+					name: 'Stats',
+					sort: {
+						enabled: true
+					},
+					formatter: (count) => `${Number(count) > 0 ? `Found by ${Number(count)} ${Number(count) > 1 ? 'people 😊' : 'person 😮'}` : 'No one has found this cache yet 😢'}`
+				}
 				],
 				autoWidth: false,
 				sort: true,
@@ -503,15 +503,15 @@ function loadCachesTablePage() {
 function loadCachePage(id) {
 	resetCachePage();
 	fetch('./api/get-cache', {
-			method: 'POST',
-			body: JSON.stringify({
-				cache: id
-			}),
-			headers: {
-				'Content-Type': 'application/json',
-				'Device-Id': localStorage.getItem('deviceId')
-			}
-		})
+		method: 'POST',
+		body: JSON.stringify({
+			cache: id
+		}),
+		headers: {
+			'Content-Type': 'application/json',
+			'Device-Id': localStorage.getItem('deviceId')
+		}
+	})
 		.then(response => response.json())
 		.then(handleErrors)
 		.then(data => {
@@ -606,57 +606,57 @@ function resetCachePage() {
 function loadFoundCachePage(id) {
 	changePage('viewCache', `Cache ${id}`, id);
 	Swal.fire({
-			title: `Found Cache ${id}?`,
-			text: "If you've found this cache, please enter the 5-digit code below to mark it as found:",
-			input: 'text',
-			inputAttributes: {
-				autocomplete: 'off',
-				inputmode: 'numeric',
-				pattern: '[0-9]*',
-				'data-lpignore': true,
-				'data-form-type': 'other',
-				maxlength: 5
-			},
-			showCancelButton: true,
-			buttonsStyling: false,
-			customClass: {
-				cancelButton: 'btn btn-outline-primary m-1',
-				confirmButton: 'btn btn-primary m-1',
-				loader: 'custom-loader'
-			},
-			loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Verifying code...</span></div>',
-			returnFocus: false,
-			confirmButtonText: 'Verify cache code',
-			backdrop: true,
-			showLoaderOnConfirm: true,
-			allowOutsideClick: () => !Swal.isLoading(),
-			inputValidator: (value) => {
-				if (!value) {
-					return 'You must enter the 5-digit code from the cache to confirm you have found it';
-				} else if (value.length !== 5 || (Number.isNaN(Number(value)))) {
-					return 'This code is invalid';
-				}
-			},
-			preConfirm: (data) => {
-				return getApiAuth()
-					.then(auth => {
-						return fetch('./api/found-cache', {
-							method: 'POST',
-							body: JSON.stringify({
-								cache: id,
-								cacheCode: Number(data)
-							}),
-							headers: {
-								'Content-Type': 'application/json',
-								'Device-Id': auth.deviceId,
-								'Request-Id': auth.requestId
-							}
-						});
-					})
-					.then(response => response.json())
-					.then(handleErrors);
+		title: `Found Cache ${id}?`,
+		text: "If you've found this cache, please enter the 5-digit code below to mark it as found:",
+		input: 'text',
+		inputAttributes: {
+			autocomplete: 'off',
+			inputmode: 'numeric',
+			pattern: '[0-9]*',
+			'data-lpignore': true,
+			'data-form-type': 'other',
+			maxlength: 5
+		},
+		showCancelButton: true,
+		buttonsStyling: false,
+		customClass: {
+			cancelButton: 'btn btn-outline-primary m-1',
+			confirmButton: 'btn btn-primary m-1',
+			loader: 'custom-loader'
+		},
+		loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Verifying code...</span></div>',
+		returnFocus: false,
+		confirmButtonText: 'Verify cache code',
+		backdrop: true,
+		showLoaderOnConfirm: true,
+		allowOutsideClick: () => !Swal.isLoading(),
+		inputValidator: (value) => {
+			if (!value) {
+				return 'You must enter the 5-digit code from the cache to confirm you have found it';
+			} else if (value.length !== 5 || (Number.isNaN(Number(value)))) {
+				return 'This code is invalid';
 			}
-		})
+		},
+		preConfirm: (data) => {
+			return getApiAuth()
+				.then(auth => {
+					return fetch('./api/found-cache', {
+						method: 'POST',
+						body: JSON.stringify({
+							cache: id,
+							cacheCode: Number(data)
+						}),
+						headers: {
+							'Content-Type': 'application/json',
+							'Device-Id': auth.deviceId,
+							'Request-Id': auth.requestId
+						}
+					});
+				})
+				.then(response => response.json())
+				.then(handleErrors);
+		}
+	})
 		.then(result => {
 			if (result.isConfirmed) {
 				Swal.fire({
@@ -783,28 +783,28 @@ function loadFoundCachesPage() {
 				<div id="foundWrapper"></div>`;
 				const grid = new gridjs.Grid({
 					columns: [{
-							id: 'id',
-							name: 'Cache number',
-							sort: {
-								enabled: true
-							},
-							formatter: (cell) => gridjs.html(`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo>${DOMPurify.sanitize(cell)}</a>`)
+						id: 'id',
+						name: 'Cache number',
+						sort: {
+							enabled: true
 						},
-						{
-							id: 'date',
-							name: 'Found',
-							sort: {
-								enabled: true
-							},
-							formatter: (date) => {
-								const time = new Date(date);
-								return gridjs.html(`<time datetime="${DOMPurify.sanitize(date)}">${time.toLocaleTimeString('en-GB',{
-									hour: 'numeric',
-									minute: 'numeric',
-									hour12: true
-								})} on ${prettyDate(date)}</time>`);
-							}
+						formatter: (cell) => gridjs.html(`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo>${DOMPurify.sanitize(cell)}</a>`)
+					},
+					{
+						id: 'date',
+						name: 'Found',
+						sort: {
+							enabled: true
+						},
+						formatter: (date) => {
+							const time = new Date(date);
+							return gridjs.html(`<time datetime="${DOMPurify.sanitize(date)}">${time.toLocaleTimeString('en-GB', {
+								hour: 'numeric',
+								minute: 'numeric',
+								hour12: true
+							})} on ${prettyDate(date)}</time>`);
 						}
+					}
 					],
 					sort: true,
 					style: {
@@ -858,63 +858,63 @@ function loadLeaderboardPage() {
 	const leaderboardContainer = document.getElementById('leaderboardContainer');
 	leaderboardContainer.innerHTML = placeholder;
 	fetch('./api/get-leaderboard', {
-			method: 'GET',
-			headers: {
-				'Device-Id': localStorage.getItem('deviceId')
-			}
-		})
+		method: 'GET',
+		headers: {
+			'Device-Id': localStorage.getItem('deviceId')
+		}
+	})
 		.then(response => response.json())
 		.then(handleErrors)
 		.then(data => {
 			if (data.length > 0) {
 				leaderboardContainer.innerHTML = '<div id="leaderboardWrapper"></div>';
 				const grid = new gridjs.Grid({
-						columns: [{
-								id: 'position',
-								name: 'Position',
-								sort: {
-									enabled: true
-								},
-								formatter: (position) => {
-									const positionString = appendSuffix(Number(position));
-									return gridjs.html(`${positionString}${positionString === '1st' ? '&nbsp;🥇' : positionString === '2nd' ? '&nbsp;🥈' : positionString === '3rd' ? '&nbsp;🥉' : ''}`);
-								},
-								attributes: (cell, row) => {
-									if (cell) {
-										return {
-											'data-ranking': cell,
-											'data-match': String(Boolean(row.cells[1].data === localStorage.getItem('deviceId')))
-										};
-									}
-								}
-							},
-							{
-								id: 'deviceId',
-								name: 'Device ID',
-								sort: {
-									enabled: true
-								},
-								formatter: (deviceId) => {
-									const name = DOMPurify.sanitize(deviceId);
-									return gridjs.html(`<div class="row"><div class="col-md-4"><div class="icon rounded-circle"><img src="./profilePic/${name}/96" alt="Profile picture for ${name}" height="48" width="48"></div></div><div class="col-md-8 my-auto text-break">${name}${name === localStorage.getItem('deviceId') ? '&nbsp;<strong>(You)</strong>' : ''}</div></div>`);
-								}
-							},
-							{
-								id: 'found',
-								name: 'Number of caches found',
-								sort: {
-									enabled: true
-								}
-							}
-						],
-						sort: true,
-						style: {
-							table: {
-								'white-space': 'nowrap'
-							}
+					columns: [{
+						id: 'position',
+						name: 'Position',
+						sort: {
+							enabled: true
 						},
-						data: data
-					})
+						formatter: (position) => {
+							const positionString = appendSuffix(Number(position));
+							return gridjs.html(`${positionString}${positionString === '1st' ? '&nbsp;🥇' : positionString === '2nd' ? '&nbsp;🥈' : positionString === '3rd' ? '&nbsp;🥉' : ''}`);
+						},
+						attributes: (cell, row) => {
+							if (cell) {
+								return {
+									'data-ranking': cell,
+									'data-match': String(Boolean(row.cells[1].data === localStorage.getItem('deviceId')))
+								};
+							}
+						}
+					},
+					{
+						id: 'deviceId',
+						name: 'Device ID',
+						sort: {
+							enabled: true
+						},
+						formatter: (deviceId) => {
+							const name = DOMPurify.sanitize(deviceId);
+							return gridjs.html(`<div class="row"><div class="col-md-4"><div class="icon rounded-circle"><img src="./profilePic/${name}/96" alt="Profile picture for ${name}" height="48" width="48"></div></div><div class="col-md-8 my-auto text-break">${name}${name === localStorage.getItem('deviceId') ? '&nbsp;<strong>(You)</strong>' : ''}</div></div>`);
+						}
+					},
+					{
+						id: 'found',
+						name: 'Number of caches found',
+						sort: {
+							enabled: true
+						}
+					}
+					],
+					sort: true,
+					style: {
+						table: {
+							'white-space': 'nowrap'
+						}
+					},
+					data: data
+				})
 					.render(document.getElementById('leaderboardWrapper'));
 				grid
 					.on('ready', function () {
@@ -931,7 +931,7 @@ function loadLeaderboardPage() {
 							[...document.querySelector('td[data-match="true"]').parentElement.children].forEach(child => {
 								child.classList.add('your-device');
 							});
-						} catch {}
+						} catch { }
 					});
 			} else {
 				leaderboardContainer.innerHTML = emptyLeaderboard;
