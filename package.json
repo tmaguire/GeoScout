@@ -42,7 +42,7 @@
 		"react-dom": "^18.2.0"
 	},
 	"devDependencies": {
-		"@fingerprintjs/fingerprintjs-pro": "^3.8.0",
+		"@fingerprintjs/fingerprintjs-pro": "^3.8.1",
 		"@types/google.maps": "^3.50.5",
 		"dompurify": "^2.4.1",
 		"gulp": "^4.0.2",
