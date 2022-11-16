@@ -85,17 +85,19 @@
 							</li>
 							<li class="nav-item">
 								<a
-									class="nav-link"
+									class="nav-link disabled"
 									href="viewCaches"
 									data-navigo
+									tabindex="-1"
 									>View caches</a
 								>
 							</li>
 							<li class="nav-item">
 								<a
-									class="nav-link"
+									class="nav-link disabled"
 									href="foundCaches"
 									data-navigo
+									tabindex="-1"
 									>Found caches</a
 								>
 							</li>
@@ -128,6 +130,21 @@
 			</nav>
 			<!-- Main app layout -->
 			<main class="container mt-3" id="content">
+				<!-- Loading screen -->
+				<section class="row mx-auto">
+					<div class="col mx-auto">
+						<h1 class="my-4 text-center visually-hidden">
+							Loading...
+						</h1>
+						<div class="text-center">
+							<img
+								src="./img/loading.gif"
+								class="img-fluid text-center"
+								alt="Animated loading indicator"
+							/>
+						</div>
+					</div>
+				</section>
 				<!-- Home screen -->
 				<section
 					id="home"
@@ -541,6 +558,20 @@
 							>&nbsp;Privacy Policy for the GeoScout website/app
 						</h1>
 						@@include(markdown('./src/docs/privacy.md'))
+					</div>
+				</section>
+				<!-- Holding screen -->
+				<section
+					id="holding"
+					class="row mx-auto d-none"
+					aria-hidden="true"
+				>
+					<div class="col mx-auto">
+						<h1 class="my-4 text-center">
+							<i class="bi bi-compass" aria-hidden="true"></i
+							>&nbsp;Welcome
+						</h1>
+						@@include(markdown('./src/docs/holding.md'))
 					</div>
 				</section>
 				<!-- Not found screen -->

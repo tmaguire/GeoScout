@@ -184,12 +184,12 @@ function changePage(page, title, id) {
 	// Hide all pages (except selected)
 	document.querySelectorAll('section').forEach(section => {
 		if (section.id !== page) {
-			section.setAttribute('class', 'row mx-auto d-none');
+			section.classList.add('d-none');
 			section.setAttribute('aria-hidden', 'true');
 		}
 	});
 	// Set page as active
-	document.getElementById(page).setAttribute('class', 'row mx-auto');
+	document.getElementById(page).classList.remove('d-none');
 	document.getElementById(page).removeAttribute('aria-hidden');
 	// Change document title
 	document.title = `${title} | GeoScout`;
@@ -951,27 +951,33 @@ window.onload = function () {
 	// Specify routes and resolve
 	router
 		.on('/', function () {
-			changePage('home', 'Home', false);
+			changePage('holding', 'Home', false);
 		})
 		.on('/home', function () {
-			changePage('home', 'Home', false);
+			router.navigate('/', { historyAPIMethod: 'replaceState' });
 		})
 		.on('/viewCaches', function () {
-			loadCachesPage();
+			router.navigate('/', { historyAPIMethod: 'replaceState' });
+			// loadCachesPage();
 		})
 		.on('/viewCachesTable', function () {
-			loadCachesTablePage();
+			router.navigate('/', { historyAPIMethod: 'replaceState' });
+			// loadCachesTablePage();
 		})
 		.on('/viewCache-:id', function (value) {
-			loadCachePage(value.data.id);
+			router.navigate('/', { historyAPIMethod: 'replaceState' });
+			// loadCachePage(value.data.id);
 		})
 		.on('/foundCaches', function () {
-			loadFoundCachesPage();
+			router.navigate('/', { historyAPIMethod: 'replaceState' });
+			// loadFoundCachesPage();
 		})
 		.on('/foundCache-:id', function (value) {
-			loadFoundCachePage(value.data.id);
+			router.navigate('/', { historyAPIMethod: 'replaceState' });
+			// loadFoundCachePage(value.data.id);
 		})
 		.on('/leaderboard', function () {
+			// router.navigate('/');
 			loadLeaderboardPage();
 		})
 		.on('/about', function () {
