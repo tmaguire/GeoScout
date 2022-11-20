@@ -951,33 +951,35 @@ window.onload = function () {
 	// Specify routes and resolve
 	router
 		.on('/', function () {
+			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+		})
+		.on('/holding', function () {
 			changePage('holding', 'Home', false);
 		})
 		.on('/home', function () {
-			router.navigate('/', { historyAPIMethod: 'replaceState' });
+			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
 		})
 		.on('/viewCaches', function () {
-			router.navigate('/', { historyAPIMethod: 'replaceState' });
+			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
 			// loadCachesPage();
 		})
 		.on('/viewCachesTable', function () {
-			router.navigate('/', { historyAPIMethod: 'replaceState' });
+			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
 			// loadCachesTablePage();
 		})
 		.on('/viewCache-:id', function (value) {
-			router.navigate('/', { historyAPIMethod: 'replaceState' });
+			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
 			// loadCachePage(value.data.id);
 		})
 		.on('/foundCaches', function () {
-			router.navigate('/', { historyAPIMethod: 'replaceState' });
+			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
 			// loadFoundCachesPage();
 		})
 		.on('/foundCache-:id', function (value) {
-			router.navigate('/', { historyAPIMethod: 'replaceState' });
+			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
 			// loadFoundCachePage(value.data.id);
 		})
 		.on('/leaderboard', function () {
-			// router.navigate('/');
 			loadLeaderboardPage();
 		})
 		.on('/about', function () {

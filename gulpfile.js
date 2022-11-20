@@ -45,16 +45,16 @@ function sri() {
 
 function bundledJs() {
 	return src([
-			'./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js',
-			'./node_modules/sweetalert2/dist/sweetalert2.min.js',
-			'./node_modules/dompurify/dist/purify.min.js',
-			'./node_modules/navigo/lib/navigo.min.js',
-			'./node_modules/@fingerprintjs/fingerprintjs-pro/dist/fp.min.js',
-			'./node_modules/gridjs/dist/gridjs.production.min.js',
-			'./node_modules/@googlemaps/js-api-loader/dist/index.min.js',
-			'./node_modules/@googlemaps/markerclusterer/dist/index.min.js',
-			'./src/js/script.min.js'
-		])
+		'./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js',
+		'./node_modules/sweetalert2/dist/sweetalert2.min.js',
+		'./node_modules/dompurify/dist/purify.min.js',
+		'./node_modules/navigo/lib/navigo.min.js',
+		'./node_modules/@fingerprintjs/fingerprintjs-pro/dist/fp.min.js',
+		'./node_modules/gridjs/dist/gridjs.production.min.js',
+		'./node_modules/@googlemaps/js-api-loader/dist/index.min.js',
+		'./node_modules/@googlemaps/markerclusterer/dist/index.min.js',
+		'./src/js/script.min.js'
+	])
 		.pipe(concat(`main-${version}.min.js`))
 		.pipe(uglify())
 		.pipe(dest('dist/js/'));
@@ -62,12 +62,12 @@ function bundledJs() {
 
 function bundledCss() {
 	return src([
-			'./src/css/style.scss',
-			'./node_modules/bootstrap-icons/font/bootstrap-icons.scss',
-			'./node_modules/sweetalert2/dist/sweetalert2.min.css',
-			'./node_modules/gridjs/dist/theme/mermaid.min.css',
-			'./node_modules/outdated-browser-rework/dist/style.css'
-		])
+		'./src/css/style.scss',
+		'./node_modules/bootstrap-icons/font/bootstrap-icons.scss',
+		'./node_modules/sweetalert2/dist/sweetalert2.min.css',
+		'./node_modules/gridjs/dist/theme/mermaid.min.css',
+		'./node_modules/outdated-browser-rework/dist/style.css'
+	])
 		.pipe(concat(`bundle-${version}.min.css`))
 		.pipe(sass.sync({
 			outputStyle: 'compressed'
@@ -77,8 +77,8 @@ function bundledCss() {
 
 function copyImg() {
 	return src([
-			'./src/img/*'
-		])
+		'./src/img/*'
+	])
 		.pipe(dest('dist/img/'));
 }
 
@@ -116,17 +116,17 @@ function copySite() {
 
 function browserCompat() {
 	return src([
-			'./node_modules/outdated-browser-rework/dist/outdated-browser-rework.min.js',
-			'./src/js/browser-compat.min.js'
-		])
+		'./node_modules/outdated-browser-rework/dist/outdated-browser-rework.min.js',
+		'./src/js/browser-compat.min.js'
+	])
 		.pipe(concat(`browser-compat-${version}.min.js`))
 		.pipe(dest('dist/js/'));
 }
 
 function serviceWorker() {
 	return src([
-			'./src/js/service-worker.js'
-		])
+		'./src/js/service-worker.js'
+	])
 		.pipe(preprocess({
 			context: {
 				VERSION: version
