@@ -22,7 +22,7 @@
 		"@googlemaps/js-api-loader": "^1.15.1",
 		"@googlemaps/markerclusterer": "^2.0.13",
 		"@popperjs/core": "^2.11.6",
-		"bootstrap": "^5.2.2",
+		"bootstrap": "^5.2.3",
 		"bootstrap-icons": "^1.10.2",
 		"boring-avatars": "^1.7.0",
 		"gridjs": "^5.1.0",
