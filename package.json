@@ -44,7 +44,7 @@
 	"devDependencies": {
 		"@fingerprintjs/fingerprintjs-pro": "^3.8.1",
 		"@types/google.maps": "^3.51.0",
-		"dompurify": "^2.4.2",
+		"dompurify": "^2.4.3",
 		"gulp": "^4.0.2",
 		"gulp-concat": "^2.6.1",
 		"gulp-file-include": "^2.3.0",
