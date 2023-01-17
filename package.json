@@ -25,7 +25,7 @@
 		"bootstrap": "^5.2.3",
 		"bootstrap-icons": "^1.10.3",
 		"boring-avatars": "^1.7.0",
-		"gridjs": "^5.1.0",
+		"gridjs": "^6.0.3",
 		"navigo": "^8.11.1",
 		"outdated-browser-rework": "^3.0.1",
 		"sweetalert2": "^11.7.0",
