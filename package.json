@@ -1,7 +1,7 @@
 {
 	"name": "geoscout",
 	"appName": "GeoScout",
-	"version": "2.0.2",
+	"version": "2.0.3",
 	"description": "Witham Scouts Geocaching project (GeoScout) using What3Words, Google Maps and SharePoint Online",
 	"scripts": {
 		"build": "npm run license-check && gulp",
