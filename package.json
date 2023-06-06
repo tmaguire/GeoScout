@@ -24,7 +24,7 @@
 		"@popperjs/core": "^2.11.8",
 		"bootstrap": "^5.3.0",
 		"bootstrap-icons": "^1.10.5",
-		"boring-avatars": "^1.7.0",
+		"boring-avatars": "^1.10.0",
 		"gridjs": "^6.0.6",
 		"navigo": "^8.11.1",
 		"outdated-browser-rework": "^3.0.1",
