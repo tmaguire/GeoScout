@@ -236,7 +236,7 @@ function loadCachesPage() {
 			return loader.load();
 		})
 		.then((google) => {
-			mapContainer.innerHTML = '<div id="mapFilter"></div><div id="mainMap"></div><div class="my-3 text-center"><a href="viewCachesTable" class="text-decoration-none" data-navigo><i class="bi bi-table" aria-hidden="true"></i>&nbsp;View map data as a table</a></div>';
+			mapContainer.innerHTML = '<div id="mapFilter"></div><div id="mainMap"></div><div class="my-3 text-center"><a href="viewCachesTable" class="text-decoration-none" data-navigo="true"><i class="bi bi-table" aria-hidden="true"></i>&nbsp;View map data as a table</a></div>';
 			router.updatePageLinks();
 			mainMap = null;
 			mainMap = new google.maps.Map(document.getElementById('mainMap'), {
@@ -366,7 +366,7 @@ function loadCachesPage() {
 
 		})
 		.catch(error => {
-			showError(error, false);
+			showError(error, true);
 		});
 	changePage('viewCaches', 'View caches', false);
 }
@@ -392,7 +392,7 @@ function loadCachesTablePage() {
 			}
 		})
 		.then(data => {
-			tableContainer.innerHTML = '<div id="tableFilter"></div><div id="table"></div><div class="my-3 text-center"><a href="viewCaches" class="text-decoration-none" data-navigo><i class="bi bi-map" aria-hidden="true"></i>&nbsp;View table data in a map</a></div>';
+			tableContainer.innerHTML = '<div id="tableFilter"></div><div id="table"></div><div class="my-3 text-center"><a href="viewCaches" class="text-decoration-none" data-navigo="true"><i class="bi bi-map" aria-hidden="true"></i>&nbsp;View table data in a map</a></div>';
 			const table = new gridjs.Grid({
 				columns: [{
 					id: 'id',
@@ -400,7 +400,7 @@ function loadCachesTablePage() {
 					sort: {
 						enabled: true
 					},
-					formatter: (cell) => gridjs.html(`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo>${DOMPurify.sanitize(cell)}</a>`)
+					formatter: (cell) => gridjs.html(`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo="true">${DOMPurify.sanitize(cell)}</a>`)
 				},
 				{
 					id: 'location',
@@ -450,9 +450,6 @@ function loadCachesTablePage() {
 					}
 				},
 			}).render(document.getElementById('table'));
-			table.on('ready', function () {
-				router.updatePageLinks();
-			});
 			return table;
 		})
 		.then(table => {
@@ -493,6 +490,9 @@ function loadCachesTablePage() {
 					changeFilter(document.querySelector('input[name="tableFilterBtn"]:checked').value);
 				});
 			});
+		})
+		.finally(() => {
+			router.updatePageLinks();
 		})
 		.catch(error => {
 			showError(error, false);
@@ -706,7 +706,7 @@ function loadFoundCachesPage() {
 		<div class="col-lg-6 mx-auto">
 			<p class="lead mb-4">Get outside and go find some!</p>
 			<div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-				<a href="viewCaches" class="btn btn-primary btn-lg px-4 gap-3" data-navigo>Find caches</a>
+				<a href="viewCaches" class="btn btn-primary btn-lg px-4 gap-3" data-navigo="true">Find caches</a>
 			</div>
 		</div>
 	</div>`;
@@ -781,16 +781,15 @@ function loadFoundCachesPage() {
 					</div>
 				</div>
 				<div id="foundWrapper"></div>`;
-				const grid = new gridjs.Grid({
+				new gridjs.Grid({
 					columns: [{
 						id: 'id',
 						name: 'Cache number',
 						sort: {
 							enabled: true
 						},
-						formatter: (cell) => gridjs.html(`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo>${DOMPurify.sanitize(cell)}</a>`)
-					},
-					{
+						formatter: (cell) => gridjs.html(`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo="true">${DOMPurify.sanitize(cell)}</a>`)
+					}, {
 						id: 'date',
 						name: 'Found',
 						sort: {
@@ -804,8 +803,7 @@ function loadFoundCachesPage() {
 								hour12: true
 							})} on ${prettyDate(date)}</time>`);
 						}
-					}
-					],
+					}],
 					sort: true,
 					style: {
 						table: {
@@ -819,9 +817,6 @@ function loadFoundCachesPage() {
 					},
 					data: data.found
 				}).render(document.getElementById('foundWrapper'));
-				grid.on('ready', function () {
-					router.updatePageLinks();
-				});
 				const deviceId = DOMPurify.sanitize(localStorage.getItem('deviceId'));
 				document.getElementById('foundCachesDeviceId').innerText = deviceId;
 				document.getElementById('foundCachesProfilePic').setAttribute('src', `./profilePic/${deviceId}/96`);
@@ -833,8 +828,10 @@ function loadFoundCachesPage() {
 				document.getElementById('foundCacheRanking').innerHTML = `${positionString}${positionString === '1st' ? '&nbsp;🥇' : positionString === '2nd' ? '&nbsp;🥈' : positionString === '3rd' ? '&nbsp;🥉' : ''}`;
 			} else {
 				foundContainer.innerHTML = noneFound;
-				router.updatePageLinks();
 			}
+		})
+		.finally(() => {
+			router.updatePageLinks();
 		})
 		.catch(error => {
 			showError(error, true);
@@ -850,7 +847,7 @@ function loadLeaderboardPage() {
 		<div class="col-lg-6 mx-auto">
 			<p class="lead mb-4">Get outside and go find some!</p>
 			<div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-				<button id="findCachesBtn" class="btn btn-primary btn-lg px-4 gap-3">Find caches</button>
+				<a class="btn btn-primary btn-lg px-4 gap-3" href="viewCaches" data-navigo="true">Find caches</a>
 			</div>
 		</div>
 	</div>`;
@@ -868,7 +865,7 @@ function loadLeaderboardPage() {
 		.then(data => {
 			if (data.length > 0) {
 				leaderboardContainer.innerHTML = '<div id="leaderboardWrapper"></div>';
-				const grid = new gridjs.Grid({
+				new gridjs.Grid({
 					columns: [{
 						id: 'position',
 						name: 'Position',
@@ -896,7 +893,8 @@ function loadLeaderboardPage() {
 						},
 						formatter: (deviceId) => {
 							const name = DOMPurify.sanitize(deviceId);
-							return gridjs.html(`<div class="row"><div class="col-md-4"><div class="icon rounded-circle"><img src="./profilePic/${name}/96" alt="Profile picture for ${name}" height="48" width="48"></div></div><div class="col-md-8 my-auto text-break">${name}${name === localStorage.getItem('deviceId') ? '&nbsp;<strong>(You)</strong>' : ''}</div></div>`);
+							// return gridjs.html(`<div class="row"><div class="col-md-4"><div class="icon rounded-circle"><img src="./profilePic/${name}/48" alt="Profile picture for ${name}" height="48" width="48" loading="lazy"></div></div><div class="col-md-8 my-auto text-break">${name}${name === localStorage.getItem('deviceId') ? '&nbsp;<strong>(You)</strong>' : ''}</div></div>`);
+							return gridjs.html(`${name}${name === localStorage.getItem('deviceId') ? '&nbsp;<strong>(You)</strong>' : ''}`);
 						}
 					},
 					{
@@ -916,27 +914,28 @@ function loadLeaderboardPage() {
 					data: data
 				})
 					.render(document.getElementById('leaderboardWrapper'));
-				grid
-					.on('ready', function () {
-						try {
-							document.querySelectorAll('td[data-ranking="1"]').forEach(element => [...element.parentElement.children].forEach(child => {
-								child.classList.add('gold');
-							}));
-							document.querySelectorAll('td[data-ranking="2"]').forEach(element => [...element.parentElement.children].forEach(child => {
-								child.classList.add('silver');
-							}));
-							document.querySelectorAll('td[data-ranking="3"]').forEach(element => [...element.parentElement.children].forEach(child => {
-								child.classList.add('bronze');
-							}));
-							[...document.querySelector('td[data-match="true"]').parentElement.children].forEach(child => {
-								child.classList.add('your-device');
-							});
-						} catch { }
-					});
 			} else {
 				leaderboardContainer.innerHTML = emptyLeaderboard;
-				router.updatePageLinks();
 			}
+		})
+		.finally(() => {
+			setTimeout(function () {
+				try {
+					document.querySelectorAll('td[data-ranking="1"]').forEach(element => [...element.parentElement.children].forEach(child => {
+						child.classList.add('gs-gold');
+					}));
+					document.querySelectorAll('td[data-ranking="2"]').forEach(element => [...element.parentElement.children].forEach(child => {
+						child.classList.add('gs-silver');
+					}));
+					document.querySelectorAll('td[data-ranking="3"]').forEach(element => [...element.parentElement.children].forEach(child => {
+						child.classList.add('gs-bronze');
+					}));
+					[...document.querySelector('td[data-match="true"]').parentElement.children].forEach(child => {
+						child.classList.add('gs-your-device');
+					});
+				} catch { }
+				router.updatePageLinks();
+			}, 1000);
 		})
 		.catch(error => {
 			showError(error, true);
@@ -951,33 +950,34 @@ window.onload = function () {
 	// Specify routes and resolve
 	router
 		.on('/', function () {
-			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			router.navigate('/home', { historyAPIMethod: 'replaceState' });
 		})
-		.on('/holding', function () {
-			changePage('holding', 'Home', false);
-		})
+		// .on('/holding', function () {
+		// 	changePage('holding', 'Home', false);
+		// })
 		.on('/home', function () {
-			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			// router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			changePage('home', 'Home', false);
 		})
 		.on('/viewCaches', function () {
-			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			// loadCachesPage();
+			// router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			loadCachesPage();
 		})
 		.on('/viewCachesTable', function () {
-			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			// loadCachesTablePage();
+			// router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			loadCachesTablePage();
 		})
 		.on('/viewCache-:id', function (value) {
-			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			// loadCachePage(value.data.id);
+			// router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			loadCachePage(value.data.id);
 		})
 		.on('/foundCaches', function () {
-			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			// loadFoundCachesPage();
+			// router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			loadFoundCachesPage();
 		})
 		.on('/foundCache-:id', function (value) {
-			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			// loadFoundCachePage(value.data.id);
+			// router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			loadFoundCachePage(value.data.id);
 		})
 		.on('/leaderboard', function () {
 			loadLeaderboardPage();
@@ -1005,7 +1005,7 @@ window.onload = function () {
 		getDeviceId();
 	}
 	// Load service worker if supported
-	if ('serviceWorker' in navigator) {
+	if ('serviceWorker' in navigator && window.origin === 'https://www.geoscout.uk') {
 		const updateBtn = document.getElementById('updateBtn');
 		// Register service worker
 		navigator

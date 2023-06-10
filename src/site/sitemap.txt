@@ -1,4 +1,7 @@
-https://www.geoscout.uk/holding
+https://www.geoscout.uk/home
+https://www.geoscout.uk/viewCaches
+https://www.geoscout.uk/foundCaches
+https://www.geoscout.uk/leaderboard
 https://www.geoscout.uk/about
 https://www.geoscout.uk/terms
 https://www.geoscout.uk/privacy

@@ -10,8 +10,11 @@ const concat = require('gulp-concat');
 const fileInclude = require('gulp-file-include');
 const sriHash = require('gulp-sri-hash');
 const htmlmin = require('gulp-html-minifier-terser');
-const version = require('./package.json').version;
-const appName = require('./package.json').appName;
+const {
+	version,
+	appName,
+	author
+} = require('./package.json');
 const sass = require('gulp-sass')(require('sass'));
 const {
 	marked
@@ -53,7 +56,7 @@ function bundledJs() {
 		'./node_modules/gridjs/dist/gridjs.production.min.js',
 		'./node_modules/@googlemaps/js-api-loader/dist/index.min.js',
 		'./node_modules/@googlemaps/markerclusterer/dist/index.min.js',
-		'./src/js/script.min.js'
+		'./src/js/script.js'
 	])
 		.pipe(concat(`main-${version}.min.js`))
 		.pipe(uglify())
@@ -76,9 +79,7 @@ function bundledCss() {
 }
 
 function copyImg() {
-	return src([
-		'./src/img/*'
-	])
+	return src('./src/img/*')
 		.pipe(dest('dist/img/'));
 }
 
@@ -95,10 +96,11 @@ function sitePages() {
 			context: {
 				version,
 				licenses,
-				appName
+				appName,
+				author
 			},
 			filters: {
-				markdown: marked.parse
+				markdown: marked.options({ mangle: false, headerIds: false, headerPrefix: false }).parse
 			}
 		}))
 		.pipe(htmlmin({
@@ -117,9 +119,10 @@ function copySite() {
 function browserCompat() {
 	return src([
 		'./node_modules/outdated-browser-rework/dist/outdated-browser-rework.min.js',
-		'./src/js/browser-compat.min.js'
+		'./src/js/browser-compat.js'
 	])
 		.pipe(concat(`browser-compat-${version}.min.js`))
+		.pipe(uglify())
 		.pipe(dest('dist/js/'));
 }
 

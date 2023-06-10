@@ -20,7 +20,7 @@ async function handler(event, context) {
 				size: (config[3] || 80),
 				name: config[2],
 				variant: 'beam',
-				colors: '#e22e12,#ffb4e5,#23a950,#003982,#ffe627'.split(','),
+				colors: ['#e22e12', '#ffb4e5', '#23a950', '#003982', '#ffe627'],
 				square: false
 			}, null)
 		),

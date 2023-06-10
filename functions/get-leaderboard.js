@@ -111,7 +111,7 @@ export async function handler(event, context) {
 			return {
 				statusCode: 500,
 				body: JSON.stringify({
-					error: 'Unable to get found caches',
+					error: 'Unable to load the leaderboard',
 					errorDebug: error
 				}),
 				headers: {

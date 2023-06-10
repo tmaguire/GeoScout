@@ -116,13 +116,13 @@ Terms and Conditions then You may not access the Service.
 <p>
 Your access to and use of the Service is also conditioned on
 Your acceptance of and compliance with the
-<a href="privacy" data-navigo>Privacy Policy</a> of the Company.
-Our <a href="privacy" data-navigo>Privacy Policy</a> describes
+<a href="privacy" data-navigo="true">Privacy Policy</a> of the Company.
+Our <a href="privacy" data-navigo="true">Privacy Policy</a> describes
 Our policies and procedures on the collection, use and
 disclosure of Your personal information when You use the
 Application or the Website and tells You about Your privacy
 rights and how the law protects You. Please read Our
-<a href="privacy" data-navigo>Privacy Policy</a> carefully
+<a href="privacy" data-navigo="true">Privacy Policy</a> carefully
 before using Our Service.
 </p>
 <h2>Links to Other Websites</h2>

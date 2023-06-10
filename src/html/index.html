@@ -11,7 +11,7 @@
 			name="description"
 			content="Grab your smartphone and get Geocaching over the summer holidays with our geocache challenge. Geocaching is a fantastic way to enjoy the outdoors exploring new areas and keeping fit."
 		/>
-		<meta name="author" content="Tom Maguire (1st Witham Scouts)" />
+		<meta name="author" content="@@author" />
 		<!-- Bundled CSS -->
 		<link
 			rel="stylesheet"
@@ -49,7 +49,7 @@
 			>
 			<nav class="navbar navbar-expand-md navbar-dark bg-primary">
 				<div class="container-fluid">
-					<a href="/" class="navbar-brand" data-navigo>
+					<a href="/" class="navbar-brand" data-navigo="true">
 						<picture>
 							<source
 								srcset="./img/logo.webp"
@@ -79,25 +79,26 @@
 					<div class="collapse navbar-collapse" id="navbarToggler">
 						<ul class="navbar-nav me-auto mb-2 mb-lg-0">
 							<li class="nav-item">
-								<a class="nav-link" href="holding" data-navigo
+								<a
+									class="nav-link"
+									href="home"
+									data-navigo="true"
 									>Home</a
 								>
 							</li>
 							<li class="nav-item">
 								<a
-									class="nav-link disabled"
+									class="nav-link"
 									href="viewCaches"
-									data-navigo
-									tabindex="-1"
+									data-navigo="true"
 									>View caches</a
 								>
 							</li>
 							<li class="nav-item">
 								<a
-									class="nav-link disabled"
+									class="nav-link"
 									href="foundCaches"
-									data-navigo
-									tabindex="-1"
+									data-navigo="true"
 									>Found caches</a
 								>
 							</li>
@@ -105,12 +106,15 @@
 								<a
 									class="nav-link"
 									href="leaderboard"
-									data-navigo
+									data-navigo="true"
 									>Leaderboard</a
 								>
 							</li>
 							<li class="nav-item">
-								<a class="nav-link" href="about" data-navigo
+								<a
+									class="nav-link"
+									href="about"
+									data-navigo="true"
 									>About</a
 								>
 							</li>
@@ -161,7 +165,7 @@
 								<a
 									href="viewCaches"
 									class="btn btn-sq-lg btn-primary"
-									data-navigo
+									data-navigo="true"
 								>
 									<i
 										class="bi bi-map home-icon"
@@ -177,7 +181,7 @@
 								<a
 									href="foundCaches"
 									class="btn btn-sq-lg btn-primary"
-									data-navigo
+									data-navigo="true"
 								>
 									<i
 										class="bi bi-pin-map home-icon"
@@ -193,7 +197,7 @@
 								<a
 									href="leaderboard"
 									class="btn btn-sq-lg btn-primary"
-									data-navigo
+									data-navigo="true"
 								>
 									<i
 										class="bi bi-trophy home-icon"
@@ -209,7 +213,7 @@
 								<a
 									href="about"
 									class="btn btn-sq-lg btn-primary"
-									data-navigo
+									data-navigo="true"
 								>
 									<i
 										class="bi bi-info-circle home-icon"
@@ -427,7 +431,7 @@
 													be viewable on the
 													<a
 														href="foundCaches"
-														data-navigo
+														data-navigo="true"
 														>Found caches page</a
 													>)
 												</li>
@@ -509,8 +513,8 @@
 							>&nbsp;Open Source Licenses
 						</h1>
 						<p>
-							The @@appName website/app (v@@version) is built
-							using the following open source libraries:
+							The @@appName website/app (v@@version) is built by
+							@@author using the following open source libraries:
 						</p>
 						@@for (var i = 0; i < licenses.length; i++) {
 						@@include('./src/includes/license.html',
@@ -614,10 +618,19 @@
 							>. All Rights Reserved.
 						</p>
 						<p>
-							<a href="terms" data-navigo>Terms and Conditions</a>
-							| <a href="privacy" data-navigo>Privacy Policy</a> |
-							<a href="disclaimer" data-navigo>Disclaimer</a> |
-							<a href="openSourceLicenses" data-navigo
+							<a href="terms" data-navigo="true"
+								>Terms and Conditions</a
+							>
+							|
+							<a href="privacy" data-navigo="true"
+								>Privacy Policy</a
+							>
+							|
+							<a href="disclaimer" data-navigo="true"
+								>Disclaimer</a
+							>
+							|
+							<a href="openSourceLicenses" data-navigo="true"
 								>Open Source Licenses</a
 							>
 							|
