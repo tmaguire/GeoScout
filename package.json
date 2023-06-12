@@ -38,7 +38,7 @@
 		"outdated-browser-rework": "^3.0.1",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
-		"sweetalert2": "^11.7.11",
+		"sweetalert2": "^11.7.12",
 		"validator": "^13.9.0"
 	},
 	"devDependencies": {
