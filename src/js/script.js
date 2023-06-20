@@ -17,36 +17,16 @@ const showToast = Swal.mixin({
 	}
 });
 
-function getDeviceId() {
-	FingerprintJS.load({
-		apiKey: 'a1ZJOENnGt4QCgAqBHHb',
-		region: 'eu',
-		endpoint: 'https://login.geoscout.uk'
-	})
-		.then(fp => fp.get())
-		.then(result => {
-			localStorage.setItem('deviceId', result.visitorId);
+function getAccessToken() {
+	return fetch('./api/get-token')
+		.then(response => response.json())
+		.then(handleErrors)
+		.then(data => {
+			localStorage.setItem('accessToken', data.accessToken);
+			return data.accessToken;
 		})
 		.catch(error => {
 			console.warn(error);
-		});
-}
-
-function getApiAuth() {
-	return FingerprintJS.load({
-		apiKey: 'a1ZJOENnGt4QCgAqBHHb',
-		region: 'eu',
-		endpoint: 'https://login.geoscout.uk'
-	})
-		.then(fp => fp.get())
-		.then(result => {
-			return {
-				requestId: result.requestId,
-				deviceId: result.visitorId
-			};
-		})
-		.catch(error => {
-			showError(error, false);
 		});
 }
 
@@ -529,8 +509,9 @@ function loadCachePage(id) {
 				const w3wLink = document.getElementById('cacheW3WLink');
 				w3wLink.setAttribute('class', 'card-text');
 				const w3wAddress = String(DOMPurify.sanitize(data.location)).split('///')[1];
+				const coordinates = String(DOMPurify.sanitize(data.coordinates));
 				w3wLink.innerHTML = `<p><strong>what3words address:</strong>&nbsp;<a href="https://what3words.com/${w3wAddress}" target="_blank" translate="no">///${w3wAddress}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a></p>
-				<p><strong>Grid reference:</strong>&nbsp;<a href="https://explore.osmaps.com/pin?lat=${String(DOMPurify.sanitize(data.coordinates)).split(',')[0]}&lon=${String(DOMPurify.sanitize(data.coordinates)).split(',')[1]}&zoom=18.0000&overlays=&style=Standard&type=2d&placesCategory=" target="_blank">${DOMPurify.sanitize(data.gridRef)}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a><br><a class="text-decoration-none" href="https://getoutside.ordnancesurvey.co.uk/guides/beginners-guide-to-grid-references/" target="_blank">Learn more about grid references&nbsp;<i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a></p>
+				<p><strong>Grid reference:</strong>&nbsp;<a href="https://explore.osmaps.com/pin?lat=${coordinates.split(',')[0]}&lon=${coordinates.split(',')[1]}&zoom=18.0000&overlays=&style=Standard&type=2d&placesCategory=" target="_blank">${DOMPurify.sanitize(data.gridRef)}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a><br><a class="text-decoration-none" href="https://getoutside.ordnancesurvey.co.uk/guides/beginners-guide-to-grid-references/" target="_blank">Learn more about grid references&nbsp;<i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a></p>
 				<p><br><strong id="cacheStats"></strong></p>`;
 				const w3wBtn = document.getElementById('cacheW3WBtn');
 				w3wBtn.removeAttribute('tabindex');
@@ -541,7 +522,7 @@ function loadCachePage(id) {
 				const mapBtn = document.getElementById('cacheMapsLink');
 				mapBtn.removeAttribute('tabindex');
 				mapBtn.setAttribute('class', 'btn btn-primary m-1');
-				mapBtn.setAttribute('href', `https://www.google.com/maps/search/?api=1&query=${DOMPurify.sanitize(data.coordinates)}`);
+				mapBtn.setAttribute('href', `https://www.google.com/maps/search/?api=1&query=${coordinates}`);
 				mapBtn.setAttribute('target', '_blank');
 				mapBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in Google Maps';
 				const foundBtn = document.getElementById('cacheFoundLink');
@@ -638,7 +619,7 @@ function loadFoundCachePage(id) {
 			}
 		},
 		preConfirm: (data) => {
-			return getApiAuth()
+			return getAccessToken()
 				.then(auth => {
 					return fetch('./api/found-cache', {
 						method: 'POST',
@@ -713,7 +694,7 @@ function loadFoundCachesPage() {
 	const placeholder = loadingGif;
 	const foundContainer = document.getElementById('foundContainer');
 	foundContainer.innerHTML = placeholder;
-	getApiAuth()
+	getAccessToken()
 		.then(auth => {
 			return fetch('./api/found-caches', {
 				method: 'GET',
@@ -893,7 +874,6 @@ function loadLeaderboardPage() {
 						},
 						formatter: (deviceId) => {
 							const name = DOMPurify.sanitize(deviceId);
-							// return gridjs.html(`<div class="row"><div class="col-md-4"><div class="icon rounded-circle"><img src="./profilePic/${name}/48" alt="Profile picture for ${name}" height="48" width="48" loading="lazy"></div></div><div class="col-md-8 my-auto text-break">${name}${name === localStorage.getItem('deviceId') ? '&nbsp;<strong>(You)</strong>' : ''}</div></div>`);
 							return gridjs.html(`${name}${name === localStorage.getItem('deviceId') ? '&nbsp;<strong>(You)</strong>' : ''}`);
 						}
 					},
@@ -1001,8 +981,8 @@ window.onload = function () {
 			changePage('404', 'Page not found', false);
 		})
 		.resolve();
-	if (localStorage.getItem('deviceId') === null) {
-		getDeviceId();
+	if (localStorage.getItem('accessToken') === null) {
+		getAccessToken();
 	}
 	// Load service worker if supported
 	if ('serviceWorker' in navigator && window.origin === 'https://www.geoscout.uk') {

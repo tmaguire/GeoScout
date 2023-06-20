@@ -84,7 +84,7 @@ self.addEventListener('activate', event => {
 
 // Listen to messages
 self.addEventListener('message', function (event) {
-	if (event.origin !== 'https://www.geoscout.uk') {
+	if (event.origin !== '/* @echo APPURL */') {
 		return;
 	} else {
 		if (event.data.action === 'skipWaiting') {

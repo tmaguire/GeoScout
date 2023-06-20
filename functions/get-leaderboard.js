@@ -27,7 +27,7 @@ const client = Client.initWithMiddleware({
 	authProvider: authProvider
 });
 // SharePoint Site Details
-const deviceListId = process.env.graphUserListId;
+const userListId = process.env.graphUserListId;
 const siteId = process.env.graphSiteId;
 
 // Start Lambda Function
@@ -45,27 +45,9 @@ export async function handler(event, context) {
 		};
 	}
 
-	try {
-		const deviceId = event.headers['device-id'];
-		if (!deviceId) {
-			throw 'Missing required header';
-		}
-	} catch (error) {
-		console.log(error);
-		return {
-			statusCode: 400,
-			body: JSON.stringify({
-				error: 'Invalid request'
-			}),
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		};
-	}
-
 	// Get list items from library
 	return client
-		.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,Total)&$select=id,fields&$orderby=fields/Total desc,fields/Title`)
+		.api(`/sites/${siteId}/lists/${userListId}/items?expand=fields(select=Title,Total)&$select=id,fields&$orderby=fields/Total desc,fields/Title`)
 		.get()
 		.then(data => {
 			if (data.value.length === 0) {

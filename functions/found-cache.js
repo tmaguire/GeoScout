@@ -1,4 +1,8 @@
 /* jshint esversion: 10 */
+// Import JWT module
+import {
+	verify
+} from 'jwt-promisify';
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
 // Microsoft Graph API details

@@ -13,7 +13,8 @@ const htmlmin = require('gulp-html-minifier-terser');
 const {
 	version,
 	appName,
-	author
+	author,
+	appUrl
 } = require('./package.json');
 const sass = require('gulp-sass')(require('sass'));
 const {
@@ -52,7 +53,6 @@ function bundledJs() {
 		'./node_modules/sweetalert2/dist/sweetalert2.min.js',
 		'./node_modules/dompurify/dist/purify.min.js',
 		'./node_modules/navigo/lib/navigo.min.js',
-		'./node_modules/@fingerprintjs/fingerprintjs-pro/dist/fp.min.js',
 		'./node_modules/gridjs/dist/gridjs.production.min.js',
 		'./node_modules/@googlemaps/js-api-loader/dist/index.min.js',
 		'./node_modules/@googlemaps/markerclusterer/dist/index.min.js',
@@ -97,7 +97,8 @@ function sitePages() {
 				version,
 				licenses,
 				appName,
-				author
+				author,
+				appUrl
 			},
 			filters: {
 				markdown: marked.options({ mangle: false, headerIds: false, headerPrefix: false }).parse
@@ -132,7 +133,8 @@ function serviceWorker() {
 	])
 		.pipe(preprocess({
 			context: {
-				VERSION: version
+				VERSION: version,
+				APPURL: appUrl
 			}
 		}))
 		.pipe(concat('service-worker.js'))

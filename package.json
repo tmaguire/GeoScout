@@ -1,6 +1,7 @@
 {
 	"name": "geoscout",
 	"appName": "GeoScout",
+	"appUrl": "https://www.geoscout.uk",
 	"version": "3.0.12",
 	"description": "Witham Scouts Geocaching project (GeoScout) using What3Words, Google Maps and SharePoint Online",
 	"scripts": {
@@ -20,7 +21,6 @@
 	"homepage": "https://github.com/tmaguire/GeoScout#readme",
 	"dependencies": {
 		"@azure/identity": "^3.2.2",
-		"@fingerprintjs/fingerprintjs-pro-server-api": "^2.1.0",
 		"@googlemaps/js-api-loader": "^1.16.1",
 		"@googlemaps/markerclusterer": "^2.2.3",
 		"@googlemaps/url-signature": "^1.0.29",
@@ -33,6 +33,7 @@
 		"geodesy": "^2.4.0",
 		"gridjs": "^6.0.6",
 		"isomorphic-fetch": "^3.0.0",
+		"jwt-promisify": "^1.1.7",
 		"lambda-rate-limiter": "^3.0.1",
 		"navigo": "^8.11.1",
 		"outdated-browser-rework": "^3.0.1",
@@ -42,7 +43,6 @@
 		"validator": "^13.9.0"
 	},
 	"devDependencies": {
-		"@fingerprintjs/fingerprintjs-pro": "^3.8.3",
 		"@types/google.maps": "^3.53.4",
 		"dompurify": "^3.0.3",
 		"gulp": "^4.0.2",
