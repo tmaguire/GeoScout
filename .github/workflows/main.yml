@@ -22,7 +22,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          skip-tag:  'true'
-          minor-wording:  'Feature'
+          skip-tag:  'false'
+          minor-wording:  'Feature,feat'
           major-wording:  'BREAKING CHANGE,major'
           patch-wording:  ''

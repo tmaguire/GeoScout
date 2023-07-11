@@ -18,16 +18,25 @@ const showToast = Swal.mixin({
 });
 
 function getAccessToken() {
-	return fetch('./api/get-token')
-		.then(response => response.json())
-		.then(handleErrors)
-		.then(data => {
-			localStorage.setItem('accessToken', data.accessToken);
-			return data.accessToken;
-		})
-		.catch(error => {
-			console.warn(error);
-		});
+	return new Promise((resolve, reject) => {
+		if (localStorage.getItem('accessToken') === null) {
+			fetch('./api/get-token', {
+				method: 'PUT'
+			})
+				.then(response => response.json())
+				.then(handleErrors)
+				.then(data => {
+					localStorage.setItem('accessToken', data.accessToken);
+					resolve(data.accessToken);
+				})
+				.catch(error => {
+					console.warn(error);
+					reject(error);
+				});
+		} else {
+			resolve(localStorage.getItem('accessToken'));
+		}
+	});
 }
 
 // Error Message Function
@@ -39,7 +48,7 @@ function showError(error, button) {
 			icon: 'error',
 			buttonsStyling: false,
 			customClass: {
-				confirmButton: 'btn btn-primary'
+				confirmButton: 'btn btn-link'
 			},
 			didOpen: () => {
 				Swal.hideLoading();
@@ -199,12 +208,15 @@ function loadCachesPage() {
 		id: 'googleMapsScript'
 	});
 	let caches;
-	fetch('./api/get-caches', {
-		method: 'GET',
-		headers: {
-			'Device-Id': localStorage.getItem('deviceId')
-		}
-	})
+	getAccessToken
+		.then(accessToken => {
+			return fetch('./api/get-caches', {
+				method: 'GET',
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			});
+		})
 		.then(response => response.json())
 		.then(handleErrors)
 		.then(data => {
@@ -355,12 +367,15 @@ function loadCachesTablePage() {
 	const tableContainer = document.getElementById('tableContainer');
 	tableContainer.innerHTML = loadingGif;
 	let caches;
-	fetch('./api/get-caches', {
-		method: 'GET',
-		headers: {
-			'Device-Id': localStorage.getItem('deviceId')
-		}
-	})
+	getAccessToken()
+		.then(accessToken => {
+			return fetch('./api/get-caches', {
+				method: 'GET',
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			});
+		})
 		.then(response => response.json())
 		.then(handleErrors)
 		.then(data => {
@@ -482,16 +497,19 @@ function loadCachesTablePage() {
 
 function loadCachePage(id) {
 	resetCachePage();
-	fetch('./api/get-cache', {
-		method: 'POST',
-		body: JSON.stringify({
-			cache: id
-		}),
-		headers: {
-			'Content-Type': 'application/json',
-			'Device-Id': localStorage.getItem('deviceId')
-		}
-	})
+	getAccessToken()
+		.then(accessToken => {
+			return fetch('./api/get-cache', {
+				method: 'POST',
+				body: JSON.stringify({
+					cache: id
+				}),
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${accessToken}`
+				}
+			});
+		})
 		.then(response => response.json())
 		.then(handleErrors)
 		.then(data => {
@@ -601,7 +619,7 @@ function loadFoundCachePage(id) {
 		showCancelButton: true,
 		buttonsStyling: false,
 		customClass: {
-			cancelButton: 'btn btn-outline-primary m-1',
+			cancelButton: 'btn btn-link m-1',
 			confirmButton: 'btn btn-primary m-1',
 			loader: 'custom-loader'
 		},
@@ -620,7 +638,7 @@ function loadFoundCachePage(id) {
 		},
 		preConfirm: (data) => {
 			return getAccessToken()
-				.then(auth => {
+				.then(accessToken => {
 					return fetch('./api/found-cache', {
 						method: 'POST',
 						body: JSON.stringify({
@@ -629,8 +647,7 @@ function loadFoundCachePage(id) {
 						}),
 						headers: {
 							'Content-Type': 'application/json',
-							'Device-Id': auth.deviceId,
-							'Request-Id': auth.requestId
+							Authorization: accessToken
 						}
 					});
 				})
@@ -695,12 +712,11 @@ function loadFoundCachesPage() {
 	const foundContainer = document.getElementById('foundContainer');
 	foundContainer.innerHTML = placeholder;
 	getAccessToken()
-		.then(auth => {
+		.then(accessToken => {
 			return fetch('./api/found-caches', {
 				method: 'GET',
 				headers: {
-					'Device-Id': auth.deviceId,
-					'Request-Id': auth.requestId
+					Authorization: `Bearer ${accessToken}`
 				}
 			});
 		})
@@ -797,8 +813,9 @@ function loadFoundCachesPage() {
 						summary: true
 					},
 					data: data.found
-				}).render(document.getElementById('foundWrapper'));
-				const deviceId = DOMPurify.sanitize(localStorage.getItem('deviceId'));
+				})
+					.render(document.getElementById('foundWrapper'));
+				const deviceId = DOMPurify.sanitize(data.deviceid);
 				document.getElementById('foundCachesDeviceId').innerText = deviceId;
 				document.getElementById('foundCachesProfilePic').setAttribute('src', `./profilePic/${deviceId}/96`);
 				document.getElementById('foundCachesProfilePic').setAttribute('height', '48');
@@ -835,16 +852,19 @@ function loadLeaderboardPage() {
 	const placeholder = loadingGif;
 	const leaderboardContainer = document.getElementById('leaderboardContainer');
 	leaderboardContainer.innerHTML = placeholder;
-	fetch('./api/get-leaderboard', {
-		method: 'GET',
-		headers: {
-			'Device-Id': localStorage.getItem('deviceId')
-		}
-	})
+	getAccessToken()
+		.then(accessToken => {
+			return fetch('./api/get-leaderboard', {
+				method: 'GET',
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			});
+		})
 		.then(response => response.json())
 		.then(handleErrors)
 		.then(data => {
-			if (data.length > 0) {
+			if (data.leaderboard.length > 0) {
 				leaderboardContainer.innerHTML = '<div id="leaderboardWrapper"></div>';
 				new gridjs.Grid({
 					columns: [{
@@ -861,7 +881,7 @@ function loadLeaderboardPage() {
 							if (cell) {
 								return {
 									'data-ranking': cell,
-									'data-match': String(Boolean(row.cells[1].data === localStorage.getItem('deviceId')))
+									'data-match': String(Boolean(row.cells[1].data === data.deviceId))
 								};
 							}
 						}
@@ -874,7 +894,7 @@ function loadLeaderboardPage() {
 						},
 						formatter: (deviceId) => {
 							const name = DOMPurify.sanitize(deviceId);
-							return gridjs.html(`${name}${name === localStorage.getItem('deviceId') ? '&nbsp;<strong>(You)</strong>' : ''}`);
+							return gridjs.html(`${name}${name === data.deviceId ? '&nbsp;<strong>(You)</strong>' : ''}`);
 						}
 					},
 					{
@@ -891,7 +911,7 @@ function loadLeaderboardPage() {
 							'white-space': 'nowrap'
 						}
 					},
-					data: data
+					data: data.leaderboard
 				})
 					.render(document.getElementById('leaderboardWrapper'));
 			} else {
