@@ -143,4 +143,3 @@ function serviceWorker() {
 }
 
 exports.default = parallel(series(parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg, copySite, browserCompat, serviceWorker), sri));
-exports.dev = parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg, copySite, browserCompat, serviceWorker);

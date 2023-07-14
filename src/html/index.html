@@ -501,26 +501,6 @@
 						@@include(markdown('./src/docs/about.md'))
 					</div>
 				</section>
-				<!-- Open Source Licenses screen -->
-				<section
-					id="openSourceLicenses"
-					class="row mx-auto d-none"
-					aria-hidden="true"
-				>
-					<div class="col mx-auto">
-						<h1 class="my-4 text-center">
-							<i class="bi bi-file-text" aria-hidden="true"></i
-							>&nbsp;Open Source Licenses
-						</h1>
-						<p>
-							The @@appName website/app (v@@version) is built by
-							@@author using the following open source libraries:
-						</p>
-						@@for (var i = 0; i < licenses.length; i++) {
-						@@include('./src/includes/license.html',
-						`+(JSON.stringify(licenses[i]))+`) }
-					</div>
-				</section>
 				<!-- Disclaimer screen -->
 				<section
 					id="disclaimer"
@@ -630,7 +610,7 @@
 								>Disclaimer</a
 							>
 							|
-							<a href="openSourceLicenses" data-navigo="true"
+							<a data-bs-toggle="modal" href="#openSourceLicenses"
 								>Open Source Licenses</a
 							>
 							|
@@ -664,6 +644,54 @@
 					</div>
 				</div>
 			</footer>
+			<!-- Modal for Open Source Licenses -->
+			<div
+				class="modal fade"
+				id="openSourceLicenses"
+				tabindex="-1"
+				aria-labelledby="openSourceLicensesLabel"
+				aria-hidden="true"
+			>
+				<div
+					class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered"
+				>
+					<div class="modal-content">
+						<div class="modal-header">
+							<h1
+								class="modal-title"
+								id="openSourceLicensesLabel"
+							>
+								Open Source Licenses
+							</h1>
+							<button
+								type="button"
+								class="btn-close"
+								data-bs-dismiss="modal"
+								aria-label="Close"
+							></button>
+						</div>
+						<div class="modal-body">
+							<p>
+								The @@appName (v@@version) app is built by
+								@@author using the following open source
+								libraries:
+							</p>
+							@@for (var i = 0; i < licenses.length; i++) {
+							@@include('./src/includes/license.html',
+							`+(JSON.stringify(licenses[i]))+`) }
+						</div>
+						<div class="modal-footer">
+							<button
+								type="button"
+								class="btn btn-link"
+								data-bs-dismiss="modal"
+							>
+								Close
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 		<script src="./js/browser-compat-@@version.min.js"></script>
 		<script src="./js/main-@@version.min.js"></script>

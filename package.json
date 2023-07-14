@@ -6,7 +6,6 @@
 	"description": "Witham Scouts Geocaching project (GeoScout) using What3Words, Google Maps and SharePoint Online",
 	"scripts": {
 		"build": "npm run license-check && gulp",
-		"dev": "npm run license-check && gulp dev",
 		"license-check": "npx license-checker-rseidelsohn --relativeLicensePath --production --excludePrivatePackages --direct --json --customPath ./thirdparty-licenses-template.json --nopeer > thirdparty-licenses.json"
 	},
 	"repository": {

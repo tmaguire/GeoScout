@@ -19,10 +19,33 @@ const showToast = Swal.mixin({
 
 function getAccessToken() {
 	return new Promise((resolve, reject) => {
-		if (localStorage.getItem('accessToken') === null) {
+		if (localStorage.getItem('accessToken') === null || localStorage.getItem('accessToken') === '') {
+			const uuid = crypto.randomUUID().toString();
 			fetch('./api/get-token', {
-				method: 'PUT'
+				method: 'POST',
+				headers: {
+					Accept: 'application/json',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					uuid
+				})
 			})
+				.then(response => response.json())
+				.then(handleErrors)
+				.then(data => {
+					return fetch('./api/get-token', {
+						method: 'POST',
+						headers: {
+							Accept: 'application/json',
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({
+							uuid,
+							token: data.tempToken
+						})
+					});
+				})
 				.then(response => response.json())
 				.then(handleErrors)
 				.then(data => {
@@ -208,7 +231,7 @@ function loadCachesPage() {
 		id: 'googleMapsScript'
 	});
 	let caches;
-	getAccessToken
+	getAccessToken()
 		.then(accessToken => {
 			return fetch('./api/get-caches', {
 				method: 'GET',
@@ -994,16 +1017,12 @@ window.onload = function () {
 		.on('/privacy', function () {
 			changePage('privacy', 'Privacy Policy', false);
 		})
-		.on('/openSourceLicenses', function () {
-			changePage('openSourceLicenses', 'Open Source Licenses', false);
-		})
 		.notFound(function () {
 			changePage('404', 'Page not found', false);
 		})
 		.resolve();
-	if (localStorage.getItem('accessToken') === null) {
-		getAccessToken();
-	}
+	// Sort out page links
+	router.updatePageLinks();
 	// Load service worker if supported
 	if ('serviceWorker' in navigator && window.origin === 'https://www.geoscout.uk') {
 		const updateBtn = document.getElementById('updateBtn');

@@ -496,18 +496,6 @@ target="_blank"
 >
 </p>
 </li>
-<li>
-<p><strong>FingerprintJS Pro</strong></p>
-<p>
-Their Privacy Policy can be viewed at
-<a
-href="https://dev.fingerprint.com/docs/privacy-policy"
-rel="external nofollow noopener"
-target="_blank"
->https://dev.fingerprint.com/docs/privacy-policy</a
->
-</p>
-</li>
 </ul>
 <h2>GDPR Privacy</h2>
 <h3>Legal Basis for Processing Personal Data under GDPR</h3>

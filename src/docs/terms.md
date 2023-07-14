@@ -290,7 +290,7 @@ material change will be determined at Our sole discretion.
 By continuing to access or use Our Service after those revisions
 become effective, You agree to be bound by the revised terms. If
 You do not agree to the new terms, in whole or in part, please
-stop using the website and the Service.
+stop using the web-app and the Service.
 </p>
 <h2>Contact Us</h2>
 <p>
