@@ -2,7 +2,7 @@
 	"name": "geoscout",
 	"appName": "GeoScout",
 	"appUrl": "https://www.geoscout.uk",
-	"version": "3.0.15",
+	"version": "3.0.16",
 	"description": "Witham Scouts Geocaching project (GeoScout) using What3Words, Google Maps and SharePoint Online",
 	"scripts": {
 		"build": "npm run license-check && gulp",
