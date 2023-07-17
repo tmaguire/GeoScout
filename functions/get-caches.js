@@ -1,4 +1,8 @@
 /* jshint esversion: 10 */
+// Import JWT module
+import {
+	verify
+} from 'jwt-promisify';
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
 // Microsoft Graph API details
@@ -30,6 +34,14 @@ const client = Client.initWithMiddleware({
 const listId = process.env.graphSiteListId;
 const deviceListId = process.env.graphUserListId;
 const siteId = process.env.graphSiteId;
+// JWT authentication
+const jwtSecret = process.env.jwtTokenSecret;
+const jwtOptions = {
+	audience: 'www.geoscout.uk',
+	maxAge: '3y',
+	issuer: 'api.geoscout.uk',
+	algorithms: 'HS384'
+};
 
 // Start Lambda Function
 export async function handler(event, context) {
@@ -49,35 +61,10 @@ export async function handler(event, context) {
 	const returnObj = {
 		caches: []
 	};
-	let deviceId;
+	let deviceId = 'test';
 	let deviceObj;
 	let caches;
 
-	try {
-		deviceId = event.headers['device-id'];
-		if (!deviceId) {
-			return {
-				statusCode: 400,
-				body: JSON.stringify({
-					error: 'Invalid request'
-				}),
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			};
-		}
-	} catch (error) {
-		console.log(error);
-		return {
-			statusCode: 400,
-			body: JSON.stringify({
-				error: 'Invalid request'
-			}),
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		};
-	}
 
 	// Use batch request
 	return client

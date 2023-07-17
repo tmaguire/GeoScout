@@ -11,5 +11,5 @@ updates:
       interval: "daily"
       time: "09:00"
     commit-message:
-      prefix: "[skip netlify]"
+      prefix: "[skip ci]"
       include: "scope"

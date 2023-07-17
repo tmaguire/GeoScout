@@ -3,6 +3,10 @@
 import {
 	signUrl
 } from '@googlemaps/url-signature';
+// Import JWT module
+import {
+	verify
+} from 'jwt-promisify';
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
 // Microsoft Graph API details
@@ -40,6 +44,14 @@ const mapsSecret = process.env.mapsSecret;
 import {
 	LatLon
 } from 'geodesy/osgridref.js';
+// JWT authentication
+const jwtSecret = process.env.jwtTokenSecret;
+const jwtOptions = {
+	audience: 'www.geoscout.uk',
+	maxAge: '3y',
+	issuer: 'api.geoscout.uk',
+	algorithms: 'HS384'
+};
 
 // Start Lambda Function
 export async function handler(event, context) {
@@ -68,17 +80,6 @@ export async function handler(event, context) {
 				statusCode: 400,
 				body: JSON.stringify({
 					error: 'Invalid cache ID'
-				}),
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			};
-		}
-		if (!deviceId) {
-			return {
-				statusCode: 400,
-				body: JSON.stringify({
-					error: 'Missing required header'
 				}),
 				headers: {
 					'Content-Type': 'application/json'

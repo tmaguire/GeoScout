@@ -19,6 +19,7 @@ const showToast = Swal.mixin({
 
 function getAccessToken() {
 	return new Promise((resolve, reject) => {
+		resolve(true);
 		if (localStorage.getItem('accessToken') === null || localStorage.getItem('accessToken') === '') {
 			const uuid = crypto.randomUUID().toString();
 			fetch('./api/get-token', {

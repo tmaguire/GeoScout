@@ -23,7 +23,6 @@ const credential = new ClientCertificateCredential(tenantId, clientId, {
 	certificatePath: path.join(__dirname, 'cert.pem'),
 	certificatePassword: process.env.graphCertKey
 });
-
 const authProvider = new TokenCredentialAuthenticationProvider(credential, {
 	scopes: ['.default']
 });
@@ -38,16 +37,14 @@ const siteId = process.env.graphSiteId;
 // Imports for rate limiting
 import crypto from 'crypto';
 import limiterFactory from 'lambda-rate-limiter';
-// Import validation module for deviceId
-import {
-	FingerprintJsServerApiClient,
-	Region
-} from '@fingerprintjs/fingerprintjs-pro-server-api';
-const fingerprintSecret = process.env.fingerprintSecret;
-const fingerprintClient = new FingerprintJsServerApiClient({
-	region: Region.EU,
-	apiKey: fingerprintSecret
-});
+// JWT authentication
+const jwtSecret = process.env.jwtTokenSecret;
+const jwtOptions = {
+	audience: 'www.geoscout.uk',
+	maxAge: '3y',
+	issuer: 'api.geoscout.uk',
+	algorithms: 'HS384'
+};
 
 // Start Lambda Function
 export async function handler(event, context) {
@@ -93,14 +90,13 @@ export async function handler(event, context) {
 	let cacheId;
 	let cacheCode;
 	let deviceId;
-	let requestId;
+	let token;
 	let currentStats;
 
 	try {
 		cacheId = JSON.parse(event.body).cache;
 		cacheCode = JSON.parse(event.body).cacheCode;
-		deviceId = event.headers['device-id'];
-		requestId = event.headers['request-id'];
+		token = String(event.headers.Authorization).split(' ')[1];
 		const check = new RegExp('^[0-9]{5}$');
 		if (!check.test(cacheCode)) {
 			return {
@@ -113,9 +109,9 @@ export async function handler(event, context) {
 				}
 			};
 		}
-		if (!deviceId || !requestId) {
+		if (!token) {
 			return {
-				statusCode: 400,
+				statusCode: 401,
 				body: JSON.stringify({
 					error: 'Missing required headers'
 				}),
@@ -137,18 +133,9 @@ export async function handler(event, context) {
 		};
 	}
 
-	return fingerprintClient
-		.getVisitorHistory(deviceId, {
-			request_id: requestId
-		})
-		.then(sessionData => {
-			if (sessionData.visits.length === 0) {
-				throw 'Invalid session';
-			} else {
-				return true;
-			}
-		})
-		.then(() => {
+	return verify(token, jwtSecret, jwtOptions)
+		.then(decodedToken => {
+			deviceId = decodedToken.sub;
 			return client
 				.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,CableTieCode,Found)&$select=id,fields&filter=fields/Title eq '${cacheId}'`)
 				.get();
@@ -172,20 +159,7 @@ export async function handler(event, context) {
 		})
 		.then(data => {
 			const currentTime = new Date();
-			if (data.value.length === 0) {
-				return client
-					.api(`/sites/${siteId}/lists/${deviceListId}/items`)
-					.post({
-						fields: {
-							Title: deviceId,
-							FoundCaches: JSON.stringify([{
-								id: cacheId,
-								date: currentTime.toISOString()
-							}]),
-							Total: 1
-						}
-					});
-			} else if (data.value.length === 1) {
+			if (data.value.length === 1) {
 				const found = [...JSON.parse(data.value[0].fields.FoundCaches)];
 				found.push({
 					id: cacheId,
@@ -198,7 +172,7 @@ export async function handler(event, context) {
 						Total: Number(Number(data.value[0].fields.Total) + 1)
 					});
 			} else {
-				throw 'Duplicate device ID!';
+				throw 'Invalid device ID';
 			}
 		})
 		.then(() => {
@@ -212,7 +186,7 @@ export async function handler(event, context) {
 			return {
 				statusCode: 200,
 				body: JSON.stringify({
-					success: `You've found Cache ${cacheId}`
+					success: `You've found Cache ${cacheId}!`
 				}),
 				headers: {
 					'Content-Type': 'application/json'
@@ -231,12 +205,12 @@ export async function handler(event, context) {
 						'Content-Type': 'application/json'
 					}
 				};
-			} else if (error === 'Invalid session') {
+			} else if (error === 'Invalid device ID') {
 				return {
 					statusCode: 401,
 					body: JSON.stringify({
-						error: 'Unable to validate your Device ID',
-						errorDebug: 'No valid sessions were provided for this device ID...'
+						error: 'Unable to validate your device ID',
+						errorDebug: 'Token not found in backend - contact support@geoscout.uk'
 					}),
 					headers: {
 						'Content-Type': 'application/json'

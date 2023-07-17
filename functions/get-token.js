@@ -1,7 +1,7 @@
 /* jshint esversion: 10 */
 // Import JWT module
 import {
-	verify
+	sign
 } from 'jwt-promisify';
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
@@ -33,19 +33,50 @@ const client = Client.initWithMiddleware({
 // SharePoint Site Details
 const deviceListId = process.env.graphUserListId;
 const siteId = process.env.graphSiteId;
+// Imports for rate limiting
+import crypto from 'crypto';
+import limiterFactory from 'lambda-rate-limiter';
 // JWT authentication
 const jwtSecret = process.env.jwtTokenSecret;
 const jwtOptions = {
 	audience: 'www.geoscout.uk',
 	maxAge: '3y',
 	issuer: 'api.geoscout.uk',
-	algorithms: 'HS384'
+	algorithm: 'HS384'
 };
+// Cache for validation
+const uuidCache = {};
 
 // Start Lambda Function
 export async function handler(event, context) {
-	// Only allow GET
-	if (event.httpMethod !== 'GET') {
+	// Rate limiting configuration to prevent abuse
+	const limiter = limiterFactory({
+		interval: 6000,
+		uniqueTokenPerInterval: 500,
+	});
+	// Hash IP address before storing it in the limiter (to comply with GDPR)
+	const ip = crypto
+		.createHash('SHA256')
+		.update((event.headers['x-nf-client-connection-ip'] || event.headers['client-ip']))
+		.digest('hex');
+	limiter
+		.check(10, ip)
+		.catch((error) => {
+			console.log(error);
+			return {
+				statusCode: 429,
+				body: JSON.stringify({
+					error: 'Too many attempts',
+					errorDebug: 'Please contact support@geoscout.uk if you believe this is a mistake.'
+				}),
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			};
+		});
+
+	// Only allow POST
+	if (event.httpMethod !== 'POST') {
 		return {
 			statusCode: 405,
 			body: JSON.stringify({
@@ -57,16 +88,17 @@ export async function handler(event, context) {
 		};
 	}
 
-	let token;
-	let deviceId;
+	let uuid;
+	let tempToken;
 
 	try {
-		token = String(event.headers.Authorization).split(' ')[1];
-		if (!token) {
+		uuid = JSON.parse(event.body).uuid;
+		const check = new RegExp('^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$');
+		if (!check.test(uuid)) {
 			return {
-				statusCode: 401,
+				statusCode: 400,
 				body: JSON.stringify({
-					error: 'Missing access token'
+					error: 'Invalid UUID'
 				}),
 				headers: {
 					'Content-Type': 'application/json'
@@ -86,70 +118,40 @@ export async function handler(event, context) {
 		};
 	}
 
-	return verify(token, jwtSecret, jwtOptions)
-		.then(decodedToken => {
-			deviceId = decodedToken.sub;
+	if (JSON.parse(event.body).hasOwnProperty('token')) {
+		tempToken = JSON.parse(event.body).token;
+		if (tempToken === uuidCache[uuid]) {
+			delete uuidCache[uuid];
 			return client
-				.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,Total,FoundCaches)&$select=id,fields&$orderby=fields/Total desc,fields/Title`)
-				.get();
-		})
-		.then(data => {
-			if (data.value.length === 0) {
-				return {
-					found: []
-				};
-			} else {
-				const array = [];
-				const obj = {
-					found: '',
-					total: '',
-					position: ''
-				};
-				data.value.forEach(device => {
-					array.push({
-						found: [...JSON.parse(device.fields.FoundCaches)],
-						total: device.fields.Total,
-						deviceId: device.fields.Title
-					});
-				});
-				array.sort(function (a, b) {
-					return b.total - a.total;
-				});
-				let position = 1;
-				for (var i = 0; i < array.length; i++) {
-					if (i > 0 && array[i].found < array[i - 1].found) {
-						position++;
-					}
-					array[i].position = position;
-					if (array[i].deviceId === deviceId) {
-						obj.found = array[i].found;
-						obj.total = array[i].total;
-						obj.position = array[i].position;
-					}
-				}
-				return obj;
-			}
-		})
-		.then(obj => {
+				.api(``)
+				.post({})
+				.then(data => { })
+				.catch(error => { });
+		} else {
+			try {
+				delete uuidCache[uuid];
+			} catch { }
 			return {
-				statusCode: 200,
-				body: JSON.stringify(obj),
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			};
-		})
-		.catch(error => {
-			console.log(error);
-			return {
-				statusCode: 500,
+				statusCode: 400,
 				body: JSON.stringify({
-					error: 'Unable to get found caches',
-					errorDebug: error
+					error: 'Invalid request'
 				}),
 				headers: {
 					'Content-Type': 'application/json'
 				}
 			};
-		});
+		}
+	} else {
+		const tempToken = Buffer.from(`${crypto.randomUUID()}-${uuid}`, 'ascii').toString('base64');
+		uuidCache[uuid] = tempToken;
+		return {
+			statusCode: 200,
+			body: JSON.stringify({
+				token: tempToken
+			}),
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		};
+	}
 }

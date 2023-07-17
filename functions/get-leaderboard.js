@@ -1,4 +1,8 @@
 /* jshint esversion: 10 */
+// Import JWT module
+import {
+	verify
+} from 'jwt-promisify';
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
 // Microsoft Graph API details
@@ -29,6 +33,14 @@ const client = Client.initWithMiddleware({
 // SharePoint Site Details
 const userListId = process.env.graphUserListId;
 const siteId = process.env.graphSiteId;
+// JWT authentication
+const jwtSecret = process.env.jwtTokenSecret;
+const jwtOptions = {
+	audience: 'www.geoscout.uk',
+	maxAge: '3y',
+	issuer: 'api.geoscout.uk',
+	algorithms: 'HS384'
+};
 
 // Start Lambda Function
 export async function handler(event, context) {
