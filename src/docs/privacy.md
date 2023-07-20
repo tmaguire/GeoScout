@@ -1,4 +1,4 @@
-<p>Last updated: July 11, 2022</p>
+<p>Last updated: July 20, 202</p>
 <p>
 This Privacy Policy describes Our policies and procedures on the
 collection, use and disclosure of Your information when You use

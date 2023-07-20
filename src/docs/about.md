@@ -19,7 +19,7 @@ keeping fit.
 </strong>
 </p>
 <p>
-We have hidden 100 codes around Witham, get out there and start
+We have hidden over 100 codes around Witham, get out there and start
 searching for the hidden caches. These are blue, and red
 coloured cable ties that could be fixed to street furniture,
 trees, fences, signposts - just about anywhere! Using your smartphone,

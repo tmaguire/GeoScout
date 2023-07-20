@@ -114,7 +114,7 @@ export async function handler(event, context) {
 				location: fields.W3WLocation,
 				coordinates: fields.Coordinates,
 				id: fields.Title,
-				image: signUrl(`https://maps.googleapis.com/maps/api/staticmap?center=${fields.Coordinates}&zoom=17&markers=color:0x7413DC|${fields.Coordinates}&size=400x400&scale=2&map_id=6b8e857a992e95a7&key=AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4`, mapsSecret).href,
+				image: signUrl(`https://maps.googleapis.com/maps/api/staticmap?center=${fields.Coordinates}&zoom=18&markers=color:0x7413DC|${fields.Coordinates}&size=400x400&scale=2&map_id=6b8e857a992e95a7&key=AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4`, mapsSecret).href,
 				gridRef: new LatLon(Number(String(fields.Coordinates).split(',')[0]), Number(String(fields.Coordinates).split(',')[1])).toOsGrid().toString(),
 				stats: fields.Found,
 				found: false,
