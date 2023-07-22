@@ -59,12 +59,12 @@ export async function handler(event, context) {
 		};
 	}
 
-	let token;
+	let token = '';
 	let deviceId;
 
 	try {
 		token = String(event.headers.authorization).split(' ')[1];
-		if (!token) {
+		if (!token || token === '') {
 			return {
 				statusCode: 200,
 				body: JSON.stringify({
