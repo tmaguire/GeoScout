@@ -742,7 +742,9 @@ function loadFoundCachesPage() {
 			return fetch('./api/found-caches', {
 				method: 'GET',
 				headers: {
-					Authorization: `Bearer ${accessToken}`
+					...(accessToken && {
+						Authorization: `Bearer ${accessToken}`
+					})
 				}
 			});
 		})
