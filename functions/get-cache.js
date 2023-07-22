@@ -148,7 +148,7 @@ export async function handler(event, context) {
 				found.forEach(cache => {
 					if (cache.id === cacheId) {
 						returnObj.found = true;
-						returnObj.image = signUrl(`https://maps.googleapis.com/maps/api/staticmap?center=${returnObj.coordinates}&zoom=17&markers=color:0x23A950|${returnObj.coordinates}&size=400x400&scale=2&map_id=6b8e857a992e95a7&key=AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4`, mapsSecret).href;
+						returnObj.image = signUrl(`https://maps.googleapis.com/maps/api/staticmap?center=${returnObj.coordinates}&zoom=18&markers=color:0x23A950|${returnObj.coordinates}&size=400x400&scale=2&map_id=6b8e857a992e95a7&key=AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4`, mapsSecret).href;
 					}
 				});
 				return returnObj;
