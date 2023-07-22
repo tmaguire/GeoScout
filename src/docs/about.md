@@ -61,11 +61,8 @@ take part is the use of a smartphone or tablet with a 4G data
 connection.
 </p>
 <p>
-There is no need to sign up or log in and no personal information
-is supplied from you to the organisers (and no personal
-information will be requested from this web-app). 
-We use the information provided by your device to generate a unique Device ID which is used to allow you to track your <a href="foundCaches" data-navigo="true">found caches</a> and see your position on the <a href="leaderboard" data-navigo="true">leaderboard</a>. 
-We only store the Device ID and found caches (cache ID and timestamp when found). No personally identifiable information is stored.
+There is no need to sign up or log in with personal information. We use the information provided by your device to generate a secure token to validate access to an account. This account is used to keep track of your <a href="foundCaches" data-navigo="true">found caches</a> and see your position on the <a href="leaderboard" data-navigo="true">leaderboard</a>. 
+We only store the token ID (this is unique per device you register with your account) and found caches (cache ID and timestamp when found). No personally identifiable information is collected or stored.
 Please refer to our
 <a href="privacy" data-navigo="true">Privacy Policy</a> for more
 information.

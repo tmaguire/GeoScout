@@ -45,6 +45,10 @@ const jwtOptions = {
 	issuer: 'api.geoscout.uk',
 	algorithms: 'HS384'
 };
+// Return for all responses
+const headers = {
+	'Content-Type': 'application/json'
+};
 
 // Start Lambda Function
 export async function handler(event, context) {
@@ -68,9 +72,7 @@ export async function handler(event, context) {
 					error: 'Too many attempts',
 					errorDebug: 'Please contact support@geoscout.uk if you believe this is a mistake.'
 				}),
-				headers: {
-					'Content-Type': 'application/json'
-				}
+				headers
 			};
 		});
 
@@ -81,9 +83,7 @@ export async function handler(event, context) {
 			body: JSON.stringify({
 				error: 'Method Not Allowed'
 			}),
-			headers: {
-				'Content-Type': 'application/json'
-			}
+			headers
 		};
 	}
 
@@ -96,7 +96,7 @@ export async function handler(event, context) {
 	try {
 		cacheId = JSON.parse(event.body).cache;
 		cacheCode = JSON.parse(event.body).cacheCode;
-		token = String(event.headers.Authorization).split(' ')[1];
+		token = String(event.headers.authorization).split(' ')[1];
 		const check = new RegExp('^[0-9]{5}$');
 		if (!check.test(cacheCode)) {
 			return {
@@ -104,9 +104,7 @@ export async function handler(event, context) {
 				body: JSON.stringify({
 					error: 'Invalid code'
 				}),
-				headers: {
-					'Content-Type': 'application/json'
-				}
+				headers
 			};
 		}
 		if (!token) {
@@ -115,9 +113,7 @@ export async function handler(event, context) {
 				body: JSON.stringify({
 					error: 'Missing required headers'
 				}),
-				headers: {
-					'Content-Type': 'application/json'
-				}
+				headers
 			};
 		}
 	} catch (error) {
@@ -127,9 +123,7 @@ export async function handler(event, context) {
 			body: JSON.stringify({
 				error: 'Invalid request'
 			}),
-			headers: {
-				'Content-Type': 'application/json'
-			}
+			headers
 		};
 	}
 
@@ -188,9 +182,7 @@ export async function handler(event, context) {
 				body: JSON.stringify({
 					success: `You've found Cache ${cacheId}!`
 				}),
-				headers: {
-					'Content-Type': 'application/json'
-				}
+				headers
 			};
 		})
 		.catch(error => {
@@ -201,9 +193,7 @@ export async function handler(event, context) {
 					body: JSON.stringify({
 						error: error
 					}),
-					headers: {
-						'Content-Type': 'application/json'
-					}
+					headers
 				};
 			} else if (error === 'Invalid device ID') {
 				return {
@@ -212,9 +202,7 @@ export async function handler(event, context) {
 						error: 'Unable to validate your device ID',
 						errorDebug: 'Token not found in backend - contact support@geoscout.uk'
 					}),
-					headers: {
-						'Content-Type': 'application/json'
-					}
+					headers
 				};
 			} else {
 				return {
@@ -223,9 +211,7 @@ export async function handler(event, context) {
 						error: 'Unable to check cache code',
 						errorDebug: error
 					}),
-					headers: {
-						'Content-Type': 'application/json'
-					}
+					headers
 				};
 			}
 		});

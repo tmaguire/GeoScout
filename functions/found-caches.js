@@ -41,6 +41,10 @@ const jwtOptions = {
 	issuer: 'api.geoscout.uk',
 	algorithms: 'HS384'
 };
+// Return for all responses
+const headers = {
+	'Content-Type': 'application/json'
+};
 
 // Start Lambda Function
 export async function handler(event, context) {
@@ -51,9 +55,7 @@ export async function handler(event, context) {
 			body: JSON.stringify({
 				error: 'Method Not Allowed'
 			}),
-			headers: {
-				'Content-Type': 'application/json'
-			}
+			headers
 		};
 	}
 
@@ -61,16 +63,14 @@ export async function handler(event, context) {
 	let deviceId;
 
 	try {
-		token = String(event.headers.Authorization).split(' ')[1];
+		token = String(event.headers.authorization).split(' ')[1];
 		if (!token) {
 			return {
-				statusCode: 401,
+				statusCode: 200,
 				body: JSON.stringify({
-					error: 'Missing access token'
+					found: []
 				}),
-				headers: {
-					'Content-Type': 'application/json'
-				}
+				headers
 			};
 		}
 	} catch (error) {
@@ -80,9 +80,7 @@ export async function handler(event, context) {
 			body: JSON.stringify({
 				error: 'Invalid request'
 			}),
-			headers: {
-				'Content-Type': 'application/json'
-			}
+			headers
 		};
 	}
 
@@ -134,9 +132,7 @@ export async function handler(event, context) {
 			return {
 				statusCode: 200,
 				body: JSON.stringify(obj),
-				headers: {
-					'Content-Type': 'application/json'
-				}
+				headers
 			};
 		})
 		.catch(error => {
@@ -147,9 +143,7 @@ export async function handler(event, context) {
 					error: 'Unable to get found caches',
 					errorDebug: error
 				}),
-				headers: {
-					'Content-Type': 'application/json'
-				}
+				headers
 			};
 		});
 }

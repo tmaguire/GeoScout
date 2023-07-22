@@ -41,6 +41,10 @@ const jwtOptions = {
 	issuer: 'api.geoscout.uk',
 	algorithms: 'HS384'
 };
+// Return for all responses
+const headers = {
+	'Content-Type': 'application/json'
+};
 
 // Start Lambda Function
 export async function handler(event, context) {
@@ -51,23 +55,41 @@ export async function handler(event, context) {
 			body: JSON.stringify({
 				error: 'Method Not Allowed'
 			}),
-			headers: {
-				'Content-Type': 'application/json'
-			}
+			headers
 		};
 	}
 
-	// Get list items from library
-	return client
-		.api(`/sites/${siteId}/lists/${userListId}/items?expand=fields(select=Title,Total)&$select=id,fields&$orderby=fields/Total desc,fields/Title`)
-		.get()
+	let deviceId = false;
+
+	return new Promise((resolve, reject) => {
+		// Get token (if provided)
+		try {
+			const authToken = String(event.headers.Authorization).split(' ')[1];
+			if (authToken) {
+				resolve(verify(authToken, jwtSecret, jwtOptions));
+			} else {
+				resolve(false);
+			}
+		} catch (error) {
+			reject(error);
+		}
+	})
+		.then(decodedToken => {
+			if (decodedToken) {
+				deviceId = decodedToken.sub;
+			}
+			// Get items from list
+			return client
+				.api(`/sites/${siteId}/lists/${userListId}/items?expand=fields(select=Title,Total)&$select=id,fields&$orderby=fields/Total desc,fields/Title&filter=fields/Total ne 0`)
+				.get();
+		})
 		.then(data => {
 			if (data.value.length === 0) {
 				return [];
 			} else {
 				const array = [];
-				data.value.forEach(device => {
-					const fields = device.fields;
+				data.value.forEach(user => {
+					const fields = user.fields;
 					array.push({
 						deviceId: fields.Title,
 						found: fields.Total
@@ -91,26 +113,25 @@ export async function handler(event, context) {
 			}
 			return array;
 		})
-		.then(array => {
+		.then(leaderboard => {
 			return {
 				statusCode: 200,
-				body: JSON.stringify(array),
-				headers: {
-					'Content-Type': 'application/json'
-				}
+				body: JSON.stringify({
+					leaderboard,
+					deviceId
+				}),
+				headers
 			};
 		})
 		.catch(error => {
-			console.log(error);
+			console.warn(error);
 			return {
 				statusCode: 500,
 				body: JSON.stringify({
 					error: 'Unable to load the leaderboard',
 					errorDebug: error
 				}),
-				headers: {
-					'Content-Type': 'application/json'
-				}
+				headers
 			};
 		});
 }

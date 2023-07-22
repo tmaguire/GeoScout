@@ -17,80 +17,76 @@ const showToast = Swal.mixin({
 	}
 });
 
-function getAccessToken() {
+function getAccessToken(required) {
 	return new Promise((resolve, reject) => {
-		resolve(true);
 		if (localStorage.getItem('accessToken') === null || localStorage.getItem('accessToken') === '') {
-			const uuid = crypto.randomUUID().toString();
-			fetch('./api/get-token', {
-				method: 'POST',
-				headers: {
-					Accept: 'application/json',
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					uuid
-				})
-			})
-				.then(response => response.json())
-				.then(handleErrors)
-				.then(data => {
-					return fetch('./api/get-token', {
-						method: 'POST',
-						headers: {
-							Accept: 'application/json',
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({
-							uuid,
-							token: data.tempToken
-						})
-					});
-				})
-				.then(response => response.json())
-				.then(handleErrors)
-				.then(data => {
-					localStorage.setItem('accessToken', data.accessToken);
-					resolve(data.accessToken);
-				})
-				.catch(error => {
-					console.warn(error);
+			if (required) {
+				try {
+					resolve(newAccessToken());
+				} catch (error) {
 					reject(error);
-				});
+				}
+			} else {
+				resolve(false);
+			}
 		} else {
 			resolve(localStorage.getItem('accessToken'));
 		}
 	});
 }
 
+function newAccessToken() {
+	const uuid = crypto.randomUUID().toString();
+	return fetch('./api/get-token', {
+		method: 'POST',
+		headers: {
+			Accept: 'application/json',
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			uuid
+		})
+	})
+		.then(response => response.json())
+		.then(handleErrors)
+		.then(data => {
+			return fetch('./api/get-token', {
+				method: 'POST',
+				headers: {
+					Accept: 'application/json',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					uuid,
+					token: data.token
+				})
+			});
+		})
+		.then(response => response.json())
+		.then(handleErrors)
+		.then(data => {
+			localStorage.setItem('accessToken', data.accessToken);
+			return data.accessToken;
+		});
+}
+
 // Error Message Function
 function showError(error, button) {
-	console.log(`Showing error message: ${error}`);
-	if (button) {
-		Swal.fire({
-			title: error,
-			icon: 'error',
-			buttonsStyling: false,
-			customClass: {
-				confirmButton: 'btn btn-link'
-			},
-			didOpen: () => {
-				Swal.hideLoading();
-			}
-		});
-	} else {
-		Swal.fire({
-			title: error,
-			icon: 'error',
-			showConfirmButton: false,
-			allowOutsideClick: false,
-			allowEscapeKey: false,
-			allowEnterKey: false,
-			didOpen: () => {
-				Swal.hideLoading();
-			}
-		});
-	}
+	Swal.fire({
+		title: error,
+		icon: 'error',
+		buttonsStyling: false,
+		customClass: {
+			confirmButton: 'btn btn-link'
+		},
+		showConfirmButton: button,
+		allowOutsideClick: button,
+		allowEscapeKey: button,
+		allowEnterKey: button,
+		didOpen: () => {
+			Swal.hideLoading();
+		}
+	});
 }
 
 // Loading Indicator Function
@@ -220,7 +216,7 @@ function changePage(page, title, id) {
 	bsCollapse.hide();
 }
 
-function loadCachesPage() {
+function loadCachesMapPage() {
 	const mapContainer = document.getElementById('mapContainer');
 	mapContainer.innerHTML = loadingGif;
 	const loader = new google.maps.plugins.loader.Loader({
@@ -232,13 +228,15 @@ function loadCachesPage() {
 		id: 'googleMapsScript'
 	});
 	let caches;
-	getAccessToken()
+	getAccessToken(false)
 		.then(accessToken => {
 			return fetch('./api/get-caches', {
 				method: 'GET',
-				headers: {
-					Authorization: `Bearer ${accessToken}`
-				}
+				...(accessToken && {
+					headers: {
+						Authorization: `Bearer ${accessToken}`
+					}
+				})
 			});
 		})
 		.then(response => response.json())
@@ -391,13 +389,15 @@ function loadCachesTablePage() {
 	const tableContainer = document.getElementById('tableContainer');
 	tableContainer.innerHTML = loadingGif;
 	let caches;
-	getAccessToken()
+	getAccessToken(false)
 		.then(accessToken => {
 			return fetch('./api/get-caches', {
 				method: 'GET',
-				headers: {
-					Authorization: `Bearer ${accessToken}`
-				}
+				...(accessToken && {
+					headers: {
+						Authorization: `Bearer ${accessToken}`
+					}
+				})
 			});
 		})
 		.then(response => response.json())
@@ -429,7 +429,7 @@ function loadCachesTablePage() {
 					},
 					formatter: (location) => {
 						const locationString = String(DOMPurify.sanitize(location)).split('///')[1];
-						return gridjs.html(`<a href="https://what3words.com/${locationString}" target="_blank" translate="no">///${locationString}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a>`);
+						return gridjs.html(`<a href="https://what3words.com/${locationString}?maptype=satellite" target="_blank" translate="no">///${locationString}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a>`);
 					}
 				},
 				{
@@ -521,7 +521,7 @@ function loadCachesTablePage() {
 
 function loadCachePage(id) {
 	resetCachePage();
-	getAccessToken()
+	getAccessToken(false)
 		.then(accessToken => {
 			return fetch('./api/get-cache', {
 				method: 'POST',
@@ -530,7 +530,9 @@ function loadCachePage(id) {
 				}),
 				headers: {
 					'Content-Type': 'application/json',
-					Authorization: `Bearer ${accessToken}`
+					...(accessToken && {
+						Authorization: `Bearer ${accessToken}`
+					})
 				}
 			});
 		})
@@ -552,8 +554,8 @@ function loadCachePage(id) {
 				w3wLink.setAttribute('class', 'card-text');
 				const w3wAddress = String(DOMPurify.sanitize(data.location)).split('///')[1];
 				const coordinates = String(DOMPurify.sanitize(data.coordinates));
-				w3wLink.innerHTML = `<p><strong>what3words address:</strong>&nbsp;<a href="https://what3words.com/${w3wAddress}" target="_blank" translate="no">///${w3wAddress}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a></p>
-				<p><strong>Grid reference:</strong>&nbsp;<a href="https://explore.osmaps.com/pin?lat=${coordinates.split(',')[0]}&lon=${coordinates.split(',')[1]}&zoom=18.0000&overlays=&style=Standard&type=2d&placesCategory=" target="_blank">${DOMPurify.sanitize(data.gridRef)}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a><br><a class="text-decoration-none" href="https://getoutside.ordnancesurvey.co.uk/guides/beginners-guide-to-grid-references/" target="_blank">Learn more about grid references&nbsp;<i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a></p>
+				w3wLink.innerHTML = `<p><strong>what3words address:</strong>&nbsp;<a href="https://what3words.com/${w3wAddress}?maptype=satellite" target="_blank" translate="no">///${w3wAddress}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a></p>
+				<p><strong>Grid reference:</strong>&nbsp;<a href="https://explore.osmaps.com/pin?lat=${coordinates.split(',')[0]}&lon=${coordinates.split(',')[1]}&zoom=18.0000&overlays=&style=Aerial&type=2d&placesCategory=" target="_blank">${DOMPurify.sanitize(data.gridRef)}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a><br><a class="text-decoration-none" href="https://getoutside.ordnancesurvey.co.uk/guides/beginners-guide-to-grid-references/" target="_blank">Learn more about grid references&nbsp;<i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a></p>
 				<p><br><strong id="cacheStats"></strong></p>`;
 				const w3wBtn = document.getElementById('cacheW3WBtn');
 				w3wBtn.removeAttribute('tabindex');
@@ -564,7 +566,7 @@ function loadCachePage(id) {
 				const mapBtn = document.getElementById('cacheMapsLink');
 				mapBtn.removeAttribute('tabindex');
 				mapBtn.setAttribute('class', 'btn btn-primary m-1');
-				mapBtn.setAttribute('href', `https://www.google.com/maps/search/?api=1&query=${coordinates}`);
+				mapBtn.setAttribute('href', `https://www.google.com/maps/search/?q=${coordinates}&t=k`);
 				mapBtn.setAttribute('target', '_blank');
 				mapBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in Google Maps';
 				const foundBtn = document.getElementById('cacheFoundLink');
@@ -661,7 +663,7 @@ function loadFoundCachePage(id) {
 			}
 		},
 		preConfirm: (data) => {
-			return getAccessToken()
+			return getAccessToken(true)
 				.then(accessToken => {
 					return fetch('./api/found-cache', {
 						method: 'POST',
@@ -671,7 +673,7 @@ function loadFoundCachePage(id) {
 						}),
 						headers: {
 							'Content-Type': 'application/json',
-							Authorization: accessToken
+							Authorization: `Bearer ${accessToken}`
 						}
 					});
 				})
@@ -735,7 +737,7 @@ function loadFoundCachesPage() {
 	const placeholder = loadingGif;
 	const foundContainer = document.getElementById('foundContainer');
 	foundContainer.innerHTML = placeholder;
-	getAccessToken()
+	getAccessToken(false)
 		.then(accessToken => {
 			return fetch('./api/found-caches', {
 				method: 'GET',
@@ -876,13 +878,15 @@ function loadLeaderboardPage() {
 	const placeholder = loadingGif;
 	const leaderboardContainer = document.getElementById('leaderboardContainer');
 	leaderboardContainer.innerHTML = placeholder;
-	getAccessToken()
+	getAccessToken(false)
 		.then(accessToken => {
 			return fetch('./api/get-leaderboard', {
 				method: 'GET',
-				headers: {
-					Authorization: `Bearer ${accessToken}`
-				}
+				...(accessToken && {
+					headers: {
+						Authorization: `Bearer ${accessToken}`
+					}
+				})
 			});
 		})
 		.then(response => response.json())
@@ -985,7 +989,7 @@ window.onload = function () {
 		})
 		.on('/viewCaches', function () {
 			// router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			loadCachesPage();
+			loadCachesMapPage();
 		})
 		.on('/viewCachesTable', function () {
 			// router.navigate('/holding', { historyAPIMethod: 'replaceState' });

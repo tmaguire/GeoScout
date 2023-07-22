@@ -5,6 +5,8 @@ import {
 } from 'jwt-promisify';
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
+// Validation module
+import isUUID from 'validator/es/lib/isUUID';
 // Microsoft Graph API details
 const clientId = process.env.graphClientId;
 const tenantId = process.env.tenantId;
@@ -40,15 +42,24 @@ import limiterFactory from 'lambda-rate-limiter';
 const jwtSecret = process.env.jwtTokenSecret;
 const jwtOptions = {
 	audience: 'www.geoscout.uk',
-	maxAge: '3y',
+	expiresIn: '3y',
 	issuer: 'api.geoscout.uk',
 	algorithm: 'HS384'
 };
 // Cache for validation
 const uuidCache = {};
+// Return for all responses
+const headers = {
+	'Content-Type': 'application/json'
+};
+// Dictionary list for usernames
+const usernameList = [
+	'Red', 'Yellow', 'Green', 'Teal', 'Blue', 'Purple', 'Amber', 'Orange', 'Pink'
+];
 
 // Start Lambda Function
 export async function handler(event, context) {
+	console.log(uuidCache);
 	// Rate limiting configuration to prevent abuse
 	const limiter = limiterFactory({
 		interval: 6000,
@@ -69,9 +80,7 @@ export async function handler(event, context) {
 					error: 'Too many attempts',
 					errorDebug: 'Please contact support@geoscout.uk if you believe this is a mistake.'
 				}),
-				headers: {
-					'Content-Type': 'application/json'
-				}
+				headers
 			};
 		});
 
@@ -82,27 +91,21 @@ export async function handler(event, context) {
 			body: JSON.stringify({
 				error: 'Method Not Allowed'
 			}),
-			headers: {
-				'Content-Type': 'application/json'
-			}
+			headers
 		};
 	}
 
 	let uuid;
-	let tempToken;
 
 	try {
 		uuid = JSON.parse(event.body).uuid;
-		const check = new RegExp('^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$');
-		if (!check.test(uuid)) {
+		if (!isUUID(uuid)) {
 			return {
 				statusCode: 400,
 				body: JSON.stringify({
 					error: 'Invalid UUID'
 				}),
-				headers: {
-					'Content-Type': 'application/json'
-				}
+				headers
 			};
 		}
 	} catch (error) {
@@ -112,21 +115,58 @@ export async function handler(event, context) {
 			body: JSON.stringify({
 				error: 'Invalid request'
 			}),
-			headers: {
-				'Content-Type': 'application/json'
-			}
+			headers
 		};
 	}
 
 	if (JSON.parse(event.body).hasOwnProperty('token')) {
-		tempToken = JSON.parse(event.body).token;
+		const tempToken = JSON.parse(event.body).token;
+		let itemId;
+		let accessToken;
 		if (tempToken === uuidCache[uuid]) {
 			delete uuidCache[uuid];
 			return client
-				.api(``)
-				.post({})
-				.then(data => { })
-				.catch(error => { });
+				.api(`/sites/${siteId}/lists/${deviceListId}/items`)
+				.post({
+					fields: {
+						Title: `${usernameList[crypto.randomInt(usernameList.length)]}-${crypto.randomInt(100, 999)}`
+					}
+				})
+				.then(data => {
+					itemId = data.id;
+					return sign({
+						sub: data.fields.Title,
+						oid: data.id,
+						jwtId: tempToken,
+					}, jwtSecret, jwtOptions);
+				})
+				.then(jwt => {
+					accessToken = jwt;
+					return client
+						.api(`/sites/${siteId}/lists/${deviceListId}/items/${itemId}/fields`)
+						.patch({
+							Username: JSON.stringify([tempToken])
+						});
+				})
+				.then(() => {
+					return {
+						statusCode: 200,
+						body: JSON.stringify({
+							accessToken
+						}),
+						headers
+					};
+				})
+				.catch(error => {
+					console.warn(error);
+					return {
+						statusCode: 500,
+						body: JSON.stringify({
+							error: 'Unable to generate an account for this device',
+							errorDebug: error
+						})
+					};
+				});
 		} else {
 			try {
 				delete uuidCache[uuid];
@@ -136,9 +176,7 @@ export async function handler(event, context) {
 				body: JSON.stringify({
 					error: 'Invalid request'
 				}),
-				headers: {
-					'Content-Type': 'application/json'
-				}
+				headers
 			};
 		}
 	} else {
@@ -149,9 +187,7 @@ export async function handler(event, context) {
 			body: JSON.stringify({
 				token: tempToken
 			}),
-			headers: {
-				'Content-Type': 'application/json'
-			}
+			headers
 		};
 	}
 }

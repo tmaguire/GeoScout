@@ -52,6 +52,10 @@ const jwtOptions = {
 	issuer: 'api.geoscout.uk',
 	algorithms: 'HS384'
 };
+// Return for all responses
+const headers = {
+	'Content-Type': 'application/json'
+};
 
 // Start Lambda Function
 export async function handler(event, context) {
@@ -62,28 +66,23 @@ export async function handler(event, context) {
 			body: JSON.stringify({
 				error: 'Method Not Allowed'
 			}),
-			headers: {
-				'Content-Type': 'application/json'
-			}
+			headers
 		};
 	}
 
 	let cacheId;
-	let deviceId;
+	let deviceId = false;
 	let returnObj;
 
 	try {
 		cacheId = JSON.parse(event.body).cache;
-		deviceId = event.headers['device-id'];
 		if (!cacheId || cacheId.length !== 3) {
 			return {
 				statusCode: 400,
 				body: JSON.stringify({
 					error: 'Invalid cache ID'
 				}),
-				headers: {
-					'Content-Type': 'application/json'
-				}
+				headers
 			};
 		}
 	} catch (error) {
@@ -93,17 +92,34 @@ export async function handler(event, context) {
 			body: JSON.stringify({
 				error: 'Invalid request'
 			}),
-			headers: {
-				'Content-Type': 'application/json'
-			}
+			headers
 		};
 	}
 
-	// Get list items from library
-	return client
-		.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,W3WLocation,Coordinates,Found,Suspended)&$select=id,fields&filter=fields/Title eq '${cacheId}'`)
-		.get()
+	return new Promise((resolve, reject) => {
+		// Get token (if provided)
+		try {
+			const authToken = String(event.headers.Authorization).split(' ')[1];
+			if (authToken) {
+				resolve(verify(authToken, jwtSecret, jwtOptions));
+			} else {
+				resolve(false);
+			}
+		} catch (error) {
+			reject(error);
+		}
+	})
+		.then(decodedToken => {
+			if (decodedToken) {
+				deviceId = decodedToken.sub;
+			}
+			// Get items from list
+			return client
+				.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,W3WLocation,Coordinates,Found,Suspended)&$select=id,fields&filter=fields/Title eq '${cacheId}' and fields/Suspended eq 0`)
+				.get();
+		})
 		.then(data => {
+
 			if (data.hasOwnProperty('error')) {
 				throw {
 					error: data.error
@@ -121,7 +137,7 @@ export async function handler(event, context) {
 				suspended: fields.Suspended
 			};
 			return client
-				.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
+				.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${deviceId ? deviceId : ''}'`)
 				.get();
 		})
 		.then(data => {
@@ -144,9 +160,7 @@ export async function handler(event, context) {
 			return {
 				statusCode: 200,
 				body: JSON.stringify(obj),
-				headers: {
-					'Content-Type': 'application/json'
-				}
+				headers
 			};
 		})
 		.catch(error => {
@@ -157,9 +171,7 @@ export async function handler(event, context) {
 					error: 'Cache not found',
 					errorDebug: error
 				}),
-				headers: {
-					'Content-Type': 'application/json'
-				}
+				headers
 			};
 		});
 }
