@@ -101,7 +101,8 @@ export async function handler(event, context) {
 				const obj = {
 					found: '',
 					total: '',
-					position: ''
+					position: '',
+					deviceId
 				};
 				data.value.forEach(device => {
 					array.push({

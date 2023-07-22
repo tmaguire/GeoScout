@@ -99,7 +99,7 @@ export async function handler(event, context) {
 	return new Promise((resolve, reject) => {
 		// Get token (if provided)
 		try {
-			const authToken = String(event.headers.Authorization).split(' ')[1];
+			const authToken = String(event.headers.authorization).split(' ')[1];
 			if (authToken) {
 				resolve(verify(authToken, jwtSecret, jwtOptions));
 			} else {

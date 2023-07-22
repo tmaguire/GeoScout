@@ -843,7 +843,7 @@ function loadFoundCachesPage() {
 					data: data.found
 				})
 					.render(document.getElementById('foundWrapper'));
-				const deviceId = DOMPurify.sanitize(data.deviceid);
+				const deviceId = DOMPurify.sanitize(data.deviceId);
 				document.getElementById('foundCachesDeviceId').innerText = deviceId;
 				document.getElementById('foundCachesProfilePic').setAttribute('src', `./profilePic/${deviceId}/96`);
 				document.getElementById('foundCachesProfilePic').setAttribute('height', '48');

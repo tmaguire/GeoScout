@@ -91,6 +91,7 @@ export async function handler(event, context) {
 	let cacheCode;
 	let deviceId;
 	let token;
+	let tokenId;
 	let currentStats;
 
 	try {
@@ -130,16 +131,12 @@ export async function handler(event, context) {
 	return verify(token, jwtSecret, jwtOptions)
 		.then(decodedToken => {
 			deviceId = decodedToken.sub;
+			tokenId = decodedToken.jwtId;
 			return client
 				.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,CableTieCode,Found)&$select=id,fields&filter=fields/Title eq '${cacheId}'`)
 				.get();
 		})
 		.then(data => {
-			if (data.hasOwnProperty('error')) {
-				throw {
-					error: data.error
-				};
-			}
 			if (data.value[0].fields.CableTieCode !== String(cacheCode)) {
 				throw 'Invalid code';
 			}
@@ -148,23 +145,33 @@ export async function handler(event, context) {
 				id: data.value[0].id
 			};
 			return client
-				.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches,Total)&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
+				.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches,Total,Username)&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
 				.get();
 		})
 		.then(data => {
 			const currentTime = new Date();
 			if (data.value.length === 1) {
-				const found = [...JSON.parse(data.value[0].fields.FoundCaches)];
-				found.push({
-					id: cacheId,
-					date: currentTime.toISOString()
-				});
-				return client
-					.api(`/sites/${siteId}/lists/${deviceListId}/items/${data.value[0].id}/fields`)
-					.patch({
-						FoundCaches: JSON.stringify(found),
-						Total: Number(Number(data.value[0].fields.Total) + 1)
+				const tokenIds = [...JSON.parse(data.value[0].fields.Username)];
+				if (tokenIds.find(id => id === tokenId)) {
+					const found = [...JSON.parse(data.value[0].fields.FoundCaches)];
+					found.forEach(entry => {
+						if (entry.id === cacheId) {
+							throw 'Duplicate entry!';
+						}
 					});
+					found.push({
+						id: cacheId,
+						date: currentTime.toISOString()
+					});
+					return client
+						.api(`/sites/${siteId}/lists/${deviceListId}/items/${data.value[0].id}/fields`)
+						.patch({
+							FoundCaches: JSON.stringify(found),
+							Total: Number(Number(data.value[0].fields.Total) + 1)
+						});
+				} else {
+					throw 'Invalid device ID';
+				}
 			} else {
 				throw 'Invalid device ID';
 			}
@@ -201,6 +208,15 @@ export async function handler(event, context) {
 					body: JSON.stringify({
 						error: 'Unable to validate your device ID',
 						errorDebug: 'Token not found in backend - contact support@geoscout.uk'
+					}),
+					headers
+				};
+			} else if (error === 'Duplicate entry') {
+				return {
+					statusCode: 403,
+					body: JSON.stringify({
+						error: "You've already found this cache!",
+						errorDebug: 'Your device ID has already found this cache - contact support@geoscout.uk if you believe this is an error'
 					}),
 					headers
 				};
