@@ -250,7 +250,7 @@ function loadCachesMapPage() {
 			return loader.load();
 		})
 		.then((google) => {
-			mapContainer.innerHTML = '<div id="mapFilter"></div><div id="mainMap"></div><div class="my-3 text-center"><a href="viewCachesTable" class="text-decoration-none" data-navigo="true"><i class="bi bi-table" aria-hidden="true"></i>&nbsp;View map data as a table</a></div>';
+			mapContainer.innerHTML = '<div id="mapFilter"></div><div id="mainMap" class="rounded"></div><div class="my-3 text-center"><a href="viewCachesTable" class="text-decoration-none" data-navigo="true"><i class="bi bi-table" aria-hidden="true"></i>&nbsp;View map data as a table</a></div>';
 			router.updatePageLinks();
 			mainMap = null;
 			mainMap = new google.maps.Map(document.getElementById('mainMap'), {
