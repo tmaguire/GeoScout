@@ -31,7 +31,7 @@ const client = Client.initWithMiddleware({
 	authProvider: authProvider
 });
 // SharePoint Site Details
-const deviceListId = process.env.graphUserListId;
+const userListId = process.env.graphUserListId;
 const siteId = process.env.graphSiteId;
 // JWT authentication
 const jwtSecret = process.env.jwtTokenSecret;
@@ -60,7 +60,7 @@ export async function handler(event, context) {
 	}
 
 	let token = '';
-	let deviceId;
+	let userId;
 
 	try {
 		token = String(event.headers.authorization).split(' ')[1];
@@ -86,9 +86,9 @@ export async function handler(event, context) {
 
 	return verify(token, jwtSecret, jwtOptions)
 		.then(decodedToken => {
-			deviceId = decodedToken.sub;
+			userId = decodedToken.sub;
 			return client
-				.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,Total,FoundCaches)&$select=id,fields&$orderby=fields/Total desc,fields/Title`)
+				.api(`/sites/${siteId}/lists/${userListId}/items?expand=fields(select=Title,Total,FoundCaches)&$select=id,fields&$orderby=fields/Total desc,fields/Title`)
 				.get();
 		})
 		.then(data => {
@@ -102,13 +102,13 @@ export async function handler(event, context) {
 					found: '',
 					total: '',
 					position: '',
-					deviceId
+					userId
 				};
-				data.value.forEach(device => {
+				data.value.forEach(user => {
 					array.push({
-						found: [...JSON.parse(device.fields.FoundCaches)],
-						total: device.fields.Total,
-						deviceId: device.fields.Title
+						found: [...JSON.parse(user.fields.FoundCaches)],
+						total: user.fields.Total,
+						userId: user.fields.Title
 					});
 				});
 				array.sort(function (a, b) {
@@ -120,7 +120,7 @@ export async function handler(event, context) {
 						position++;
 					}
 					array[i].position = position;
-					if (array[i].deviceId === deviceId) {
+					if (array[i].userId === userId) {
 						obj.found = array[i].found;
 						obj.total = array[i].total;
 						obj.position = array[i].position;

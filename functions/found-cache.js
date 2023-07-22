@@ -32,7 +32,7 @@ const client = Client.initWithMiddleware({
 });
 // SharePoint Site Details
 const listId = process.env.graphSiteListId;
-const deviceListId = process.env.graphUserListId;
+const userListId = process.env.graphUserListId;
 const siteId = process.env.graphSiteId;
 // Imports for rate limiting
 import crypto from 'crypto';
@@ -89,7 +89,7 @@ export async function handler(event, context) {
 
 	let cacheId;
 	let cacheCode;
-	let deviceId;
+	let userId;
 	let token;
 	let tokenId;
 	let currentStats;
@@ -130,7 +130,7 @@ export async function handler(event, context) {
 
 	return verify(token, jwtSecret, jwtOptions)
 		.then(decodedToken => {
-			deviceId = decodedToken.sub;
+			userId = decodedToken.sub;
 			tokenId = decodedToken.jwtId;
 			return client
 				.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,CableTieCode,Found)&$select=id,fields&filter=fields/Title eq '${cacheId}'`)
@@ -145,7 +145,7 @@ export async function handler(event, context) {
 				id: data.value[0].id
 			};
 			return client
-				.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches,Total,Username)&$select=id,fields&filter=fields/Title eq '${deviceId}'`)
+				.api(`/sites/${siteId}/lists/${userListId}/items?expand=fields(select=Title,FoundCaches,Total,Username)&$select=id,fields&filter=fields/Title eq '${userId}'`)
 				.get();
 		})
 		.then(data => {
@@ -156,7 +156,7 @@ export async function handler(event, context) {
 					const found = [...JSON.parse(data.value[0].fields.FoundCaches)];
 					found.forEach(entry => {
 						if (entry.id === cacheId) {
-							throw 'Duplicate entry!';
+							throw 'Duplicate entry';
 						}
 					});
 					found.push({
@@ -164,16 +164,16 @@ export async function handler(event, context) {
 						date: currentTime.toISOString()
 					});
 					return client
-						.api(`/sites/${siteId}/lists/${deviceListId}/items/${data.value[0].id}/fields`)
+						.api(`/sites/${siteId}/lists/${userListId}/items/${data.value[0].id}/fields`)
 						.patch({
 							FoundCaches: JSON.stringify(found),
 							Total: Number(Number(data.value[0].fields.Total) + 1)
 						});
 				} else {
-					throw 'Invalid device ID';
+					throw 'Invalid User ID';
 				}
 			} else {
-				throw 'Invalid device ID';
+				throw 'Invalid User ID';
 			}
 		})
 		.then(() => {
@@ -202,11 +202,11 @@ export async function handler(event, context) {
 					}),
 					headers
 				};
-			} else if (error === 'Invalid device ID') {
+			} else if (error === 'Invalid User ID') {
 				return {
 					statusCode: 401,
 					body: JSON.stringify({
-						error: 'Unable to validate your device ID',
+						error: 'Unable to validate your User ID',
 						errorDebug: 'Token not found in backend - contact support@geoscout.uk'
 					}),
 					headers
@@ -216,7 +216,7 @@ export async function handler(event, context) {
 					statusCode: 403,
 					body: JSON.stringify({
 						error: "You've already found this cache!",
-						errorDebug: 'Your device ID has already found this cache - contact support@geoscout.uk if you believe this is an error'
+						errorDebug: 'Your User ID has already found this cache - contact support@geoscout.uk if you believe this is an error'
 					}),
 					headers
 				};

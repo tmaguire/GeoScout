@@ -36,7 +36,7 @@ const client = Client.initWithMiddleware({
 });
 // SharePoint Site Details
 const listId = process.env.graphSiteListId;
-const deviceListId = process.env.graphUserListId;
+const userListId = process.env.graphUserListId;
 const siteId = process.env.graphSiteId;
 // Google Maps Secret
 const mapsSecret = process.env.mapsSecret;
@@ -71,7 +71,7 @@ export async function handler(event, context) {
 	}
 
 	let cacheId;
-	let deviceId = false;
+	let userId = false;
 	let returnObj;
 
 	try {
@@ -111,7 +111,7 @@ export async function handler(event, context) {
 	})
 		.then(decodedToken => {
 			if (decodedToken) {
-				deviceId = decodedToken.sub;
+				userId = decodedToken.sub;
 			}
 			// Get items from list
 			return client
@@ -119,42 +119,33 @@ export async function handler(event, context) {
 				.get();
 		})
 		.then(data => {
-
-			if (data.hasOwnProperty('error')) {
-				throw {
-					error: data.error
-				};
+			if (data.value.length === 0) {
+				throw 'Cache has been suspended or does not exist';
 			}
 			const fields = data.value[0].fields;
 			returnObj = {
 				location: fields.W3WLocation,
 				coordinates: fields.Coordinates,
 				id: fields.Title,
-				image: signUrl(`https://maps.googleapis.com/maps/api/staticmap?center=${fields.Coordinates}&zoom=18&markers=color:0x7413DC|${fields.Coordinates}&size=400x400&scale=2&map_id=6b8e857a992e95a7&key=AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4`, mapsSecret).href,
+				image: '',
 				gridRef: new LatLon(Number(String(fields.Coordinates).split(',')[0]), Number(String(fields.Coordinates).split(',')[1])).toOsGrid().toString(),
 				stats: fields.Found,
 				found: false,
 				suspended: fields.Suspended
 			};
 			return client
-				.api(`/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${deviceId ? deviceId : ''}'`)
+				.api(`/sites/${siteId}/lists/${userListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${userId ? userId : ''}'`)
 				.get();
 		})
 		.then(data => {
-			if (data.value.length === 0) {
-				return returnObj;
-			} else if (data.value.length === 1) {
-				const found = JSON.parse(data.value[0].fields.FoundCaches);
-				found.forEach(cache => {
-					if (cache.id === cacheId) {
-						returnObj.found = true;
-						returnObj.image = signUrl(`https://maps.googleapis.com/maps/api/staticmap?center=${returnObj.coordinates}&zoom=18&markers=color:0x23A950|${returnObj.coordinates}&size=400x400&scale=2&map_id=6b8e857a992e95a7&key=AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4`, mapsSecret).href;
-					}
-				});
-				return returnObj;
-			} else {
-				throw 'Duplicate device ID!';
+			if (data.value.length === 1) {
+				const found = [...JSON.parse(data.value[0].fields.FoundCaches)];
+				if (found.find(cache => (cache.id === cacheId))) {
+					returnObj.found = true;
+				}
 			}
+			returnObj.image = signUrl(`https://maps.googleapis.com/maps/api/staticmap?center=${returnObj.coordinates}&zoom=20&markers=color:${returnObj.found ? '0x23A950' : '0x7413DC'}|${returnObj.coordinates}&size=400x400&scale=2&maptype=satellite&key=AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4`, mapsSecret).href;
+			return returnObj;
 		})
 		.then(obj => {
 			return {

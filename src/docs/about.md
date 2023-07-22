@@ -20,7 +20,7 @@ keeping fit.
 </p>
 <p>
 We have hidden over 100 codes around Witham, get out there and start
-searching for the hidden caches. These are blue, and red
+searching for the hidden caches. These are blue, red, and yellow
 coloured cable ties that could be fixed to street furniture,
 trees, fences, signposts - just about anywhere! Using your smartphone,
 our web-app, and what3words or Google Maps. Navigate,

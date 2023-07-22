@@ -259,7 +259,7 @@ function loadCachesMapPage() {
 					lng: 0.64038
 				},
 				zoom: 13,
-				minZoom: 13,
+				minZoom: 12,
 				maxZoom: 20,
 				restriction: {
 					latLngBounds: {
@@ -323,7 +323,7 @@ function loadCachesMapPage() {
 			document.getElementById('mapFilter').innerHTML = `<fieldset><div class="btn-group mb-3">
 				<legend class="visually-hidden">Filter control for the map to toggle which caches are visible</legend>
 				<input type="radio" class="btn-check" name="mapFilterBtn" id="mapFilterAll" autocomplete="off" value="all" checked>
-				<label class="btn btn-outline-primary" for="mapFilterAll">All caches</label>
+				<label class="btn btn-outline-primary rounded-start" for="mapFilterAll">All caches</label>
 				<input type="radio" class="btn-check" name="mapFilterBtn" id="mapFilterNotFound" autocomplete="off" value="notFound">
 				<label class="btn btn-outline-primary" for="mapFilterNotFound">Caches you haven't found</label>
 				<input type="radio" class="btn-check" name="mapFilterBtn" id="mapFilterFound" autocomplete="off" value="found">
@@ -439,7 +439,7 @@ function loadCachesTablePage() {
 						enabled: true
 					},
 					formatter: (cell) => {
-						return (cell ? 'Yes 😊' : 'No ☹️');
+						return (Boolean(cell) ? 'Yes 😊' : 'No ☹️');
 					}
 				},
 				{
@@ -461,14 +461,15 @@ function loadCachesTablePage() {
 				data: () => data.flatMap(cache => cache.suspended ? [] : [cache]),
 				search: {
 					enabled: true,
-					selector: (cell, rowIndex, cellIndex) => cellIndex === 0 ? cell : null
+					selector: (cell, rowIndex, cellIndex) => (cellIndex === 0) ? cell : null
 				},
 				language: {
 					search: {
 						placeholder: 'Search by Cache ID'
 					}
 				},
-			}).render(document.getElementById('table'));
+			})
+				.render(document.getElementById('table'));
 			return table;
 		})
 		.then(table => {
@@ -758,8 +759,8 @@ function loadFoundCachesPage() {
 							<div class="card-body">
 								<div class="row">
 									<div class="col">
-										<p class="card-title text-muted mb-0">Device ID</p>
-										<p class="font-weight-bold mb-0"><strong id="foundCachesDeviceId"></strong></p>
+										<p class="card-title text-muted mb-0">User ID</p>
+										<p class="font-weight-bold mb-0"><strong id="foundCachesUserId"></strong></p>
 									</div>
 									<div class="col-auto">
 										<div class="icon rounded-circle my-3 my-sm-auto">
@@ -843,12 +844,12 @@ function loadFoundCachesPage() {
 					data: data.found
 				})
 					.render(document.getElementById('foundWrapper'));
-				const deviceId = DOMPurify.sanitize(data.deviceId);
-				document.getElementById('foundCachesDeviceId').innerText = deviceId;
-				document.getElementById('foundCachesProfilePic').setAttribute('src', `./profilePic/${deviceId}/96`);
+				const userId = DOMPurify.sanitize(data.userId);
+				document.getElementById('foundCachesUserId').innerText = userId;
+				document.getElementById('foundCachesProfilePic').setAttribute('src', `./profilePic/${userId}/96`);
 				document.getElementById('foundCachesProfilePic').setAttribute('height', '48');
 				document.getElementById('foundCachesProfilePic').setAttribute('width', '48');
-				document.getElementById('foundCachesProfilePic').setAttribute('alt', `Profile picture for ${deviceId} (your device ID)`);
+				document.getElementById('foundCachesProfilePic').setAttribute('alt', `Profile picture for ${userId} (your User ID)`);
 				document.getElementById('foundCachesTotal').innerText = Number(data.found.length);
 				const positionString = appendSuffix(Number(data.position));
 				document.getElementById('foundCacheRanking').innerHTML = `${positionString}${positionString === '1st' ? '&nbsp;🥇' : positionString === '2nd' ? '&nbsp;🥈' : positionString === '3rd' ? '&nbsp;🥉' : ''}`;
@@ -911,20 +912,20 @@ function loadLeaderboardPage() {
 							if (cell) {
 								return {
 									'data-ranking': cell,
-									'data-match': String(Boolean(row.cells[1].data === data.deviceId))
+									'data-match': String(Boolean(row.cells[1].data === data.userId))
 								};
 							}
 						}
 					},
 					{
-						id: 'deviceId',
-						name: 'Device ID',
+						id: 'userId',
+						name: 'User ID',
 						sort: {
 							enabled: true
 						},
-						formatter: (deviceId) => {
-							const name = DOMPurify.sanitize(deviceId);
-							return gridjs.html(`${name}${name === data.deviceId ? '&nbsp;<strong>(You)</strong>' : ''}`);
+						formatter: (userId) => {
+							const name = DOMPurify.sanitize(userId);
+							return gridjs.html(`${name}${(name === data.userId) ? '&nbsp;<strong>(You)</strong>' : ''}`);
 						}
 					},
 					{

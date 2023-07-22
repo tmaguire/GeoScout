@@ -42,7 +42,7 @@ $secondary: #003982;
 // @import "./node_modules/bootstrap/scss/popover";
 // @import "./node_modules/bootstrap/scss/carousel";
 @import './node_modules/bootstrap/scss/spinners';
-// @import "./node_modules/bootstrap/scss/offcanvas"; // Requires transitions
+@import './node_modules/bootstrap/scss/offcanvas'; // Requires transitions
 @import './node_modules/bootstrap/scss/placeholders';
 
 // Helpers
@@ -161,5 +161,6 @@ input[type='number']::-webkit-outer-spin-button {
 }
 
 .gs-your-device {
-	border: 3px solid $secondary !important;
+	border-top: solid var(--bs-secondary) !important;
+	border-bottom: solid var(--bs-secondary) !important;
 }

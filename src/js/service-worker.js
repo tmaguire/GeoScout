@@ -25,8 +25,7 @@ let resourcesToCache = [
 	'./img/splash.png',
 	// Map icons
 	'./img/found.png',
-	'./img/notFound.png',
-
+	'./img/notFound.png'
 ];
 
 self.addEventListener('install', event => {

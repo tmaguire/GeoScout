@@ -63,7 +63,7 @@ export async function handler(event, context) {
 	const returnObj = {
 		caches: []
 	};
-	let deviceId = false;
+	let userId = false;
 	let deviceObj = [];
 	let caches = [];
 
@@ -82,7 +82,7 @@ export async function handler(event, context) {
 	})
 		.then(decodedToken => {
 			if (decodedToken) {
-				deviceId = decodedToken.sub;
+				userId = decodedToken.sub;
 			}
 			// Use batch request
 			return client
@@ -96,7 +96,7 @@ export async function handler(event, context) {
 					{
 						id: 'device',
 						method: 'GET',
-						url: `/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${deviceId ? deviceId : ''}'`
+						url: `/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${userId ? userId : ''}'`
 					}]
 				});
 		})
@@ -149,7 +149,7 @@ export async function handler(event, context) {
 				});
 				return returnObj;
 			} else {
-				throw 'Duplicate device ID!';
+				throw 'Duplicate User ID!';
 			}
 		})
 		.then(obj => {

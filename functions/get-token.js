@@ -33,7 +33,7 @@ const client = Client.initWithMiddleware({
 	authProvider: authProvider
 });
 // SharePoint Site Details
-const deviceListId = process.env.graphUserListId;
+const userListId = process.env.graphUserListId;
 const siteId = process.env.graphSiteId;
 // Imports for rate limiting
 import crypto from 'crypto';
@@ -126,7 +126,7 @@ export async function handler(event, context) {
 		if (tempToken === uuidCache[uuid]) {
 			delete uuidCache[uuid];
 			return client
-				.api(`/sites/${siteId}/lists/${deviceListId}/items`)
+				.api(`/sites/${siteId}/lists/${userListId}/items`)
 				.post({
 					fields: {
 						Title: `${usernameList[crypto.randomInt(usernameList.length)]}-${crypto.randomInt(100, 999)}`
@@ -143,7 +143,7 @@ export async function handler(event, context) {
 				.then(jwt => {
 					accessToken = jwt;
 					return client
-						.api(`/sites/${siteId}/lists/${deviceListId}/items/${itemId}/fields`)
+						.api(`/sites/${siteId}/lists/${userListId}/items/${itemId}/fields`)
 						.patch({
 							Username: JSON.stringify([tempToken])
 						});

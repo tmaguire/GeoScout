@@ -59,7 +59,7 @@ export async function handler(event, context) {
 		};
 	}
 
-	let deviceId = false;
+	let userId = false;
 
 	return new Promise((resolve, reject) => {
 		// Get token (if provided)
@@ -76,7 +76,7 @@ export async function handler(event, context) {
 	})
 		.then(decodedToken => {
 			if (decodedToken) {
-				deviceId = decodedToken.sub;
+				userId = decodedToken.sub;
 			}
 			// Get items from list
 			return client
@@ -91,7 +91,7 @@ export async function handler(event, context) {
 				data.value.forEach(user => {
 					const fields = user.fields;
 					array.push({
-						deviceId: fields.Title,
+						userId: fields.Title,
 						found: fields.Total
 					});
 				});
@@ -118,7 +118,7 @@ export async function handler(event, context) {
 				statusCode: 200,
 				body: JSON.stringify({
 					leaderboard,
-					deviceId
+					userId
 				}),
 				headers
 			};
