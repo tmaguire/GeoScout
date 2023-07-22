@@ -560,13 +560,13 @@ function loadCachePage(id) {
 				const w3wBtn = document.getElementById('cacheW3WBtn');
 				w3wBtn.removeAttribute('tabindex');
 				w3wBtn.setAttribute('class', 'btn btn-primary m-1');
-				w3wBtn.setAttribute('href', `https://what3words.com/${w3wAddress}`);
+				w3wBtn.setAttribute('href', `https://what3words.com/${w3wAddress}?maptype=satellite`);
 				w3wBtn.setAttribute('target', '_blank');
 				w3wBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in what3words';
 				const mapBtn = document.getElementById('cacheMapsLink');
 				mapBtn.removeAttribute('tabindex');
 				mapBtn.setAttribute('class', 'btn btn-primary m-1');
-				mapBtn.setAttribute('href', `https://www.google.com/maps/search/?q=${coordinates}&t=k`);
+				mapBtn.setAttribute('href', `https://www.google.com/maps/search/?api=1&query=${coordinates}`);
 				mapBtn.setAttribute('target', '_blank');
 				mapBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in Google Maps';
 				const foundBtn = document.getElementById('cacheFoundLink');
