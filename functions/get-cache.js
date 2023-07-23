@@ -115,7 +115,7 @@ export async function handler(event, context) {
 			}
 			// Get items from list
 			return client
-				.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,W3WLocation,Coordinates,Found,Suspended)&$select=id,fields&filter=fields/Title eq '${cacheId}' and fields/Suspended eq 0`)
+				.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,W3WLocation,Coordinates,Found,Suspended)&$select=id,fields&$filter=fields/Title eq '${cacheId}' and fields/Suspended eq 0`)
 				.get();
 		})
 		.then(data => {
@@ -134,7 +134,7 @@ export async function handler(event, context) {
 				suspended: fields.Suspended
 			};
 			return client
-				.api(`/sites/${siteId}/lists/${userListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${userId ? userId : ''}'`)
+				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$filter=fields/Title eq '${userId ? userId : ''}'`)
 				.get();
 		})
 		.then(data => {

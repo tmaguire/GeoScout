@@ -72,6 +72,7 @@ export async function handler(event, context) {
 	let userId;
 	let token;
 	let tokenId;
+	let recordId;
 	let currentStats;
 
 	try {
@@ -92,7 +93,7 @@ export async function handler(event, context) {
 			return {
 				statusCode: 401,
 				body: JSON.stringify({
-					error: 'Missing required headers'
+					error: 'Access denied'
 				}),
 				headers
 			};
@@ -133,8 +134,9 @@ export async function handler(event, context) {
 		.then(decodedToken => {
 			userId = decodedToken.sub;
 			tokenId = decodedToken.jwtId;
+			recordId = decodedToken.oid;
 			return client
-				.api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,CableTieCode,Found)&$select=id,fields&filter=fields/Title eq '${cacheId}'`)
+				.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,CableTieCode,Found)&$select=id,fields&$filter=fields/Title eq '${cacheId}'`)
 				.get();
 		})
 		.then(data => {
@@ -146,15 +148,15 @@ export async function handler(event, context) {
 				id: data.value[0].id
 			};
 			return client
-				.api(`/sites/${siteId}/lists/${userListId}/items?expand=fields(select=Title,FoundCaches,Total,Username)&$select=id,fields&filter=fields/Title eq '${userId}'`)
+				.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?$expand=fields($select=Title,FoundCaches,Total,Username)&$select=id,fields&$filter=fields/Title eq '${userId}'`)
 				.get();
 		})
 		.then(data => {
-			const currentTime = new Date();
-			if (data.value.length === 1) {
-				const tokenIds = [...JSON.parse(data.value[0].fields.Username)];
+			if (data.hasOwnProperty('fields')) {
+				const currentTime = new Date();
+				const tokenIds = [...JSON.parse(data.fields.Username)];
 				if (tokenIds.find(id => id === tokenId)) {
-					const found = [...JSON.parse(data.value[0].fields.FoundCaches)];
+					const found = [...JSON.parse(data.fields.FoundCaches)];
 					found.forEach(entry => {
 						if (entry.id === cacheId) {
 							throw 'Duplicate entry';
@@ -165,10 +167,10 @@ export async function handler(event, context) {
 						date: currentTime.toISOString()
 					});
 					return client
-						.api(`/sites/${siteId}/lists/${userListId}/items/${data.value[0].id}/fields`)
+						.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}/fields`)
 						.patch({
 							FoundCaches: JSON.stringify(found),
-							Total: Number(Number(data.value[0].fields.Total) + 1)
+							Total: Number(Number(data.fields.Total) + 1)
 						});
 				} else {
 					throw 'Invalid User ID';

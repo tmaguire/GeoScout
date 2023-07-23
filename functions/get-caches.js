@@ -32,7 +32,7 @@ const client = Client.initWithMiddleware({
 });
 // SharePoint Site Details
 const listId = process.env.graphSiteListId;
-const deviceListId = process.env.graphUserListId;
+const userListId = process.env.graphUserListId;
 const siteId = process.env.graphSiteId;
 // JWT authentication
 const jwtSecret = process.env.jwtTokenSecret;
@@ -64,7 +64,7 @@ export async function handler(event, context) {
 		caches: []
 	};
 	let userId = false;
-	let deviceObj = [];
+	let userObj = [];
 	let caches = [];
 
 	return new Promise((resolve, reject) => {
@@ -91,12 +91,12 @@ export async function handler(event, context) {
 					requests: [{
 						id: 'caches',
 						method: 'GET',
-						url: `/sites/${siteId}/lists/${listId}/items?expand=fields(select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields&filter=fields/Suspended eq 0`
+						url: `/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields&$filter=fields/Suspended eq 0`
 					},
 					{
-						id: 'device',
+						id: 'user',
 						method: 'GET',
-						url: `/sites/${siteId}/lists/${deviceListId}/items?expand=fields(select=Title,FoundCaches)&$select=id,fields&filter=fields/Title eq '${userId ? userId : ''}'`
+						url: `/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$filter=fields/Title eq '${userId ? userId : ''}'`
 					}]
 				});
 		})
@@ -112,8 +112,8 @@ export async function handler(event, context) {
 						error: response.body.error
 					};
 				}
-				if (response.id === 'device') {
-					deviceObj = response.body.value;
+				if (response.id === 'user') {
+					userObj = response.body.value;
 				} else if (response.id === 'caches') {
 					caches = response.body.value;
 				}
@@ -132,13 +132,13 @@ export async function handler(event, context) {
 					suspended: fields.Suspended
 				});
 			});
-			return deviceObj;
+			return userObj;
 		})
-		.then(device => {
-			if (device.length === 0) {
+		.then(user => {
+			if (user.length === 0) {
 				return returnObj;
-			} else if (device.length === 1) {
-				const found = [...JSON.parse(device[0].fields.FoundCaches)];
+			} else if (user.length === 1) {
+				const found = [...JSON.parse(user[0].fields.FoundCaches)];
 				found.forEach(item => {
 					try {
 						const cache = returnObj.caches.find(cache => (cache.id === item.id));

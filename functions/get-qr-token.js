@@ -1,7 +1,8 @@
 /* jshint esversion: 10 */
 // Import JWT module
 import {
-	sign
+	sign,
+	verify
 } from 'jwt-promisify';
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
@@ -56,16 +57,10 @@ const jwtSignOptions = {
 	issuer: 'api.geoscout.uk',
 	algorithm: 'HS256'
 };
-// Cache for validation
-const uuidCache = {};
 // Return for all responses
 const headers = {
 	'Content-Type': 'application/json'
 };
-// Dictionary list for usernames
-const usernameList = [
-	'Red', 'Yellow', 'Green', 'Teal', 'Blue', 'Purple', 'Amber', 'Orange', 'Pink'
-];
 
 // Start Lambda Function
 export async function handler(event, context) {
@@ -80,10 +75,18 @@ export async function handler(event, context) {
 		};
 	}
 
+	let token;
 	let uuid;
+	let userId;
+	let tokenId;
+	let recordId;
+	let qrToken;
+	let backupTokens;
+	let returnToken;
 
 	try {
 		uuid = JSON.parse(event.body).uuid;
+		token = String(event.headers.authorization).split(' ')[1];
 		if (!isUUID(uuid)) {
 			return {
 				statusCode: 400,
@@ -93,8 +96,17 @@ export async function handler(event, context) {
 				headers
 			};
 		}
+		if (!token || token === '') {
+			return {
+				statusCode: 401,
+				body: JSON.stringify({
+					error: 'Access denied'
+				}),
+				headers
+			};
+		}
 	} catch (error) {
-		console.log(error);
+		console.warn(error);
 		return {
 			statusCode: 400,
 			body: JSON.stringify({
@@ -110,8 +122,8 @@ export async function handler(event, context) {
 		.update(`${(event.headers['x-nf-client-connection-ip'] || event.headers['client-ip'])}-${uuid}`)
 		.digest('hex');
 	try {
-		// Limit to 5 attempts per IP/per UUID
-		await rateLimit(5, uniqueToken);
+		// Limit to 1 attempt per IP/per UUID (prevent replay attack)
+		await rateLimit(1, uniqueToken);
 	} catch (error) {
 		// If exceeds rate limit, return 429 (too many attempts)
 		console.warn(error);
@@ -125,76 +137,60 @@ export async function handler(event, context) {
 		};
 	}
 
-	if (JSON.parse(event.body).hasOwnProperty('token')) {
-		const tempToken = JSON.parse(event.body).token;
-		let itemId;
-		let accessToken;
-		if (tempToken === uuidCache[uuid]) {
-			delete uuidCache[uuid];
+	// Validate current token
+	return verify(token, jwtSecret, jwtVerifyOptions)
+		.then(decodedToken => {
+			userId = decodedToken.sub;
+			tokenId = decodedToken.jwtId;
+			recordId = decodedToken.oid;
 			return client
-				.api(`/sites/${siteId}/lists/${userListId}/items`)
-				.post({
-					fields: {
-						Title: `${usernameList[crypto.randomInt(usernameList.length)]}-${crypto.randomInt(100, 999)}`
-					}
-				})
-				.then(data => {
-					itemId = data.id;
+				.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?expand=fields(select=Title,FoundCaches,Total,Username)&$select=id,fields&filter=fields/Title eq '${userId}'`)
+				.get();
+		})
+		.then(data => {
+			if (data.hasOwnProperty('fields')) {
+				const tokenIds = [...JSON.parse(data.fields.Username)];
+				if (tokenIds.find(id => id === tokenId)) {
+					qrToken = Buffer.from(`${crypto.randomUUID()}-${uuid}`, 'ascii').toString('base64');
+					backupTokens = [...JSON.parse(data.fields.BackupTokenIDs)];
+					backupTokens.push(qrToken);
 					return sign({
-						sub: data.fields.Title,
-						oid: data.id,
-						jwtId: tempToken,
-					}, jwtSecret, jwtVerifyOptions);
-				})
-				.then(jwt => {
-					accessToken = jwt;
-					return client
-						.api(`/sites/${siteId}/lists/${userListId}/items/${itemId}/fields`)
-						.patch({
-							Username: JSON.stringify([tempToken])
-						});
-				})
-				.then(() => {
-					return {
-						statusCode: 200,
-						body: JSON.stringify({
-							accessToken
-						}),
-						headers
-					};
-				})
-				.catch(error => {
-					console.warn(error);
-					return {
-						statusCode: 500,
-						body: JSON.stringify({
-							error: 'Unable to generate an account for this device',
-							errorDebug: error
-						}),
-						headers
-					};
+						sub: userId,
+						oid: recordId,
+						jwtId: qrToken
+					}, jwtSecret, jwtSignOptions);
+				} else {
+					throw 'Invalid User ID';
+				}
+			} else {
+				throw 'Invalid User ID';
+			}
+		})
+		.then(jwt => {
+			returnToken = jwt;
+			return client.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}/fields`)
+				.patch({
+					BackupTokenIDs: JSON.stringify(backupTokens)
 				});
-		} else {
-			try {
-				delete uuidCache[uuid];
-			} catch { }
+		})
+		.then(() => {
 			return {
-				statusCode: 400,
+				statusCode: 200,
 				body: JSON.stringify({
-					error: 'Invalid request'
+					token: returnToken
 				}),
 				headers
 			};
-		}
-	} else {
-		const tempToken = Buffer.from(`${crypto.randomUUID()}-${uuid}`, 'ascii').toString('base64');
-		uuidCache[uuid] = tempToken;
-		return {
-			statusCode: 200,
-			body: JSON.stringify({
-				token: tempToken
-			}),
-			headers
-		};
-	}
+		})
+		.catch(error => {
+			console.warn(error);
+			return {
+				statusCode: 500,
+				body: JSON.stringify({
+					error: 'Unable to generate QR token',
+					errorDebug: error
+				}),
+				headers
+			};
+		});
 }
