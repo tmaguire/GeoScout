@@ -44,11 +44,17 @@ const rateLimit = require('lambda-rate-limiter')({
 }).check;
 // JWT authentication
 const jwtSecret = process.env.jwtTokenSecret;
-const jwtOptions = {
+const jwtVerifyOptions = {
 	audience: 'www.geoscout.uk',
-	expiresIn: '3y',
+	maxAge: '3y',
 	issuer: 'api.geoscout.uk',
 	algorithm: 'HS384'
+};
+const jwtSignOptions = {
+	audience: 'qr.geoscout.uk',
+	expiresIn: '1h',
+	issuer: 'api.geoscout.uk',
+	algorithm: 'HS256'
 };
 // Cache for validation
 const uuidCache = {};
@@ -138,7 +144,7 @@ export async function handler(event, context) {
 						sub: data.fields.Title,
 						oid: data.id,
 						jwtId: tempToken,
-					}, jwtSecret, jwtOptions);
+					}, jwtSecret, jwtVerifyOptions);
 				})
 				.then(jwt => {
 					accessToken = jwt;

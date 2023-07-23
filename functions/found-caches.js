@@ -61,6 +61,7 @@ export async function handler(event, context) {
 
 	let token = '';
 	let userId;
+	let tokenId;
 
 	try {
 		token = String(event.headers.authorization).split(' ')[1];
@@ -87,8 +88,9 @@ export async function handler(event, context) {
 	return verify(token, jwtSecret, jwtOptions)
 		.then(decodedToken => {
 			userId = decodedToken.sub;
+			tokenId = decodedToken.jwtId;
 			return client
-				.api(`/sites/${siteId}/lists/${userListId}/items?expand=fields(select=Title,Total,FoundCaches)&$select=id,fields&$orderby=fields/Total desc,fields/Title`)
+				.api(`/sites/${siteId}/lists/${userListId}/items?expand=fields(select=Title,Total,FoundCaches,Username)&$select=id,fields&$orderby=fields/Total desc,fields/Title`)
 				.get();
 		})
 		.then(data => {
@@ -108,8 +110,14 @@ export async function handler(event, context) {
 					array.push({
 						found: [...JSON.parse(user.fields.FoundCaches)],
 						total: user.fields.Total,
-						userId: user.fields.Title
+						userId: user.fields.Title,
 					});
+					if (user.fields.Title === userId) {
+						const tokenIds=[...JSON.parse(user.fields.Username)];
+						if (!tokenIds.find(id => id === tokenId)) {
+							throw 'Unable to validate your User ID';
+						}
+					}
 				});
 				array.sort(function (a, b) {
 					return b.total - a.total;

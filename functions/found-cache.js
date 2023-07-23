@@ -36,7 +36,11 @@ const userListId = process.env.graphUserListId;
 const siteId = process.env.graphSiteId;
 // Imports for rate limiting
 import crypto from 'crypto';
-import limiterFactory from 'lambda-rate-limiter';
+// Rate limiting configuration to prevent abuse
+const rateLimit = require('lambda-rate-limiter')({
+	// Set 1 minute interval
+	interval: 60 * 1000
+}).check;
 // JWT authentication
 const jwtSecret = process.env.jwtTokenSecret;
 const jwtOptions = {
@@ -52,30 +56,6 @@ const headers = {
 
 // Start Lambda Function
 export async function handler(event, context) {
-	// Rate limiting configuration to prevent abuse
-	const limiter = limiterFactory({
-		interval: 6000,
-		uniqueTokenPerInterval: 500,
-	});
-	// Hash IP address before storing it in the limiter (to comply with GDPR)
-	const ip = crypto
-		.createHash('SHA256')
-		.update((event.headers['x-nf-client-connection-ip'] || event.headers['client-ip']))
-		.digest('hex');
-	limiter
-		.check(10, ip)
-		.catch((error) => {
-			console.log(error);
-			return {
-				statusCode: 429,
-				body: JSON.stringify({
-					error: 'Too many attempts',
-					errorDebug: 'Please contact support@geoscout.uk if you believe this is a mistake.'
-				}),
-				headers
-			};
-		});
-
 	// Only allow POST
 	if (event.httpMethod !== 'POST') {
 		return {
@@ -108,7 +88,7 @@ export async function handler(event, context) {
 				headers
 			};
 		}
-		if (!token) {
+		if (!token || token === '') {
 			return {
 				statusCode: 401,
 				body: JSON.stringify({
@@ -123,6 +103,27 @@ export async function handler(event, context) {
 			statusCode: 400,
 			body: JSON.stringify({
 				error: 'Invalid request'
+			}),
+			headers
+		};
+	}
+
+	// Generate hash for current IP + Cache ID (stored in limiter)
+	const uniqueToken = crypto
+		.createHash('SHA256')
+		.update(`${(event.headers['x-nf-client-connection-ip'] || event.headers['client-ip'])}-${cacheId}`)
+		.digest('hex');
+	try {
+		// Limit to 3 attempts per minute/per cache
+		await rateLimit(3, uniqueToken);
+	} catch (error) {
+		// If exceeds rate limit, return 429 (too many attempts)
+		console.warn(error);
+		return {
+			statusCode: 429,
+			body: JSON.stringify({
+				error: 'Too many attempts',
+				errorDebug: 'Please contact support@geoscout.uk if you believe this is a mistake.'
 			}),
 			headers
 		};
@@ -198,7 +199,7 @@ export async function handler(event, context) {
 				return {
 					statusCode: 403,
 					body: JSON.stringify({
-						error: error
+						error
 					}),
 					headers
 				};
