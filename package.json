@@ -19,7 +19,7 @@
 	},
 	"homepage": "https://github.com/tmaguire/GeoScout#readme",
 	"dependencies": {
-		"@azure/identity": "^3.2.3",
+		"@azure/identity": "^3.2.4",
 		"@googlemaps/js-api-loader": "^1.16.2",
 		"@googlemaps/markerclusterer": "^2.3.2",
 		"@googlemaps/url-signature": "^1.0.29",
