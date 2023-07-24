@@ -151,7 +151,10 @@ export async function handler(event, context) {
 			if (data.hasOwnProperty('fields')) {
 				const tokenIds = [...JSON.parse(data.fields.Username)];
 				if (tokenIds.find(id => id === tokenId)) {
-					qrToken = Buffer.from(`${crypto.randomUUID()}-${uuid}`, 'ascii').toString('base64');
+					qrToken = crypto
+						.createHash('SHA256')
+						.update(Buffer.from(`${crypto.randomUUID()}-${uuid}`, 'ascii').toString('base64'))
+						.digest('hex');
 					backupTokens = [...JSON.parse(data.fields.BackupTokenIDs)];
 					backupTokens.push(qrToken);
 					return sign({

@@ -123,6 +123,15 @@ export async function handler(event, context) {
 		const tempToken = JSON.parse(event.body).token;
 		let itemId;
 		let accessToken;
+		if (tempToken === '' || tempToken === undefined) {
+			return {
+				statusCode: 400,
+				body: JSON.stringify({
+					error: 'Invalid request'
+				}),
+				headers
+			};
+		}
 		if (tempToken === uuidCache[uuid]) {
 			delete uuidCache[uuid];
 			return client
@@ -181,7 +190,10 @@ export async function handler(event, context) {
 			};
 		}
 	} else {
-		const tempToken = Buffer.from(`${crypto.randomUUID()}-${uuid}`, 'ascii').toString('base64');
+		const tempToken = crypto
+			.createHash('SHA256')
+			.update(Buffer.from(`${crypto.randomUUID()}-${uuid}`, 'ascii').toString('base64'))
+			.digest('hex');
 		uuidCache[uuid] = tempToken;
 		return {
 			statusCode: 200,
