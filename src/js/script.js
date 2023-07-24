@@ -975,8 +975,8 @@ function loadLeaderboardPage() {
 
 function loadRestoreFile() {
 	Swal.fire({
-		title: 'Restore account using backup file',
-		text: 'Restore your GeoScout account using a backup file create by yourself earlier or provided by GeoScout Support.',
+		title: 'Restore account using a backup file',
+		text: 'Restore your GeoScout account using a backup file created by yourself earlier or provided by GeoScout Support.',
 		showCancelButton: () => !Swal.isLoading(),
 		confirmButtonText: 'Restore account',
 		showLoaderOnConfirm: true,
