@@ -1,12 +1,11 @@
 /* jshint esversion: 10 */
 // Import JWT module
 import {
-	sign
+	sign,
+	verify
 } from 'jwt-promisify';
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
-// Validation module
-import isUUID from 'validator/es/lib/isUUID';
 // Microsoft Graph API details
 const clientId = process.env.graphClientId;
 const tenantId = process.env.tenantId;
@@ -44,22 +43,22 @@ const rateLimit = require('lambda-rate-limiter')({
 }).check;
 // JWT authentication
 const jwtSecret = process.env.jwtTokenSecret;
-const jwtOptions = {
+const jwtVerifyOptions = {
+	audience: 'backup.geoscout.uk',
+	maxAge: '5y',
+	issuer: 'api.geoscout.uk',
+	algorithm: 'HS512'
+};
+const jwtSignOptions = {
 	audience: 'www.geoscout.uk',
 	expiresIn: '3y',
 	issuer: 'api.geoscout.uk',
 	algorithm: 'HS384'
 };
-// Cache for validation
-const uuidCache = {};
 // Return for all responses
 const headers = {
 	'Content-Type': 'application/json'
 };
-// Dictionary list for usernames
-const usernameList = [
-	'Red', 'Yellow', 'Green', 'Teal', 'Blue', 'Purple', 'Amber', 'Orange', 'Pink'
-];
 
 // Start Lambda Function
 export async function handler(event, context) {
@@ -74,21 +73,28 @@ export async function handler(event, context) {
 		};
 	}
 
+	let backupToken;
 	let uuid;
+	let userId;
+	let backupTokenId;
+	let recordId;
+	let accessTokenId;
+	let accessTokenIds;
+	let returnToken;
 
 	try {
-		uuid = JSON.parse(event.body).uuid;
-		if (!isUUID(uuid)) {
+		backupToken = String(event.headers.authorization).split(' ')[1];
+		if (!backupToken || backupToken === '') {
 			return {
-				statusCode: 400,
+				statusCode: 401,
 				body: JSON.stringify({
-					error: 'Invalid UUID'
+					error: 'Access denied'
 				}),
 				headers
 			};
 		}
 	} catch (error) {
-		console.log(error);
+		console.warn(error);
 		return {
 			statusCode: 400,
 			body: JSON.stringify({
@@ -101,10 +107,10 @@ export async function handler(event, context) {
 	// Generate hash for current IP + UUID (stored in limiter)
 	const uniqueToken = crypto
 		.createHash('SHA256')
-		.update(`${(event.headers['x-nf-client-connection-ip'] || event.headers['client-ip'])}-${uuid}`)
+		.update(`${(event.headers['x-nf-client-connection-ip'] || event.headers['client-ip'])}`)
 		.digest('hex');
 	try {
-		// Limit to 5 attempts per IP/per UUID
+		// Limit to 5 attempts per IP (prevent abuse)
 		await rateLimit(5, uniqueToken);
 	} catch (error) {
 		// If exceeds rate limit, return 429 (too many attempts)
@@ -119,88 +125,63 @@ export async function handler(event, context) {
 		};
 	}
 
-	if (JSON.parse(event.body).hasOwnProperty('token')) {
-		const tempToken = JSON.parse(event.body).token;
-		let itemId;
-		let accessToken;
-		if (tempToken === '' || tempToken === undefined) {
-			return {
-				statusCode: 400,
-				body: JSON.stringify({
-					error: 'Invalid request'
-				}),
-				headers
-			};
-		}
-		if (tempToken === uuidCache[uuid]) {
-			delete uuidCache[uuid];
+	// Validate exchange token
+	return verify(backupToken, jwtSecret, jwtVerifyOptions)
+		.then(decodedToken => {
+			userId = decodedToken.sub;
+			backupTokenId = decodedToken.jwtId;
+			recordId = decodedToken.oid;
 			return client
-				.api(`/sites/${siteId}/lists/${userListId}/items`)
-				.post({
-					fields: {
-						Title: `${usernameList[crypto.randomInt(usernameList.length)]}-${crypto.randomInt(100, 999)}`
-					}
-				})
-				.then(data => {
-					itemId = data.id;
+				.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?expand=fields(select=Title,FoundCaches,Total,Username,BackupTokenIDs)&$select=id,fields&filter=fields/Title eq '${userId}'`)
+				.get();
+		})
+		.then(data => {
+			if (data.hasOwnProperty('fields')) {
+				const tempArray = [...JSON.parse(data.fields.BackupTokenIDs)];
+				if (tempArray.find(id => id === backupTokenId)) {
+					accessTokenId = crypto
+						.createHash('SHA256')
+						.update(Buffer.from(`${crypto.randomUUID()}-${uuid}`, 'ascii').toString('base64'))
+						.digest('hex');
+					accessTokenIds = [...JSON.parse(data.fields.Username)];
+					accessTokenIds.push(accessTokenId);
 					return sign({
-						sub: data.fields.Title,
-						oid: data.id,
-						jwtId: tempToken,
-					}, jwtSecret, jwtOptions);
-				})
-				.then(jwt => {
-					accessToken = jwt;
-					return client
-						.api(`/sites/${siteId}/lists/${userListId}/items/${itemId}/fields`)
-						.patch({
-							Username: JSON.stringify([tempToken])
-						});
-				})
-				.then(() => {
-					return {
-						statusCode: 201,
-						body: JSON.stringify({
-							accessToken
-						}),
-						headers
-					};
-				})
-				.catch(error => {
-					console.warn(error);
-					return {
-						statusCode: 500,
-						body: JSON.stringify({
-							error: 'Unable to generate an account for this device',
-							errorDebug: error
-						}),
-						headers
-					};
+						sub: userId,
+						oid: recordId,
+						jwtId: accessTokenId
+					}, jwtSecret, jwtSignOptions);
+				} else {
+					throw 'Invalid User ID';
+				}
+			} else {
+				throw 'Invalid User ID';
+			}
+		})
+		.then(jwt => {
+			returnToken = jwt;
+			return client.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}/fields`)
+				.patch({
+					Username: JSON.stringify(accessTokenIds)
 				});
-		} else {
-			try {
-				delete uuidCache[uuid];
-			} catch { }
+		})
+		.then(() => {
 			return {
-				statusCode: 400,
+				statusCode: 201,
 				body: JSON.stringify({
-					error: 'Invalid request'
+					accessToken: returnToken
 				}),
 				headers
 			};
-		}
-	} else {
-		const tempToken = crypto
-			.createHash('SHA256')
-			.update(Buffer.from(`${crypto.randomUUID()}-${uuid}`, 'ascii').toString('base64'))
-			.digest('hex');
-		uuidCache[uuid] = tempToken;
-		return {
-			statusCode: 200,
-			body: JSON.stringify({
-				token: tempToken
-			}),
-			headers
-		};
-	}
+		})
+		.catch(error => {
+			console.warn(error);
+			return {
+				statusCode: 500,
+				body: JSON.stringify({
+					error: 'Unable to generate access token',
+					errorDebug: error
+				}),
+				headers
+			};
+		});
 }

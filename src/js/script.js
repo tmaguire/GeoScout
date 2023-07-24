@@ -732,12 +732,12 @@ function loadFoundCachesPage() {
 			<p class="lead mb-4">Get outside and go find some!</p>
 			<div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
 				<a href="viewCaches" class="btn btn-primary btn-lg px-4 gap-3" data-navigo="true">Find caches</a>
+				<!--<a href="restoreAccount" class="btn btn-outline-primary btn-lg px-4 gap-3" data-navigo="true">Add existing account</a>-->
 			</div>
 		</div>
 	</div>`;
-	const placeholder = loadingGif;
 	const foundContainer = document.getElementById('foundContainer');
-	foundContainer.innerHTML = placeholder;
+	foundContainer.innerHTML = loadingGif;
 	getAccessToken(false)
 		.then(accessToken => {
 			return fetch('./api/found-caches', {
@@ -878,9 +878,8 @@ function loadLeaderboardPage() {
 			</div>
 		</div>
 	</div>`;
-	const placeholder = loadingGif;
 	const leaderboardContainer = document.getElementById('leaderboardContainer');
-	leaderboardContainer.innerHTML = placeholder;
+	leaderboardContainer.innerHTML = loadingGif;
 	getAccessToken(false)
 		.then(accessToken => {
 			return fetch('./api/get-leaderboard', {
@@ -974,6 +973,70 @@ function loadLeaderboardPage() {
 	changePage('leaderboard', 'Leaderboard', false);
 }
 
+function loadRestoreFile() {
+	Swal.fire({
+		title: 'Restore account using backup file',
+		text: 'Restore your GeoScout account using a backup file create by yourself earlier or provided by GeoScout Support.',
+		showCancelButton: () => !Swal.isLoading(),
+		confirmButtonText: 'Restore account',
+		showLoaderOnConfirm: true,
+		buttonsStyling: false,
+		customClass: {
+			loader: 'custom-loader',
+			confirmButton: 'btn btn-primary mx-1',
+			cancelButton: 'btn btn-link mx-1',
+			input: 'form-control swal2-file'
+		},
+		loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
+		allowOutsideClick: () => !Swal.isLoading(),
+		backdrop: true,
+		input: 'file',
+		inputAttributes: {
+			accept: '.geoscout',
+			'aria-label': 'Upload the GeoScout backup'
+		},
+		inputAutoFocus: false,
+		inputValidator: (file) => {
+			return (file ? false : 'You need to select a backup file to restore');
+		},
+		preConfirm: (file) => {
+			Swal.getCancelButton().setAttribute('hidden', true);
+			return file
+				.text()
+				.then(backupToken => {
+					return fetch('./api/exchange-backup-token', {
+						method: 'POST',
+						headers: {
+							Authorization: `Bearer ${backupToken}`
+						}
+					});
+				})
+				.then(response => response.json())
+				.then(handleErrors)
+				.then(data => {
+					localStorage.setItem('accessToken', data.accessToken);
+					return true;
+				});
+		},
+		didClose: () => {
+			router.navigate('restoreAccount');
+		}
+	})
+		.then((result) => {
+			if (result.value) {
+				router.navigate('home');
+				showToast.fire({
+					title: 'Restore successful!',
+					icon: 'success'
+				});
+			}
+		})
+		.catch(error => {
+			console.log(error);
+			showError(error, true);
+		});
+}
+
 // Function to start on page load
 window.onload = function () {
 	// Create router
@@ -1024,6 +1087,12 @@ window.onload = function () {
 		})
 		.on('/privacy', function () {
 			changePage('privacy', 'Privacy Policy', false);
+		})
+		.on('/restoreAccount', function () {
+			changePage('restoreAccount', 'Restore your account', false);
+		})
+		.on('/restoreFile', function () {
+			loadRestoreFile();
 		})
 		.notFound(function () {
 			changePage('404', 'Page not found', false);

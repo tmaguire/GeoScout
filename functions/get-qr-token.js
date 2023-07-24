@@ -75,18 +75,18 @@ export async function handler(event, context) {
 		};
 	}
 
-	let token;
+	let accessToken;
 	let uuid;
 	let userId;
-	let tokenId;
+	let accessTokenId;
 	let recordId;
-	let qrToken;
-	let backupTokens;
+	let backupTokenId;
+	let backupTokenIds;
 	let returnToken;
 
 	try {
 		uuid = JSON.parse(event.body).uuid;
-		token = String(event.headers.authorization).split(' ')[1];
+		accessToken = String(event.headers.authorization).split(' ')[1];
 		if (!isUUID(uuid)) {
 			return {
 				statusCode: 400,
@@ -96,7 +96,7 @@ export async function handler(event, context) {
 				headers
 			};
 		}
-		if (!token || token === '') {
+		if (!accessToken || accessToken === '') {
 			return {
 				statusCode: 401,
 				body: JSON.stringify({
@@ -138,29 +138,29 @@ export async function handler(event, context) {
 	}
 
 	// Validate current token
-	return verify(token, jwtSecret, jwtVerifyOptions)
+	return verify(accessToken, jwtSecret, jwtVerifyOptions)
 		.then(decodedToken => {
 			userId = decodedToken.sub;
-			tokenId = decodedToken.jwtId;
+			accessTokenId = decodedToken.jwtId;
 			recordId = decodedToken.oid;
 			return client
-				.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?expand=fields(select=Title,FoundCaches,Total,Username)&$select=id,fields&filter=fields/Title eq '${userId}'`)
+				.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?$expand=fields($select=Title,FoundCaches,Total,Username,BackupTokenIDs)&$select=id,fields&$filter=fields/Title eq '${userId}'`)
 				.get();
 		})
 		.then(data => {
 			if (data.hasOwnProperty('fields')) {
 				const tokenIds = [...JSON.parse(data.fields.Username)];
-				if (tokenIds.find(id => id === tokenId)) {
-					qrToken = crypto
+				if (tokenIds.find(id => id === accessTokenId)) {
+					backupTokenId = crypto
 						.createHash('SHA256')
 						.update(Buffer.from(`${crypto.randomUUID()}-${uuid}`, 'ascii').toString('base64'))
 						.digest('hex');
-					backupTokens = [...JSON.parse(data.fields.BackupTokenIDs)];
-					backupTokens.push(qrToken);
+					backupTokenIds = [...JSON.parse(data.fields.BackupTokenIDs)];
+					backupTokenIds.push(backupTokenId);
 					return sign({
 						sub: userId,
 						oid: recordId,
-						jwtId: qrToken
+						jwtId: backupTokenId
 					}, jwtSecret, jwtSignOptions);
 				} else {
 					throw 'Invalid User ID';
@@ -173,12 +173,12 @@ export async function handler(event, context) {
 			returnToken = jwt;
 			return client.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}/fields`)
 				.patch({
-					BackupTokenIDs: JSON.stringify(backupTokens)
+					BackupTokenIDs: JSON.stringify(backupTokenIds)
 				});
 		})
 		.then(() => {
 			return {
-				statusCode: 200,
+				statusCode: 201,
 				body: JSON.stringify({
 					token: returnToken
 				}),

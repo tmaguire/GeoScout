@@ -155,6 +155,7 @@
 					class="row mx-auto d-none"
 					aria-hidden="true"
 				>
+					<div id="appAlert"></div>
 					<div class="col mx-auto">
 						<h1 class="my-4 text-center">
 							<i class="bi bi-compass" aria-hidden="true"></i
@@ -222,6 +223,59 @@
 									<br />
 									<span class="home-caption"
 										>Find out more</span
+									>
+								</a>
+							</div>
+						</div>
+					</div>
+				</section>
+				<!-- Restore account screen -->
+				<section
+					id="restoreAccount"
+					class="row mx-auto d-none"
+					aria-hidden="true"
+				>
+					<div class="col mx-auto">
+						<h1 class="my-4 text-center">
+							<i class="bi bi-person-up" aria-hidden="true"></i
+							>&nbsp;Restore your account
+							<span class="visually-hidden"
+								>from another device or a previously created
+								backup file</span
+							>
+						</h1>
+						<div class="row home-tiles justify-content-center">
+							<div class="col-12 col-md-6 col-lg-3">
+								<a
+									href="#"
+									class="btn btn-sq-lg btn-primary disabled"
+									data-navigo="true"
+									tabindex="-1"
+								>
+									<i
+										class="bi bi-qr-code-scan home-icon"
+										aria-hidden="true"
+									></i>
+									<br />
+									<span class="home-caption"
+										>Add an additional device</span
+									>
+								</a>
+							</div>
+							<div class="col-12 col-md-6 col-lg-3">
+								<a
+									href="restoreFile"
+									class="btn btn-sq-lg btn-primary"
+									data-navigo-options="updateBrowserURL: false, historyAPIMethod: replaceState"
+									data-navigo="true"
+								>
+									<i
+										class="bi bi-file-earmark-code home-icon"
+										aria-hidden="true"
+									></i>
+									<br />
+									<span class="home-caption"
+										>Restore from backup file</span
 									>
 								</a>
 							</div>
