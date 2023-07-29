@@ -249,7 +249,7 @@ function loadCachesMapPage() {
 			}
 			return loader.load();
 		})
-		.then((google) => {
+		.then(google => {
 			mapContainer.innerHTML = '<div id="mapFilter"></div><div id="mainMap" class="rounded"></div><div class="my-3 text-center"><a href="viewCachesTable" class="text-decoration-none" data-navigo="true"><i class="bi bi-table" aria-hidden="true"></i>&nbsp;View map data as a table</a></div>';
 			router.updatePageLinks();
 			mainMap = null;
@@ -277,7 +277,7 @@ function loadCachesMapPage() {
 			});
 			return loader.load();
 		})
-		.then((google) => {
+		.then(google => {
 			try {
 				const markers = caches.flatMap(cache => {
 					if (!cache.suspended) {
@@ -477,7 +477,7 @@ function loadCachesTablePage() {
 			document.getElementById('tableFilter').innerHTML = `<fieldset><div class="btn-group mb-3">
 				<legend class="visually-hidden">Filter control for the map to toggle which caches are visible</legend>
 				<input type="radio" class="btn-check" name="tableFilterBtn" id="tableFilterAll" autocomplete="off" value="all" checked>
-				<label class="btn btn-outline-primary" for="tableFilterAll">All caches</label>
+				<label class="btn btn-outline-primary rounded-start" for="tableFilterAll">All caches</label>
 				<input type="radio" class="btn-check" name="tableFilterBtn" id="tableFilterNotFound" autocomplete="off" value="notFound">
 				<label class="btn btn-outline-primary" for="tableFilterNotFound">Caches you haven't found</label>
 				<input type="radio" class="btn-check" name="tableFilterBtn" id="tableFilterFound" autocomplete="off" value="found">
@@ -763,7 +763,7 @@ function loadFoundCachesPage() {
 										<p class="font-weight-bold mb-0"><strong id="foundCachesUserId"></strong></p>
 									</div>
 									<div class="col-auto">
-										<div class="icon rounded-circle my-3 my-sm-auto">
+										<div class="icon rounded-circle">
 											<img id="foundCachesProfilePic" src="./img/loading.gif" height="150" width="150" alt="Loading placeholder...">
 										</div>
 									</div>
@@ -996,10 +996,10 @@ function loadRestoreFile() {
 			'aria-label': 'Upload the GeoScout backup'
 		},
 		inputAutoFocus: false,
-		inputValidator: (file) => {
+		inputValidator: file => {
 			return (file ? false : 'You need to select a backup file to restore');
 		},
-		preConfirm: (file) => {
+		preConfirm: file => {
 			Swal.getCancelButton().setAttribute('hidden', true);
 			return file
 				.text()
@@ -1022,7 +1022,7 @@ function loadRestoreFile() {
 			router.navigate('restoreAccount');
 		}
 	})
-		.then((result) => {
+		.then(result => {
 			if (result.value) {
 				router.navigate('home');
 				showToast.fire({

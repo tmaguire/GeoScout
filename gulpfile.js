@@ -133,8 +133,8 @@ function serviceWorker() {
 	])
 		.pipe(preprocess({
 			context: {
-				VERSION: version,
-				APPURL: appUrl
+				version,
+				appUrl
 			}
 		}))
 		.pipe(concat('service-worker.js'))

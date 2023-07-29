@@ -1,14 +1,14 @@
 /* jshint esversion:8 */
 // Install service worker
-const cacheName = 'GeoScout-/* @echo VERSION */'; // Set cache name to align with version
+const cacheName = 'GeoScout-/* @echo version */'; // Set cache name to align with version
 
 // Static resources to cache immediately
 let resourcesToCache = [
 	// Core JavaScript
-	'./js/browser-compat-/* @echo VERSION */.min.js',
-	'./js/main-/* @echo VERSION */.min.js',
+	'./js/browser-compat-/* @echo version */.min.js',
+	'./js/main-/* @echo version */.min.js',
 	// Core CSS
-	'./css/bundle-/* @echo VERSION */.min.css',
+	'./css/bundle-/* @echo version */.min.css',
 	// Bootstrap icons (fonts)
 	'./css/fonts/bootstrap-icons.woff',
 	'./css/fonts/bootstrap-icons.woff2',
@@ -25,7 +25,14 @@ let resourcesToCache = [
 	'./img/splash.png',
 	// Map icons
 	'./img/found.png',
-	'./img/notFound.png'
+	'./img/notFound.png',
+	// About page assets
+	'./img/geoscout-logo.png',
+	'./img/geoscout-logo.webp',
+	'./img/cabletie-thumbnail.png',
+	'./img/cabletie-thumbnail.webp',
+	'./img/cabletie-example.png',
+	'./img/cabletie-example.webp'
 ];
 
 self.addEventListener('install', event => {
@@ -83,7 +90,7 @@ self.addEventListener('activate', event => {
 
 // Listen to messages
 self.addEventListener('message', function (event) {
-	if (event.origin !== '/* @echo APPURL */') {
+	if (event.origin !== '/* @echo appurl */') {
 		return;
 	} else {
 		if (event.data.action === 'skipWaiting') {

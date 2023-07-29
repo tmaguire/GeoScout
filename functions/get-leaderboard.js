@@ -80,7 +80,7 @@ export async function handler(event, context) {
 			}
 			// Get items from list
 			return client
-				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,Total)&$select=id,fields&$orderby=fields/Total desc,fields/Title&$filter=fields/Total ne 0`)
+				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,Total)&$select=id,fields&$orderby=fields/Total desc,fields/Title&$filter=fields/Total ne 0&$top=3000`)
 				.get();
 		})
 		.then(data => {
