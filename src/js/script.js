@@ -138,11 +138,9 @@ function prettyDate(inputDate) {
 		'Saturday'
 	];
 	const inputDateObj = new Date(inputDate);
-	const month = months[inputDateObj.getMonth()];
-	const day = days[inputDateObj.getDay()];
-	const date = String(inputDateObj.getDate());
-	const prettyDate = `${date}${(date === '1') || (date === '21') || (date === '31') ? 'st' : (date === '2') || (date === '22') ? 'nd' : (date === '3') || (date === '23') ? 'rd' : 'th'}`;
-	return `${day} ${prettyDate} of ${month} ${inputDateObj.getFullYear()}`;
+	const day = String(inputDateObj.getDate());
+	const prettyDay = `${days[inputDateObj.getDay()]} ${day}${(day === '1') || (day === '21') || (day === '31') ? 'st' : (day === '2') || (day === '22') ? 'nd' : (day === '3') || (day === '23') ? 'rd' : 'th'}`;
+	return `${prettyDay} of ${months[inputDateObj.getMonth()]} ${inputDateObj.getFullYear()}`;
 }
 
 function appendSuffix(number) {
