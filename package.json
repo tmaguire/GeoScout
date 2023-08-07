@@ -33,7 +33,7 @@
 		"gridjs": "^6.0.6",
 		"isomorphic-fetch": "^3.0.0",
 		"jwt-promisify": "^1.1.7",
-		"lambda-rate-limiter": "^3.0.1",
+		"lambda-rate-limiter": "^4.0.0",
 		"navigo": "^8.11.1",
 		"outdated-browser-rework": "^3.0.1",
 		"react": "^18.2.0",
