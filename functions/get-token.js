@@ -37,8 +37,9 @@ const userListId = process.env.graphUserListId;
 const siteId = process.env.graphSiteId;
 // Imports for rate limiting
 import crypto from 'crypto';
+import awsLimit from 'lambda-rate-limiter';
 // Rate limiting configuration to prevent abuse
-const rateLimit = require('lambda-rate-limiter')({
+const rateLimit = awsLimit({
 	// Set 1 minute interval
 	interval: 60 * 1000
 }).check;

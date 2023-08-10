@@ -114,7 +114,7 @@ function setLoadingIndicator(show, message) {
 }
 
 // Format dates in simple/human readable way
-function getPrettyDate(date, prefomattedDate = false, hideYear = false) {
+function getPrettyDate(date = new Date(), prefomattedDate = false, hideYear = false) {
 	const months = [
 		'January',
 		'February',
@@ -145,19 +145,21 @@ function getPrettyDate(date, prefomattedDate = false, hideYear = false) {
 	const time = String(date.toLocaleTimeString('en-GB', {
 		hour: 'numeric',
 		minute: 'numeric',
-		hour12: true
+		hour12: true,
+		hourCycle: 'h12'
 	})).replace(/\s+/g, '');
+	const formattedTime = `${time.split(':')[0] === '0' ? `12:${time.split(':')[1]}` : time}`;
 	if (prefomattedDate) {
 		// Today at 10:20am
 		// Yesterday at 10:20am
-		return `${prefomattedDate} at ${time}`;
+		return `${prefomattedDate} at ${formattedTime}`;
 	}
 	if (hideYear) {
 		// Tuesday 1st August at 10:20am
-		return `${prettyDay} ${month} at ${time}`;
+		return `${prettyDay} ${month} at ${formattedTime}`;
 	}
 	// Tuesday 1st August 2023 at 10:20am
-	return `${prettyDay} ${month} ${year} at ${time}`;
+	return `${prettyDay} ${month} ${year} at ${formattedTime}`;
 }
 
 // Function to return formatted date based on time ago
@@ -1061,7 +1063,7 @@ function loadRestoreFile() {
 				});
 		},
 		didClose: () => {
-			router.navigate('restoreAccount');
+			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
 		}
 	})
 		.then(result => {
@@ -1069,6 +1071,73 @@ function loadRestoreFile() {
 				router.navigate('home');
 				showToast.fire({
 					title: 'Restore successful!',
+					icon: 'success'
+				});
+			}
+		})
+		.catch(error => {
+			console.log(error);
+			showError(error, true);
+		});
+}
+function createRestoreFile() {
+	Swal.fire({
+		title: 'Create a backup file for your account',
+		html: "Generating this file allows you to restore your account (and all the progress you've made) on any device.<br><strong>Please keep this file safe - anyone that has it will be able to load your GeoScout account on their device!</strong>",
+		showCancelButton: () => !Swal.isLoading(),
+		confirmButtonText: 'Create backup',
+		showLoaderOnConfirm: true,
+		buttonsStyling: false,
+		customClass: {
+			loader: 'custom-loader',
+			confirmButton: 'btn btn-primary mx-1',
+			cancelButton: 'btn btn-link mx-1'
+		},
+		loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
+		allowOutsideClick: () => !Swal.isLoading(),
+		backdrop: true,
+		preConfirm: () => {
+			return getAccessToken(false)
+				.then(accessToken => {
+					if (accessToken) {
+						return fetch('./api/get-backup-token', {
+							method: 'POST',
+							headers: {
+								Authorization: `Bearer ${accessToken}`
+							},
+							body: JSON.stringify({
+								uuid: crypto.randomUUID().toString()
+							})
+						});
+					} else {
+						throw "You don't have an account!";
+					}
+				})
+				.then(response => response.json())
+				.then(handleErrors)
+				.then(backupToken => {
+					const backupFile = new File([String(backupToken.token)], `${backupToken.name}.GeoScout`, { type: 'text/plain' });
+					const url = URL.createObjectURL(backupFile);
+					const link = document.createElement('a');
+					link.href = url;
+					link.download = backupFile.name;
+					link.setAttribute('class', 'd-none');
+					document.body.appendChild(link);
+					link.click();
+					document.body.removeChild(link);
+					window.URL.revokeObjectURL(url);
+					return true;
+				});
+		},
+		didClose: () => {
+			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
+		}
+	})
+		.then(result => {
+			if (result.value) {
+				router.navigate('home');
+				showToast.fire({
+					title: 'Backup file downloaded!',
 					icon: 'success'
 				});
 			}
@@ -1130,8 +1199,24 @@ window.onload = function () {
 		.on('/privacy', function () {
 			changePage('privacy', 'Privacy Policy', false);
 		})
+		// Legacy redirect
 		.on('/restoreAccount', function () {
-			changePage('restoreAccount', 'Restore your account', false);
+			router.navigate('manageAccount');
+		})
+		.on('/manageAccount', function () {
+			getAccessToken(false)
+				.then(hasAccount => {
+					document.getElementById(hasAccount ? 'updateAccount' : 'restoreAccount').classList.remove('d-none');
+				})
+				.finally(() => {
+					changePage('manageAccount', 'Manage your account', false);
+				})
+				.catch(error => {
+					showError(error, false);
+				});
+		})
+		.on('/createFile', function () {
+			createRestoreFile();
 		})
 		.on('/restoreFile', function () {
 			loadRestoreFile();

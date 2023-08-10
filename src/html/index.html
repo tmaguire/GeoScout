@@ -1,753 +1,409 @@
 <!DOCTYPE html>
 <html lang="en-GB">
-	<head>
-		<meta charset="utf-8" />
-		<title>@@appName</title>
-		<meta
-			name="viewport"
-			content="width=device-width, initial-scale=1, shrink-to-fit=no"
-		/>
-		<meta
-			name="description"
-			content="Grab your smartphone and get Geocaching over the summer holidays with our geocache challenge. Geocaching is a fantastic way to enjoy the outdoors exploring new areas and keeping fit."
-		/>
-		<meta name="author" content="@@author" />
-		<!-- Bundled CSS -->
-		<link
-			rel="stylesheet"
-			type="text/css"
-			href="./css/bundle-@@version.min.css"
-		/>
-		<link rel="icon" href="./img/favicon.png" />
-		<meta name="apple-mobile-web-app-capable" content="yes" />
-		<meta
-			name="apple-mobile-web-app-status-bar-style"
-			content="black-translucent"
-		/>
-		<meta name="apple-mobile-web-app-title" content="GeoScout" />
-		<link
-			rel="apple-touch-icon"
-			sizes="192x192"
-			href="./img/maskable.png"
-		/>
-		<link
-			rel="apple-touch-startup-image"
-			sizes="192x192"
-			href="./img/splash.png"
-		/>
-		<link rel="canonical" href="@@appUrl" />
-		<!-- Web App Manifest -->
-		<link rel="manifest" href="./app.webmanifest" />
-		<!-- Theme colour -->
-		<meta name="theme-color" content="#7413DC" />
-	</head>
 
-	<body>
-		<div id="app">
-			<a href="#content" class="visually-hidden-focusable"
-				>Skip to main content</a
-			>
-			<nav class="navbar navbar-expand-md navbar-dark bg-primary">
-				<div class="container-fluid">
-					<a href="/" class="navbar-brand" data-navigo="true">
-						<picture>
-							<source
-								srcset="./img/logo.webp"
-								type="image/webp"
-							/>
-							<img
-								src="./img/logo.png"
-								height="30"
-								width="33"
-								class="d-inline-block align-top"
-								alt="Scouting fleur-de-lis logo"
-							/>
-						</picture>
-						<span class="ms-1 d-inline">@@appName</span>
-					</a>
-					<button
-						class="navbar-toggler"
-						type="button"
-						data-bs-toggle="collapse"
-						data-bs-target="#navbarToggler"
-						aria-controls="navbarToggler"
-						aria-expanded="false"
-						aria-label="Toggle navigation"
-					>
-						<span class="navbar-toggler-icon"></span>
-					</button>
-					<div class="collapse navbar-collapse" id="navbarToggler">
-						<ul class="navbar-nav me-auto mb-2 mb-lg-0">
-							<li class="nav-item">
-								<a
-									class="nav-link"
-									href="home"
-									data-navigo="true"
-									>Home</a
-								>
-							</li>
-							<li class="nav-item">
-								<a
-									class="nav-link"
-									href="viewCaches"
-									data-navigo="true"
-									>View caches</a
-								>
-							</li>
-							<li class="nav-item">
-								<a
-									class="nav-link"
-									href="foundCaches"
-									data-navigo="true"
-									>Found caches</a
-								>
-							</li>
-							<li class="nav-item">
-								<a
-									class="nav-link"
-									href="leaderboard"
-									data-navigo="true"
-									>Leaderboard</a
-								>
-							</li>
-							<li class="nav-item">
-								<a
-									class="nav-link"
-									href="about"
-									data-navigo="true"
-									>About</a
-								>
-							</li>
-						</ul>
-						<div class="d-flex">
-							<button
-								id="updateBtn"
-								type="button"
-								class="btn btn-secondary d-none"
-								disabled
-							>
-								Update app
-							</button>
+<head>
+	<meta charset="utf-8" />
+	<title>@@appName</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+	<meta name="description"
+		content="Grab your smartphone and get Geocaching over the summer holidays with our geocache challenge. Geocaching is a fantastic way to enjoy the outdoors exploring new areas and keeping fit." />
+	<meta name="author" content="@@author" />
+	<!-- Bundled CSS -->
+	<link rel="stylesheet" type="text/css" href="./css/bundle-@@version.min.css" />
+	<link rel="icon" href="./img/favicon.png" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+	<meta name="apple-mobile-web-app-title" content="GeoScout" />
+	<link rel="apple-touch-icon" sizes="192x192" href="./img/maskable.png" />
+	<link rel="apple-touch-startup-image" sizes="192x192" href="./img/splash.png" />
+	<link rel="canonical" href="@@appUrl" />
+	<!-- Web App Manifest -->
+	<link rel="manifest" href="./app.webmanifest" />
+	<!-- Theme colour -->
+	<meta name="theme-color" content="#7413DC" />
+</head>
+
+<body>
+	<div id="app">
+		<a href="#content" class="visually-hidden-focusable">Skip to main content</a>
+		<nav class="navbar navbar-expand-md navbar-dark bg-primary">
+			<div class="container-fluid">
+				<a href="/" class="navbar-brand" data-navigo="true">
+					<picture>
+						<source srcset="./img/logo.webp" type="image/webp" />
+						<img src="./img/logo.png" height="30" width="33" class="d-inline-block align-top"
+							alt="Scouting fleur-de-lis logo" />
+					</picture>
+					<span class="ms-1 d-inline">@@appName</span>
+				</a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggler"
+					aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarToggler">
+					<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+						@@loop('./src/includes/nav-links.html','../includes/pages.json')
+					</ul>
+					<div class="d-flex">
+						<button id="updateBtn" type="button" class="btn btn-secondary d-none" disabled>
+							Update app
+						</button>
+					</div>
+				</div>
+			</div>
+		</nav>
+		<!-- Main app layout -->
+		<main class="container mt-3" id="content">
+			<!-- Loading screen -->
+			<section class="row mx-auto">
+				<div class="col mx-auto">
+					<h1 class="my-4 text-center visually-hidden">
+						Loading...
+					</h1>
+					<div class="text-center">
+						<img src="./img/loading.gif" class="img-fluid text-center" alt="Animated loading indicator" />
+					</div>
+				</div>
+			</section>
+			<!-- Home screen -->
+			<section id="home" class="row mx-auto d-none" aria-hidden="true">
+				<div id="appAlert"></div>
+				<div class="col mx-auto">
+					<h1 class="my-4 text-center">
+						<i class="bi bi-compass" aria-hidden="true"></i>&nbsp;Welcome <span id="welcomeGreeting"></span>
+					</h1>
+					<div class="row home-tiles">
+						@@loop('./src/includes/home-tiles.html','../includes/pages.json')
+					</div>
+				</div>
+			</section>
+			<!-- Manage account screen -->
+			<section id="manageAccount" class="row mx-auto d-none" aria-hidden="true">
+				<div class="col mx-auto">
+					<h1 class="my-4 text-center">
+						<i class="bi bi-person" aria-hidden="true"></i>&nbsp;Manage your account
+					</h1>
+					<div id="restoreAccount" class="row home-tiles justify-content-center d-none">
+						<div class="col-12 col-md-6 col-lg-3">
+							<a href="restoreCode" class="btn btn-sq-lg btn-primary"
+								data-navigo-options="updateBrowserURL: false, historyAPIMethod: replaceState"
+								data-navigo="true">
+								<i class="bi bi-qr-code-scan home-icon" aria-hidden="true"></i>
+								<br />
+								<span class="home-caption">Restore from another device</span>
+							</a>
+						</div>
+						<div class="col-12 col-md-6 col-lg-3">
+							<a href="restoreFile" class="btn btn-sq-lg btn-primary"
+								data-navigo-options="updateBrowserURL: false, historyAPIMethod: replaceState"
+								data-navigo="true">
+								<i class="bi bi-file-earmark-code home-icon" aria-hidden="true"></i>
+								<br />
+								<span class="home-caption">Restore from a backup file</span>
+							</a>
+						</div>
+					</div>
+					<div id="updateAccount" class="row home-tiles justify-content-center d-none">
+						<div class="col-12 col-md-6 col-lg-3">
+							<a href="createCode" class="btn btn-sq-lg btn-primary"
+								data-navigo-options="updateBrowserURL: false, historyAPIMethod: replaceState"
+								data-navigo="true">
+								<i class="bi bi-qr-code-scan home-icon" aria-hidden="true"></i>
+								<br />
+								<span class="home-caption">Add an additional device</span>
+							</a>
+						</div>
+						<div class="col-12 col-md-6 col-lg-3">
+							<a href="createFile" class="btn btn-sq-lg btn-primary"
+								data-navigo-options="updateBrowserURL: false, historyAPIMethod: replaceState"
+								data-navigo="true">
+								<i class="bi bi-file-earmark-code home-icon" aria-hidden="true"></i>
+								<br />
+								<span class="home-caption">Create a backup file</span>
+							</a>
 						</div>
 					</div>
 				</div>
-			</nav>
-			<!-- Main app layout -->
-			<main class="container mt-3" id="content">
-				<!-- Loading screen -->
-				<section class="row mx-auto">
-					<div class="col mx-auto">
-						<h1 class="my-4 text-center visually-hidden">
-							Loading...
-						</h1>
+			</section>
+			<!-- Map screen -->
+			<section id="viewCaches" class="row mx-auto d-none" aria-hidden="true">
+				<div class="col mx-auto">
+					<h1 class="my-4 text-center">
+						<i class="bi bi-map" aria-hidden="true"></i>&nbsp;View caches
+						<span class="visually-hidden">as an interactive map</span>
+					</h1>
+					<div id="mapContainer">
 						<div class="text-center">
-							<img
-								src="./img/loading.gif"
-								class="img-fluid text-center"
-								alt="Animated loading indicator"
-							/>
+							<img src="./img/loading.gif" class="img-fluid text-center"
+								alt="Loading animation placeholder" loading="lazy" height="150" width="150" />
 						</div>
 					</div>
-				</section>
-				<!-- Home screen -->
-				<section
-					id="home"
-					class="row mx-auto d-none"
-					aria-hidden="true"
-				>
-					<div id="appAlert"></div>
-					<div class="col mx-auto">
-						<h1 class="my-4 text-center">
-							<i class="bi bi-compass" aria-hidden="true"></i
-							>&nbsp;Welcome
-						</h1>
-						<div class="row home-tiles">
-							<div class="col-12 col-md-6 col-lg-3">
-								<a
-									href="viewCaches"
-									class="btn btn-sq-lg btn-primary"
-									data-navigo="true"
-								>
-									<i
-										class="bi bi-map home-icon"
-										aria-hidden="true"
-									></i>
-									<br />
-									<span class="home-caption"
-										>View caches</span
-									>
-								</a>
-							</div>
-							<div class="col-12 col-md-6 col-lg-3">
-								<a
-									href="foundCaches"
-									class="btn btn-sq-lg btn-primary"
-									data-navigo="true"
-								>
-									<i
-										class="bi bi-pin-map home-icon"
-										aria-hidden="true"
-									></i>
-									<br />
-									<span class="home-caption"
-										>Found caches</span
-									>
-								</a>
-							</div>
-							<div class="col-12 col-md-6 col-lg-3">
-								<a
-									href="leaderboard"
-									class="btn btn-sq-lg btn-primary"
-									data-navigo="true"
-								>
-									<i
-										class="bi bi-trophy home-icon"
-										aria-hidden="true"
-									></i>
-									<br />
-									<span class="home-caption"
-										>Leaderboard</span
-									>
-								</a>
-							</div>
-							<div class="col-12 col-md-6 col-lg-3">
-								<a
-									href="about"
-									class="btn btn-sq-lg btn-primary"
-									data-navigo="true"
-								>
-									<i
-										class="bi bi-info-circle home-icon"
-										aria-hidden="true"
-									></i>
-									<br />
-									<span class="home-caption"
-										>Find out more</span
-									>
-								</a>
-							</div>
+				</div>
+			</section>
+			<!-- Table screen -->
+			<section id="viewCachesTable" class="row mx-auto d-none" aria-hidden="true">
+				<div class="col mx-auto">
+					<h1 class="my-4 text-center">
+						<i class="bi bi-table" aria-hidden="true"></i>&nbsp;View caches
+						<span class="visually-hidden">as a table</span>
+					</h1>
+					<div id="tableContainer">
+						<div class="text-center">
+							<img src="./img/loading.gif" class="img-fluid text-center"
+								alt="Loading animation placeholder" loading="lazy" height="150" width="150" />
 						</div>
 					</div>
-				</section>
-				<!-- Restore account screen -->
-				<section
-					id="restoreAccount"
-					class="row mx-auto d-none"
-					aria-hidden="true"
-				>
-					<div class="col mx-auto">
-						<h1 class="my-4 text-center">
-							<i class="bi bi-person-up" aria-hidden="true"></i
-							>&nbsp;Restore your account
-							<span class="visually-hidden"
-								>from another device or a previously created
-								backup file</span
-							>
-						</h1>
-						<div class="row home-tiles justify-content-center">
-							<div class="col-12 col-md-6 col-lg-3">
-								<a
-									href="#"
-									class="btn btn-sq-lg btn-primary disabled"
-									data-navigo="true"
-									tabindex="-1"
-								>
-									<i
-										class="bi bi-qr-code-scan home-icon"
-										aria-hidden="true"
-									></i>
-									<br />
-									<span class="home-caption"
-										>Add an additional device</span
-									>
-								</a>
-							</div>
-							<div class="col-12 col-md-6 col-lg-3">
-								<a
-									href="restoreFile"
-									class="btn btn-sq-lg btn-primary"
-									data-navigo-options="updateBrowserURL: false, historyAPIMethod: replaceState"
-									data-navigo="true"
-								>
-									<i
-										class="bi bi-file-earmark-code home-icon"
-										aria-hidden="true"
-									></i>
-									<br />
-									<span class="home-caption"
-										>Restore from backup file</span
-									>
-								</a>
-							</div>
+				</div>
+			</section>
+			<!-- Found screen -->
+			<section id="foundCaches" class="row mx-auto d-none" aria-hidden="true">
+				<div class="col mx-auto">
+					<h1 class="my-4 text-center">
+						<i class="bi bi-pin-map" aria-hidden="true"></i>&nbsp;Your found caches
+					</h1>
+					<div id="foundContainer">
+						<div class="text-center">
+							<img src="./img/loading.gif" class="img-fluid text-center"
+								alt="Loading animation placeholder" loading="lazy" height="150" width="150" />
 						</div>
 					</div>
-				</section>
-				<!-- Map screen -->
-				<section
-					id="viewCaches"
-					class="row mx-auto d-none"
-					aria-hidden="true"
-				>
-					<div class="col mx-auto">
-						<h1 class="my-4 text-center">
-							<i class="bi bi-map" aria-hidden="true"></i
-							>&nbsp;View caches
-							<span class="visually-hidden"
-								>as an interactive map</span
-							>
-						</h1>
-						<div id="mapContainer">
-							<div class="text-center">
-								<img
-									src="./img/loading.gif"
-									class="img-fluid text-center"
-									alt="Loading animation placeholder"
-									loading="lazy"
-									height="150"
-									width="150"
-								/>
+				</div>
+			</section>
+			<!-- Cache screen -->
+			<section id="viewCache" class="row mx-auto d-none" aria-hidden="true">
+				<div class="col mx-auto">
+					<h1 class="my-4 text-center">
+						<i class="bi bi-pin-map" aria-hidden="true"></i>&nbsp;Find the cache
+					</h1>
+					<div id="cacheCard" class="card mb-3" aria-hidden="true">
+						<div class="row g-0">
+							<div class="col-md-4 text-center">
+								<img id="cacheMapImg" src="./img/loading.gif" class="img-fluid rounded"
+									alt="Loading animation placeholder" loading="lazy" height="150" width="150" />
 							</div>
-						</div>
-					</div>
-				</section>
-				<!-- Table screen -->
-				<section
-					id="viewCachesTable"
-					class="row mx-auto d-none"
-					aria-hidden="true"
-				>
-					<div class="col mx-auto">
-						<h1 class="my-4 text-center">
-							<i class="bi bi-table" aria-hidden="true"></i
-							>&nbsp;View caches
-							<span class="visually-hidden">as a table</span>
-						</h1>
-						<div id="tableContainer">
-							<div class="text-center">
-								<img
-									src="./img/loading.gif"
-									class="img-fluid text-center"
-									alt="Loading animation placeholder"
-									loading="lazy"
-									height="150"
-									width="150"
-								/>
-							</div>
-						</div>
-					</div>
-				</section>
-				<!-- Found screen -->
-				<section
-					id="foundCaches"
-					class="row mx-auto d-none"
-					aria-hidden="true"
-				>
-					<div class="col mx-auto">
-						<h1 class="my-4 text-center">
-							<i class="bi bi-pin-map" aria-hidden="true"></i
-							>&nbsp;Your found caches
-						</h1>
-						<div id="foundContainer">
-							<div class="text-center">
-								<img
-									src="./img/loading.gif"
-									class="img-fluid text-center"
-									alt="Loading animation placeholder"
-									loading="lazy"
-									height="150"
-									width="150"
-								/>
-							</div>
-						</div>
-					</div>
-				</section>
-				<!-- Cache screen -->
-				<section
-					id="viewCache"
-					class="row mx-auto d-none"
-					aria-hidden="true"
-				>
-					<div class="col mx-auto">
-						<h1 class="my-4 text-center">
-							<i class="bi bi-pin-map" aria-hidden="true"></i
-							>&nbsp;Find the cache
-						</h1>
-						<div
-							id="cacheCard"
-							class="card mb-3"
-							aria-hidden="true"
-						>
-							<div class="row g-0">
-								<div class="col-md-4 text-center">
-									<img
-										id="cacheMapImg"
-										src="./img/loading.gif"
-										class="img-fluid rounded"
-										alt="Loading animation placeholder"
-										loading="lazy"
-										height="150"
-										width="150"
-									/>
-								</div>
-								<div class="col-md-8">
-									<div class="card-body">
-										<h2
-											id="cacheHeader"
-											class="card-title placeholder-glow"
-										>
-											<span class="visually-hidden"
-												>Loading cache page</span
-											>
-											<span
-												class="placeholder col-6"
-											></span>
+							<div class="col-md-8">
+								<div class="card-body">
+									<h2 id="cacheHeader" class="card-title placeholder-glow">
+										<span class="visually-hidden">Loading cache page</span>
+										<span class="placeholder col-6"></span>
+									</h2>
+									<p id="cacheW3WLink" class="card-text placeholder-glow">
+										<span class="placeholder col-7"></span>
+										<span class="placeholder col-4"></span>
+										<span class="placeholder col-4"></span>
+										<span class="placeholder col-6"></span>
+										<span class="placeholder col-8"></span>
+									</p>
+									<div class="d-grid gap-2 d-md-block">
+										<a id="cacheW3WBtn" tabindex="-1"
+											class="btn btn-primary m-1 disabled placeholder col-5"></a>
+										<a id="cacheMapsLink" tabindex="-1"
+											class="btn btn-primary m-1 disabled placeholder col-5"></a>
+										<a id="cacheFoundLink" tabindex="-1"
+											class="btn btn-outline-primary m-1 disabled placeholder col-4"></a>
+									</div>
+									<div class="alert alert-info mt-3" role="alert">
+										<h2 class="h4 alert-heading">
+											Geocaching hints and tips
 										</h2>
-										<p
-											id="cacheW3WLink"
-											class="card-text placeholder-glow"
-										>
-											<span
-												class="placeholder col-7"
-											></span>
-											<span
-												class="placeholder col-4"
-											></span>
-											<span
-												class="placeholder col-4"
-											></span>
-											<span
-												class="placeholder col-6"
-											></span>
-											<span
-												class="placeholder col-8"
-											></span>
-										</p>
-										<div class="d-grid gap-2 d-md-block">
-											<a
-												id="cacheW3WBtn"
-												tabindex="-1"
-												class="btn btn-primary m-1 disabled placeholder col-5"
-											></a>
-											<a
-												id="cacheMapsLink"
-												tabindex="-1"
-												class="btn btn-primary m-1 disabled placeholder col-5"
-											></a>
-											<a
-												id="cacheFoundLink"
-												tabindex="-1"
-												class="btn btn-outline-primary m-1 disabled placeholder col-4"
-											></a>
-										</div>
-										<div
-											class="alert alert-info mt-3"
-											role="alert"
-										>
-											<h2 class="h4 alert-heading">
-												Geocaching hints and tips
-											</h2>
-											<ul>
-												<li>
-													Caches are brightly coloured
-													(red, blue or yellow) cable
-													ties (<a
-														href="./img/cabletie-example.png"
-														><span
-															class="visually-hidden"
-															>photo </span
-														>example<span
-															class="visually-hidden"
-														>
-															of the cable ties
-															(this is a PNG
-															link)</span
-														></a
-													>) - these will be hiding
-													within the 3 metre square
-													(see the what3words map for
-													a more accurate position of
-													where the cache is)
-												</li>
-												<li>
-													If you're able to, carry a
-													bin bag and pick up any
-													litter you find along your
-													route when searching for
-													geocaches (if you're a young
-													person in Scouting, this may
-													count towards an activity or
-													challenge badge!)
-												</li>
-												<li>
-													Once you've found the cache
-													- enter the 5 digit code
-													into this app to verify that
-													you've found it (this will
-													be viewable on the
-													<a
-														href="foundCaches"
-														data-navigo="true"
-														>Found caches page</a
-													>)
-												</li>
-												<li>
-													Make sure that you leave the
-													cache as you found it - we
-													want as many people to be
-													able to find them as
-													possible
-												</li>
-												<li>
-													If you're struggling to find
-													a cache, seen a cache that
-													is damaged, or think we've
-													got the what3words location
-													slightly wrong, please email
-													us at
-													<a
-														href="mailto:inbox@geoscout.uk"
-														>inbox@geoscout.uk</a
-													>
-												</li>
-											</ul>
-										</div>
+										<ul>
+											<li>
+												Caches are brightly coloured
+												(red, blue or yellow) cable
+												ties (<a href="./img/cabletie-example.png"><span
+														class="visually-hidden">photo </span>example<span
+														class="visually-hidden">
+														of the cable ties
+														(this is a PNG
+														link)</span></a>) - these will be hiding
+												within the 3 metre square
+												(see the what3words map for
+												a more accurate position of
+												where the cache is)
+											</li>
+											<li>
+												If you're able to, carry a
+												bin bag and pick up any
+												litter you find along your
+												route when searching for
+												geocaches (if you're a young
+												person in Scouting, this may
+												count towards an activity or
+												challenge badge!)
+											</li>
+											<li>
+												Once you've found the cache
+												- enter the 5 digit code
+												into this app to verify that
+												you've found it (this will
+												be viewable on the
+												<a href="foundCaches" data-navigo="true">Found caches page</a>)
+											</li>
+											<li>
+												Make sure that you leave the
+												cache as you found it - we
+												want as many people to be
+												able to find them as
+												possible
+											</li>
+											<li>
+												If you're struggling to find
+												a cache, seen a cache that
+												is damaged, or think we've
+												got the what3words location
+												slightly wrong, please email
+												us at
+												<a href="mailto:inbox@geoscout.uk">inbox@geoscout.uk</a>
+											</li>
+										</ul>
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
-				</section>
-				<!-- Leaderboard screen -->
-				<section
-					id="leaderboard"
-					class="row mx-auto d-none"
-					aria-hidden="true"
-				>
-					<div class="col mx-auto">
-						<h1 class="my-4 text-center">
-							<i class="bi bi-trophy" aria-hidden="true"></i
-							>&nbsp;Leaderboard
-						</h1>
-						<div id="leaderboardContainer">
-							<div class="text-center">
-								<img
-									src="./img/loading.gif"
-									class="img-fluid text-center"
-									alt="Loading animation placeholder"
-									loading="lazy"
-									height="150"
-									width="150"
-								/>
-							</div>
+				</div>
+			</section>
+			<!-- Leaderboard screen -->
+			<section id="leaderboard" class="row mx-auto d-none" aria-hidden="true">
+				<div class="col mx-auto">
+					<h1 class="my-4 text-center">
+						<i class="bi bi-trophy" aria-hidden="true"></i>&nbsp;Leaderboard
+					</h1>
+					<div id="leaderboardContainer">
+						<div class="text-center">
+							<img src="./img/loading.gif" class="img-fluid text-center"
+								alt="Loading animation placeholder" loading="lazy" height="150" width="150" />
 						</div>
-					</div>
-				</section>
-				<!-- About screen -->
-				<section
-					id="about"
-					class="row mx-auto d-none"
-					aria-hidden="true"
-				>
-					<div class="col mx-auto">
-						<h1 class="my-4 text-center">
-							<i class="bi bi-info-circle" aria-hidden="true"></i
-							>&nbsp;About the @@appName project
-						</h1>
-						@@include(markdown('./src/docs/about.md'))
-					</div>
-				</section>
-				<!-- Disclaimer screen -->
-				<section
-					id="disclaimer"
-					class="row mx-auto d-none"
-					aria-hidden="true"
-				>
-					<div class="col mx-auto">
-						<h1 class="my-4 text-center">
-							<i class="bi bi-file-text" aria-hidden="true"></i
-							>&nbsp;Disclaimer for the GeoScout web-app
-						</h1>
-						@@include(markdown('./src/docs/disclaimer.md'))
-					</div>
-				</section>
-				<!-- Terms and Conditions screen -->
-				<section
-					id="terms"
-					class="row mx-auto d-none"
-					aria-hidden="true"
-				>
-					<div class="col mx-auto">
-						<h1 class="my-4 text-center">
-							<i class="bi bi-file-text" aria-hidden="true"></i
-							>&nbsp;Terms and Conditions for the GeoScout web-app
-						</h1>
-						@@include(markdown('./src/docs/terms.md'))
-					</div>
-				</section>
-				<!-- Privacy Policy screen -->
-				<section
-					id="privacy"
-					class="row mx-auto d-none"
-					aria-hidden="true"
-				>
-					<div class="col mx-auto">
-						<h1 class="my-4 text-center">
-							<i class="bi bi-file-text" aria-hidden="true"></i
-							>&nbsp;Privacy Policy for the GeoScout web-app
-						</h1>
-						@@include(markdown('./src/docs/privacy.md'))
-					</div>
-				</section>
-				<!-- Holding screen -->
-				<section
-					id="holding"
-					class="row mx-auto d-none"
-					aria-hidden="true"
-				>
-					<div class="col mx-auto">
-						<h1 class="my-4 text-center">
-							<i class="bi bi-compass" aria-hidden="true"></i
-							>&nbsp;Welcome
-						</h1>
-						@@include(markdown('./src/docs/holding.md'))
-					</div>
-				</section>
-				<!-- Not found screen -->
-				<section id="404" class="row mx-auto d-none" aria-hidden="true">
-					<div class="container">
-						<div class="p-3 text-center">
-							<i
-								class="bi bi-bug home-icon d-block mx-auto mb-4"
-								aria-hidden="true"
-								role="img"
-							></i>
-							<h1 class="display-5 fw-bold">Page not found</h1>
-							<div class="col-lg-6 mx-auto">
-								<p class="lead mb-4">
-									The page or link you're trying to get to
-									doesn't exist.
-								</p>
-								<div
-									class="d-grid gap-2 d-sm-flex justify-content-sm-center"
-								>
-									<a
-										class="btn btn-primary btn-lg px-4 gap-3"
-										href="@@appUrl"
-										>Go home</a
-									>
-								</div>
-							</div>
-						</div>
-					</div>
-				</section>
-			</main>
-			<!-- Page footer -->
-			<footer class="container my-5 text-muted border-top">
-				<div class="row pt-3">
-					<div class="col-md-10">
-						<p>
-							@@appName v@@version | All content &copy;
-							<a href="https://www.scouts.org.uk/"
-								>The Scout Association</a
-							>. All Rights Reserved.
-						</p>
-						<p>
-							<a href="terms" data-navigo="true"
-								>Terms and Conditions</a
-							>
-							|
-							<a href="privacy" data-navigo="true"
-								>Privacy Policy</a
-							>
-							|
-							<a href="disclaimer" data-navigo="true"
-								>Disclaimer</a
-							>
-							|
-							<a data-bs-toggle="modal" href="#openSourceLicenses"
-								>Open Source Licenses</a
-							>
-							|
-							<a
-								href="https://www.scouts.org.uk/about-us/strategy/"
-								>#SkillsForLife</a
-							>
-						</p>
-					</div>
-					<div class="col-md-2 text-center">
-						<a href="https://www.withamscouts.org.uk">
-							<picture>
-								<source
-									srcset="./img/group.webp"
-									type="image/webp"
-								/>
-								<source
-									srcset="./img/group.png"
-									type="image/png"
-								/>
-								<img
-									src="./img/group.png"
-									class="footer-img"
-									alt="Witham Scouts logo"
-									loading="lazy"
-									height="100"
-									width="110"
-								/>
-							</picture>
-						</a>
 					</div>
 				</div>
-			</footer>
-			<!-- Modal for Open Source Licenses -->
-			<div
-				class="modal fade"
-				id="openSourceLicenses"
-				tabindex="-1"
-				aria-labelledby="openSourceLicensesLabel"
-				aria-hidden="true"
-			>
-				<div
-					class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered"
-				>
-					<div class="modal-content">
-						<div class="modal-header">
-							<h1
-								class="modal-title"
-								id="openSourceLicensesLabel"
-							>
-								Open Source Licenses
-							</h1>
-							<button
-								type="button"
-								class="btn-close"
-								data-bs-dismiss="modal"
-								aria-label="Close"
-							></button>
-						</div>
-						<div class="modal-body">
-							<p>
-								The @@appName (v@@version) app is built by
-								@@author using the following open source
-								libraries:
+			</section>
+			<!-- About screen -->
+			<section id="about" class="row mx-auto d-none" aria-hidden="true">
+				<div class="col mx-auto">
+					<h1 class="my-4 text-center">
+						<i class="bi bi-info-circle" aria-hidden="true"></i>&nbsp;About the @@appName project
+					</h1>
+					@@include(markdown('./src/docs/about.md'))
+				</div>
+			</section>
+			<!-- Disclaimer screen -->
+			<section id="disclaimer" class="row mx-auto d-none" aria-hidden="true">
+				<div class="col mx-auto">
+					<h1 class="my-4 text-center">
+						<i class="bi bi-file-text" aria-hidden="true"></i>&nbsp;Disclaimer for the GeoScout web-app
+					</h1>
+					@@include(markdown('./src/docs/disclaimer.md'))
+				</div>
+			</section>
+			<!-- Terms and Conditions screen -->
+			<section id="terms" class="row mx-auto d-none" aria-hidden="true">
+				<div class="col mx-auto">
+					<h1 class="my-4 text-center">
+						<i class="bi bi-file-text" aria-hidden="true"></i>&nbsp;Terms and Conditions for the GeoScout
+						web-app
+					</h1>
+					@@include(markdown('./src/docs/terms.md'))
+				</div>
+			</section>
+			<!-- Privacy Policy screen -->
+			<section id="privacy" class="row mx-auto d-none" aria-hidden="true">
+				<div class="col mx-auto">
+					<h1 class="my-4 text-center">
+						<i class="bi bi-file-text" aria-hidden="true"></i>&nbsp;Privacy Policy for the GeoScout web-app
+					</h1>
+					@@include(markdown('./src/docs/privacy.md'))
+				</div>
+			</section>
+			<!-- Holding screen -->
+			<section id="holding" class="row mx-auto d-none" aria-hidden="true">
+				<div class="col mx-auto">
+					<h1 class="my-4 text-center">
+						<i class="bi bi-compass" aria-hidden="true"></i>&nbsp;Welcome
+					</h1>
+					@@include(markdown('./src/docs/holding.md'))
+				</div>
+			</section>
+			<!-- Not found screen -->
+			<section id="404" class="row mx-auto d-none" aria-hidden="true">
+				<div class="container">
+					<div class="p-3 text-center">
+						<i class="bi bi-bug home-icon d-block mx-auto mb-4" aria-hidden="true" role="img"></i>
+						<h1 class="display-5 fw-bold">Page not found</h1>
+						<div class="col-lg-6 mx-auto">
+							<p class="lead mb-4">
+								The page or link you're trying to get to
+								doesn't exist.
 							</p>
-							@@for (var i = 0; i < licenses.length; i++) {
-							@@include('./src/includes/license.html',
-							`+(JSON.stringify(licenses[i]))+`) }
+							<div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+								<a class="btn btn-primary btn-lg px-4 gap-3" href="@@appUrl">Go home</a>
+							</div>
 						</div>
-						<div class="modal-footer">
-							<button
-								type="button"
-								class="btn btn-link"
-								data-bs-dismiss="modal"
-							>
-								Close
-							</button>
-						</div>
+					</div>
+				</div>
+			</section>
+		</main>
+		<!-- Page footer -->
+		<footer class="container my-5 text-muted border-top">
+			<div class="row pt-3">
+				<div class="col-md-10">
+					<p>
+						@@appName v@@version | All content &copy;
+						<a href="https://www.scouts.org.uk/">The Scout Association</a>. All Rights Reserved.
+					</p>
+					<p>
+						<a href="terms" data-navigo="true">Terms and Conditions</a>
+						|
+						<a href="privacy" data-navigo="true">Privacy Policy</a>
+						|
+						<a href="disclaimer" data-navigo="true">Disclaimer</a>
+						|
+						<a data-bs-toggle="modal" href="#openSourceLicenses">Open Source Licenses</a>
+						|
+						<a href="https://www.scouts.org.uk/about-us/strategy/">#SkillsForLife</a>
+					</p>
+				</div>
+				<div class="col-md-2 text-center">
+					<a href="https://www.withamscouts.org.uk">
+						<picture>
+							<source srcset="./img/group.webp" type="image/webp" />
+							<source srcset="./img/group.png" type="image/png" />
+							<img src="./img/group.png" class="footer-img" alt="Witham Scouts logo" loading="lazy"
+								height="100" width="110" />
+						</picture>
+					</a>
+				</div>
+			</div>
+		</footer>
+		<!-- Modal for Open Source Licenses -->
+		<div class="modal fade" id="openSourceLicenses" tabindex="-1" aria-labelledby="openSourceLicensesLabel"
+			aria-hidden="true">
+			<div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h1 class="modal-title" id="openSourceLicensesLabel">
+							Open Source Licenses
+						</h1>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<p>
+							The @@appName (v@@version) app is built by
+							@@author using the following open source
+							libraries:
+						</p>
+						@@for (var i = 0; i < licenses.length; i++) { @@include('./src/includes/license.html',
+							`+(JSON.stringify(licenses[i]))+`) } </div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-link" data-bs-dismiss="modal">
+									Close
+								</button>
+							</div>
 					</div>
 				</div>
 			</div>
 		</div>
 		<script src="./js/browser-compat-@@version.min.js"></script>
 		<script src="./js/main-@@version.min.js"></script>
-	</body>
+</body>
+
 </html>

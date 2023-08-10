@@ -1,0 +1,32 @@
+[
+	{
+		"title": "Home",
+		"name": "",
+		"icon": "compass",
+		"url": "home"
+	},
+	{
+		"title": "View caches",
+		"name": "View caches",
+		"icon": "map",
+		"url": "viewCaches"
+	},
+	{
+		"title": "Found caches",
+		"name": "Found caches",
+		"icon": "pin-map",
+		"url": "foundCaches"
+	},
+	{
+		"title": "Leaderboard",
+		"name": "Leaderboard",
+		"icon": "trophy",
+		"url": "leaderboard"
+	},
+	{
+		"title": "About",
+		"name": "Find out more",
+		"icon": "info-circle",
+		"url": "about"
+	}
+]
