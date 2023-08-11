@@ -24,6 +24,12 @@
 		"url": "leaderboard"
 	},
 	{
+		"title": "Your account",
+		"name": "Manage your account",
+		"icon": "person-gear",
+		"url": "manageAccount"
+	},
+	{
 		"title": "About",
 		"name": "Find out more",
 		"icon": "info-circle",

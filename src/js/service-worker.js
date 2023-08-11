@@ -1,6 +1,6 @@
 /* jshint esversion:8 */
 // Install service worker
-const cacheName = 'GeoScout-/* @echo version */'; // Set cache name to align with version
+const cacheName = '/* @echo appName */-/* @echo version */'; // Set cache name to align with version
 
 // Static resources to cache immediately
 let resourcesToCache = [
@@ -32,14 +32,19 @@ let resourcesToCache = [
 	'./img/cabletie-thumbnail.png',
 	'./img/cabletie-thumbnail.webp',
 	'./img/cabletie-example.png',
-	'./img/cabletie-example.webp'
+	'./img/cabletie-example.webp',
+	// Offline page
+	'./offline.html',
+	'./js/offline-/* @echo version */.min.js'
 ];
 
 self.addEventListener('install', event => {
 	event.waitUntil(
-		caches.open(cacheName).then(cache => {
-			return cache.addAll(resourcesToCache);
-		})
+		caches
+			.open(cacheName)
+			.then(cache => {
+				return cache.addAll(resourcesToCache);
+			})
 	);
 });
 
@@ -52,22 +57,38 @@ self.addEventListener('fetch', event => {
 		event.respondWith(fetch(event.request));
 		return;
 	}
-	const destination = event.request.destination;
-	switch (destination) {
-		case 'document':
-		case 'style':
-		case 'script':
-		case 'font':
-		case 'image': {
-			event.respondWith(
-				caches.match(event.request).then(function (response) {
-					return response || fetch(event.request);
-				}));
-			return;
-		}
-		default: {
-			event.respondWith(fetch(event.request));
-			return;
+	if (event.request.mode === 'navigate') {
+		event.respondWith((async () => {
+			try {
+				const networkResponse = await fetch(event.request);
+				return networkResponse;
+			} catch (error) {
+				console.log(`Fetch failed - returning offline error to user (error: ${error})`);
+				const cache = await caches.open(cacheName);
+				const cachedResponse = await cache.match('./offline.html');
+				return cachedResponse;
+			}
+		})());
+	} else {
+		const destination = event.request.destination;
+		switch (destination) {
+			case 'document':
+			case 'style':
+			case 'script':
+			case 'font':
+			case 'image': {
+				event.respondWith(
+					caches
+						.match(event.request)
+						.then(function (response) {
+							return response || fetch(event.request);
+						}));
+				return;
+			}
+			default: {
+				event.respondWith(fetch(event.request));
+				return;
+			}
 		}
 	}
 });

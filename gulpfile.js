@@ -25,13 +25,16 @@ const preprocess = require('gulp-preprocess');
 function licensePrep() {
 	const licenses = require('./thirdparty-licenses.json');
 	const array = [];
+	let counter = 0;
 	Object.keys(licenses).forEach(key => {
+		counter++;
 		const license = licenses[key];
 		array.push({
 			name: license.name,
 			version: license.version,
 			repo: license.repository,
-			license: license.licenseText
+			license: license.licenseText,
+			counter
 		});
 	});
 	return array;
@@ -47,7 +50,7 @@ function sri() {
 		.pipe(dest('dist/'));
 }
 
-function bundledJs() {
+function bundleMainJs() {
 	return src([
 		'./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js',
 		'./node_modules/sweetalert2/dist/sweetalert2.min.js',
@@ -56,6 +59,7 @@ function bundledJs() {
 		'./node_modules/gridjs/dist/gridjs.production.min.js',
 		'./node_modules/@googlemaps/js-api-loader/dist/index.min.js',
 		'./node_modules/@googlemaps/markerclusterer/dist/index.min.js',
+		'./node_modules/qr-scanner/qr-scanner.umd.min.js',
 		'./src/js/script.js'
 	])
 		.pipe(concat(`main-${version}.min.js`))
@@ -63,7 +67,17 @@ function bundledJs() {
 		.pipe(dest('dist/js/'));
 }
 
-function bundledCss() {
+function bundleOfflineJs() {
+	return src([
+		'./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js',
+		'./src/js/offline.js'
+	])
+		.pipe(concat(`offline-${version}.min.js`))
+		.pipe(uglify())
+		.pipe(dest('dist/js/'));
+}
+
+function bundleCss() {
 	return src([
 		'./src/css/style.scss',
 		'./node_modules/bootstrap-icons/font/bootstrap-icons.scss',
@@ -134,12 +148,13 @@ function serviceWorker() {
 		.pipe(preprocess({
 			context: {
 				version,
-				appUrl
-			}
+				appUrl,
+				appName
+			},
 		}))
 		.pipe(concat('service-worker.js'))
 		.pipe(uglify())
 		.pipe(dest('dist/'));
 }
 
-exports.default = parallel(series(parallel(bundledJs, bundledCss, sitePages, copyIcons, copyImg, copySite, browserCompat, serviceWorker), sri));
+exports.default = parallel(series(parallel(bundleMainJs, bundleOfflineJs, series(copyIcons, bundleCss), sitePages, copyImg, copySite, browserCompat, serviceWorker), sri));

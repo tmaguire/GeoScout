@@ -13,11 +13,11 @@
 	<link rel="icon" href="./img/favicon.png" />
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-	<meta name="apple-mobile-web-app-title" content="GeoScout" />
+	<meta name="apple-mobile-web-app-title" content="@@appName" />
 	<link rel="apple-touch-icon" sizes="192x192" href="./img/maskable.png" />
 	<link rel="apple-touch-startup-image" sizes="192x192" href="./img/splash.png" />
 	<link rel="canonical" href="@@appUrl" />
-	<!-- Web App Manifest -->
+	<!-- Web-app Manifest -->
 	<link rel="manifest" href="./app.webmanifest" />
 	<!-- Theme colour -->
 	<meta name="theme-color" content="#7413DC" />
@@ -26,7 +26,7 @@
 <body>
 	<div id="app">
 		<a href="#content" class="visually-hidden-focusable">Skip to main content</a>
-		<nav class="navbar navbar-expand-md navbar-dark bg-primary">
+		<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
 			<div class="container-fluid">
 				<a href="/" class="navbar-brand" data-navigo="true">
 					<picture>
@@ -46,13 +46,13 @@
 					</ul>
 					<div class="d-flex">
 						<button id="updateBtn" type="button" class="btn btn-secondary d-none" disabled>
-							Update app
+							Update web-app
 						</button>
 					</div>
 				</div>
 			</div>
 		</nav>
-		<!-- Main app layout -->
+		<!-- Main web-app layout -->
 		<main class="container mt-3" id="content">
 			<!-- Loading screen -->
 			<section class="row mx-auto">
@@ -72,7 +72,7 @@
 					<h1 class="my-4 text-center">
 						<i class="bi bi-compass" aria-hidden="true"></i>&nbsp;Welcome <span id="welcomeGreeting"></span>
 					</h1>
-					<div class="row home-tiles">
+					<div class="row justify-content-center home-tiles">
 						@@loop('./src/includes/home-tiles.html','../includes/pages.json')
 					</div>
 				</div>
@@ -81,10 +81,10 @@
 			<section id="manageAccount" class="row mx-auto d-none" aria-hidden="true">
 				<div class="col mx-auto">
 					<h1 class="my-4 text-center">
-						<i class="bi bi-person" aria-hidden="true"></i>&nbsp;Manage your account
+						<i class="bi bi-person-gear" aria-hidden="true"></i>&nbsp;Manage your account
 					</h1>
 					<div id="restoreAccount" class="row home-tiles justify-content-center d-none">
-						<div class="col-12 col-md-6 col-lg-3">
+						<div class="col-12 col-md-6 col-lg-4">
 							<a href="restoreCode" class="btn btn-sq-lg btn-primary"
 								data-navigo-options="updateBrowserURL: false, historyAPIMethod: replaceState"
 								data-navigo="true">
@@ -93,18 +93,18 @@
 								<span class="home-caption">Restore from another device</span>
 							</a>
 						</div>
-						<div class="col-12 col-md-6 col-lg-3">
+						<div class="col-12 col-md-6 col-lg-4">
 							<a href="restoreFile" class="btn btn-sq-lg btn-primary"
 								data-navigo-options="updateBrowserURL: false, historyAPIMethod: replaceState"
 								data-navigo="true">
-								<i class="bi bi-file-earmark-code home-icon" aria-hidden="true"></i>
+								<i class="bi bi-file-earmark-arrow-up home-icon" aria-hidden="true"></i>
 								<br />
 								<span class="home-caption">Restore from a backup file</span>
 							</a>
 						</div>
 					</div>
 					<div id="updateAccount" class="row home-tiles justify-content-center d-none">
-						<div class="col-12 col-md-6 col-lg-3">
+						<div class="col-12 col-md-6 col-lg-4">
 							<a href="createCode" class="btn btn-sq-lg btn-primary"
 								data-navigo-options="updateBrowserURL: false, historyAPIMethod: replaceState"
 								data-navigo="true">
@@ -113,11 +113,11 @@
 								<span class="home-caption">Add an additional device</span>
 							</a>
 						</div>
-						<div class="col-12 col-md-6 col-lg-3">
+						<div class="col-12 col-md-6 col-lg-4">
 							<a href="createFile" class="btn btn-sq-lg btn-primary"
 								data-navigo-options="updateBrowserURL: false, historyAPIMethod: replaceState"
 								data-navigo="true">
-								<i class="bi bi-file-earmark-code home-icon" aria-hidden="true"></i>
+								<i class="bi bi-file-earmark-arrow-down home-icon" aria-hidden="true"></i>
 								<br />
 								<span class="home-caption">Create a backup file</span>
 							</a>
@@ -234,7 +234,7 @@
 											<li>
 												Once you've found the cache
 												- enter the 5 digit code
-												into this app to verify that
+												into this web-app to verify that
 												you've found it (this will
 												be viewable on the
 												<a href="foundCaches" data-navigo="true">Found caches page</a>)
@@ -290,7 +290,7 @@
 			<section id="disclaimer" class="row mx-auto d-none" aria-hidden="true">
 				<div class="col mx-auto">
 					<h1 class="my-4 text-center">
-						<i class="bi bi-file-text" aria-hidden="true"></i>&nbsp;Disclaimer for the GeoScout web-app
+						<i class="bi bi-file-text" aria-hidden="true"></i>&nbsp;Disclaimer for the @@appName web-app
 					</h1>
 					@@include(markdown('./src/docs/disclaimer.md'))
 				</div>
@@ -299,7 +299,7 @@
 			<section id="terms" class="row mx-auto d-none" aria-hidden="true">
 				<div class="col mx-auto">
 					<h1 class="my-4 text-center">
-						<i class="bi bi-file-text" aria-hidden="true"></i>&nbsp;Terms and Conditions for the GeoScout
+						<i class="bi bi-file-text" aria-hidden="true"></i>&nbsp;Terms and Conditions for the @@appName
 						web-app
 					</h1>
 					@@include(markdown('./src/docs/terms.md'))
@@ -309,7 +309,7 @@
 			<section id="privacy" class="row mx-auto d-none" aria-hidden="true">
 				<div class="col mx-auto">
 					<h1 class="my-4 text-center">
-						<i class="bi bi-file-text" aria-hidden="true"></i>&nbsp;Privacy Policy for the GeoScout web-app
+						<i class="bi bi-file-text" aria-hidden="true"></i>&nbsp;Privacy Policy for the @@appName web-app
 					</h1>
 					@@include(markdown('./src/docs/privacy.md'))
 				</div>
@@ -374,36 +374,10 @@
 				</div>
 			</div>
 		</footer>
-		<!-- Modal for Open Source Licenses -->
-		<div class="modal fade" id="openSourceLicenses" tabindex="-1" aria-labelledby="openSourceLicensesLabel"
-			aria-hidden="true">
-			<div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h1 class="modal-title" id="openSourceLicensesLabel">
-							Open Source Licenses
-						</h1>
-						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-					</div>
-					<div class="modal-body">
-						<p>
-							The @@appName (v@@version) app is built by
-							@@author using the following open source
-							libraries:
-						</p>
-						@@for (var i = 0; i < licenses.length; i++) { @@include('./src/includes/license.html',
-							`+(JSON.stringify(licenses[i]))+`) } </div>
-							<div class="modal-footer">
-								<button type="button" class="btn btn-link" data-bs-dismiss="modal">
-									Close
-								</button>
-							</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<script src="./js/browser-compat-@@version.min.js"></script>
-		<script src="./js/main-@@version.min.js"></script>
+		@@include('./src/includes/license-modal.html')
+	</div>
+	<script src="./js/browser-compat-@@version.min.js"></script>
+	<script src="./js/main-@@version.min.js"></script>
 </body>
 
 </html>

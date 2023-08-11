@@ -32,7 +32,6 @@
 			"purpose": "monochrome"
 		}
 	],
-	"related_applications": [],
 	"prefer_related_applications": false,
 	"shortcuts": [
 		{
@@ -74,5 +73,18 @@
 	],
 	"display": "standalone",
 	"lang": "en-GB",
-	"dir": "ltr"
+	"dir": "ltr",
+	"orientation": "natural",
+	"screenshots": [
+		{
+			"src": "./img/screenshots/1280x800-screenshot.png",
+			"sizes": "1280x800",
+			"type": "image/png"
+		},
+		{
+			"src": "./img/screenshots/750x1334-screenshot.png",
+			"sizes": "750x1334",
+			"type": "image/png"
+		}
+	]
 }

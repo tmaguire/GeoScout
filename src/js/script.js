@@ -1080,10 +1080,82 @@ function loadRestoreFile() {
 			showError(error, true);
 		});
 }
+
+function loadRestoreCode() {
+	let qrCodeToken = '';
+	let qrScanner = null;
+	Swal.fire({
+		title: 'Restore from QR code',
+		html: 'Restore your GeoScout account using a QR code generated on another device.<br><br><video id="webcamFeed" class="w-100 rounded"></video>',
+		showCancelButton: () => !Swal.isLoading(),
+		showConfirmButton: false,
+		showLoaderOnConfirm: true,
+		buttonsStyling: false,
+		customClass: {
+			loader: 'custom-loader',
+			cancelButton: 'btn btn-link mx-1',
+		},
+		loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
+		allowOutsideClick: () => !Swal.isLoading(),
+		backdrop: true,
+		preConfirm: () => {
+			Swal.getCancelButton().setAttribute('hidden', true);
+			try {
+				qrScanner.stop();
+				qrScanner.destroy();
+				qrScanner = null;
+			} catch { }
+			return fetch('./api/exchange-qr-token', {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${qrCodeToken}`
+				}
+			})
+				.then(response => response.json())
+				.then(handleErrors)
+				.then(data => {
+					localStorage.setItem('accessToken', data.accessToken);
+					return true;
+				});
+		},
+		didClose: () => {
+			try {
+				qrScanner.stop();
+				qrScanner.destroy();
+				qrScanner = null;
+			} catch { }
+			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
+		},
+		didOpen: () => {
+			const videoElem = document.getElementById('webcamFeed');
+			qrScanner = new QrScanner(videoElem, result => {
+				qrCodeToken = result.data;
+				Swal.clickConfirm();
+			}, {
+				returnDetailedScanResult: true
+			});
+			qrScanner.start();
+		}
+	})
+		.then(result => {
+			if (result.value) {
+				router.navigate('home');
+				showToast.fire({
+					title: 'Restore successful!',
+					icon: 'success'
+				});
+			}
+		})
+		.catch(error => {
+			console.log(error);
+			showError(error, true);
+		});
+}
+
 function createRestoreFile() {
 	Swal.fire({
 		title: 'Create a backup file for your account',
-		html: "Generating this file allows you to restore your account (and all the progress you've made) on any device.<br><strong>Please keep this file safe - anyone that has it will be able to load your GeoScout account on their device!</strong>",
+		html: "Generating this file allows you to restore your account (and all the progress you've made) on any device.<br><br><strong>Please keep this file safe - anyone that has it will be able to load your GeoScout account on their device!</strong>",
 		showCancelButton: () => !Swal.isLoading(),
 		confirmButtonText: 'Create backup',
 		showLoaderOnConfirm: true,
@@ -1097,6 +1169,7 @@ function createRestoreFile() {
 		allowOutsideClick: () => !Swal.isLoading(),
 		backdrop: true,
 		preConfirm: () => {
+			Swal.getCancelButton().setAttribute('hidden', true);
 			return getAccessToken(false)
 				.then(accessToken => {
 					if (accessToken) {
@@ -1139,6 +1212,74 @@ function createRestoreFile() {
 				showToast.fire({
 					title: 'Backup file downloaded!',
 					icon: 'success'
+				});
+			}
+		})
+		.catch(error => {
+			console.log(error);
+			showError(error, true);
+		});
+}
+
+function createRestoreCode() {
+	Swal.fire({
+		title: 'Add an additional device',
+		html: "This feature allows you add an additional device to your account.<br><br><strong>Please note that a new QR code needs to be generated for each device you wish to add.",
+		showCancelButton: () => !Swal.isLoading(),
+		confirmButtonText: 'Add additional device',
+		showLoaderOnConfirm: true,
+		buttonsStyling: false,
+		customClass: {
+			loader: 'custom-loader',
+			confirmButton: 'btn btn-primary mx-1',
+			cancelButton: 'btn btn-link mx-1'
+		},
+		loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
+		allowOutsideClick: () => !Swal.isLoading(),
+		backdrop: true,
+		preConfirm: () => {
+			Swal.getCancelButton().setAttribute('hidden', true);
+			return getAccessToken(false)
+				.then(accessToken => {
+					if (accessToken) {
+						return fetch('./api/get-qr-token', {
+							method: 'POST',
+							headers: {
+								Authorization: `Bearer ${accessToken}`
+							},
+							body: JSON.stringify({
+								uuid: crypto.randomUUID().toString()
+							})
+						});
+					} else {
+						throw "You don't have an account!";
+					}
+				})
+				.then(response => response.json())
+				.then(handleErrors)
+				.then(qrCode => {
+					return qrCode;
+				});
+		},
+		didClose: () => {
+			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
+		}
+	})
+		.then(result => {
+			if (result.value) {
+				Swal.fire({
+					title: 'Add an additional device',
+					html: `<strong>Scan the QR code below using the GeoScout web-app on another device</strong><br>${DOMPurify.sanitize(result.value.token)}`,
+					showCancelButton: false,
+					allowOutsideClick: false,
+					confirmButtonText: 'Close',
+					buttonsStyling: false,
+					customClass: {
+						confirmButton: 'btn btn-link mx-1'
+					},
+					didClose: () => {
+						router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
+					}
 				});
 			}
 		})
@@ -1218,8 +1359,14 @@ window.onload = function () {
 		.on('/createFile', function () {
 			createRestoreFile();
 		})
+		.on('/createCode', function () {
+			createRestoreCode();
+		})
 		.on('/restoreFile', function () {
 			loadRestoreFile();
+		})
+		.on('/restoreCode', function () {
+			loadRestoreCode();
 		})
 		.notFound(function () {
 			changePage('404', 'Page not found', false);
@@ -1266,4 +1413,13 @@ window.onload = function () {
 			window.location.reload();
 		});
 	}
+	getAccessToken(false)
+		.then(hasAccount => {
+			if (hasAccount) {
+				document.getElementById('welcomeGreeting').innerText = 'back';
+			}
+		})
+		.catch(error => {
+			console.warn(error);
+		});
 };
