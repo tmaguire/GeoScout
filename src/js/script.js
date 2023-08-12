@@ -77,7 +77,7 @@ function showError(error, button) {
 		icon: 'error',
 		buttonsStyling: false,
 		customClass: {
-			confirmButton: 'btn btn-link'
+			confirmButton: 'btn btn-primary m-1 shadow'
 		},
 		showConfirmButton: button,
 		allowOutsideClick: button,
@@ -368,7 +368,7 @@ function loadCachesMapPage() {
 		})
 		.then(cluster => {
 			let currentFilter = 'all';
-			document.getElementById('mapFilter').innerHTML = `<fieldset><div class="btn-group mb-3">
+			document.getElementById('mapFilter').innerHTML = `<fieldset><div class="btn-group mb-3 shadow">
 				<legend class="visually-hidden">Filter control for the map to toggle which caches are visible</legend>
 				<input type="radio" class="btn-check" name="mapFilterBtn" id="mapFilterAll" autocomplete="off" value="all" checked>
 				<label class="btn btn-outline-primary rounded-start" for="mapFilterAll">All caches</label>
@@ -522,7 +522,7 @@ function loadCachesTablePage() {
 		})
 		.then(table => {
 			let currentFilter = 'all';
-			document.getElementById('tableFilter').innerHTML = `<fieldset><div class="btn-group mb-3">
+			document.getElementById('tableFilter').innerHTML = `<fieldset><div class="btn-group mb-3 shadow">
 				<legend class="visually-hidden">Filter control for the map to toggle which caches are visible</legend>
 				<input type="radio" class="btn-check" name="tableFilterBtn" id="tableFilterAll" autocomplete="off" value="all" checked>
 				<label class="btn btn-outline-primary rounded-start" for="tableFilterAll">All caches</label>
@@ -592,7 +592,7 @@ function loadCachePage(id) {
 				document.getElementById('cacheCard').removeAttribute('aria-hidden');
 				const img = document.getElementById('cacheMapImg');
 				img.setAttribute('src', `${DOMPurify.sanitize(data.image)}`);
-				img.setAttribute('alt', `Map for Cache ${id}`);
+				img.setAttribute('alt', `Map for cache ${id}`);
 				img.removeAttribute('height');
 				img.removeAttribute('width');
 				const header = document.getElementById('cacheHeader');
@@ -608,13 +608,13 @@ function loadCachePage(id) {
 				<p><br><strong id="cacheStats"></strong></p>`;
 				const w3wBtn = document.getElementById('cacheW3WBtn');
 				w3wBtn.removeAttribute('tabindex');
-				w3wBtn.setAttribute('class', 'btn btn-primary m-1');
+				w3wBtn.setAttribute('class', 'btn btn-primary m-1 shadow');
 				w3wBtn.setAttribute('href', `https://what3words.com/${w3wAddress}?maptype=satellite`);
 				w3wBtn.setAttribute('target', '_blank');
 				w3wBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in what3words';
 				const mapBtn = document.getElementById('cacheMapsLink');
 				mapBtn.removeAttribute('tabindex');
-				mapBtn.setAttribute('class', 'btn btn-primary m-1');
+				mapBtn.setAttribute('class', 'btn btn-primary m-1 shadow');
 				mapBtn.setAttribute('href', `https://www.google.com/maps/search/?api=1&query=${coordinates}`);
 				mapBtn.setAttribute('target', '_blank');
 				mapBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in Google Maps';
@@ -626,7 +626,7 @@ function loadCachePage(id) {
 					foundBtn.innerHTML = `<i class="bi bi-patch-check" aria-hidden="true"></i>&nbsp;You've already found this cache`;
 					cacheStats.innerText = `You ${Number(data.stats) === 1 ? 'are the only person that has found this cache! 😮' : `and ${Number(data.stats) - 1} other ${(Number(data.stats) - 1) === 1 ? 'person has' : 'people have'} found this cache 😊`}`;
 				} else {
-					foundBtn.setAttribute('class', 'btn btn-outline-primary m-1');
+					foundBtn.setAttribute('class', 'btn btn-outline-primary m-1 shadow');
 					foundBtn.setAttribute('href', `foundCache-${id}`);
 					foundBtn.setAttribute('data-navigo', true);
 					foundBtn.removeAttribute('tabindex');
@@ -680,7 +680,7 @@ function resetCachePage() {
 function loadFoundCachePage(id) {
 	changePage('viewCache', `Cache ${id}`, id);
 	Swal.fire({
-		title: `Found Cache ${id}?`,
+		title: `Found cache ${id}?`,
 		text: "If you've found this cache, please enter the 5-digit code below to mark it as found:",
 		input: 'text',
 		inputAttributes: {
@@ -695,7 +695,7 @@ function loadFoundCachePage(id) {
 		buttonsStyling: false,
 		customClass: {
 			cancelButton: 'btn btn-link m-1',
-			confirmButton: 'btn btn-primary m-1',
+			confirmButton: 'btn btn-primary m-1 shadow',
 			loader: 'custom-loader'
 		},
 		loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Verifying code...</span></div>',
@@ -740,7 +740,7 @@ function loadFoundCachePage(id) {
 					returnFocus: false,
 					showConfirmButton: true,
 					customClass: {
-						confirmButton: 'btn btn-primary m-1'
+						confirmButton: 'btn btn-primary m-1 shadow'
 					},
 					didOpen: () => {
 						Swal.hideLoading();
@@ -759,7 +759,7 @@ function loadFoundCachePage(id) {
 				icon: 'error',
 				buttonsStyling: false,
 				customClass: {
-					confirmButton: 'btn btn-primary m-1'
+					confirmButton: 'btn btn-primary m-1 shadow'
 				},
 				didOpen: () => {
 					Swal.hideLoading();
@@ -779,8 +779,7 @@ function loadFoundCachesPage() {
 		<div class="col-lg-6 mx-auto">
 			<p class="lead mb-4">Get outside and go find some!</p>
 			<div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-				<a href="viewCaches" class="btn btn-primary btn-lg px-4 gap-3" data-navigo="true">Find caches</a>
-				<!--<a href="restoreAccount" class="btn btn-outline-primary btn-lg px-4 gap-3" data-navigo="true">Add existing account</a>-->
+				<a href="viewCaches" class="btn btn-primary btn-lg px-4 gap-3 shadow" data-navigo="true">Find caches</a>
 			</div>
 		</div>
 	</div>`;
@@ -803,7 +802,7 @@ function loadFoundCachesPage() {
 			if (data.found.length > 0) {
 				foundContainer.innerHTML = `<div class="row">
 					<div class="col-md-12 col-xl-4">
-						<div class="card stat-card mb-2">
+						<div class="card stat-card mb-2 shadow">
 							<div class="card-body">
 								<div class="row">
 									<div class="col">
@@ -820,7 +819,7 @@ function loadFoundCachesPage() {
 						</div>
 					</div>
 					<div class="col-md-6 col-xl-4">
-						<div class="card stat-card mb-2">
+						<div class="card stat-card mb-2 shadow">
 							<div class="card-body">
 								<div class="row">
 									<div class="col">
@@ -837,7 +836,7 @@ function loadFoundCachesPage() {
 						</div>
 					</div>
 					<div class="col-md-6 col-xl-4">
-						<div class="card stat-card mb-2">
+						<div class="card stat-card mb-2 shadow">
 							<div class="card-body">
 								<div class="row">
 									<div class="col">
@@ -918,7 +917,7 @@ function loadLeaderboardPage() {
 		<div class="col-lg-6 mx-auto">
 			<p class="lead mb-4">Get outside and go find some!</p>
 			<div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-				<a class="btn btn-primary btn-lg px-4 gap-3" href="viewCaches" data-navigo="true">Find caches</a>
+				<a class="btn btn-primary btn-lg px-4 gap-3 shadow" href="viewCaches" data-navigo="true">Find caches</a>
 			</div>
 		</div>
 	</div>`;
@@ -1027,7 +1026,7 @@ function loadRestoreFile() {
 		buttonsStyling: false,
 		customClass: {
 			loader: 'custom-loader',
-			confirmButton: 'btn btn-primary mx-1',
+			confirmButton: 'btn btn-primary mx-1 shadow',
 			cancelButton: 'btn btn-link mx-1',
 			input: 'form-control swal2-file'
 		},
@@ -1173,7 +1172,7 @@ function createRestoreFile() {
 		buttonsStyling: false,
 		customClass: {
 			loader: 'custom-loader',
-			confirmButton: 'btn btn-primary mx-1',
+			confirmButton: 'btn btn-primary mx-1 shadow',
 			cancelButton: 'btn btn-link mx-1'
 		},
 		loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
@@ -1242,7 +1241,7 @@ function createRestoreCode() {
 		buttonsStyling: false,
 		customClass: {
 			loader: 'custom-loader',
-			confirmButton: 'btn btn-primary mx-1',
+			confirmButton: 'btn btn-primary mx-1 shadow',
 			cancelButton: 'btn btn-link mx-1'
 		},
 		loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
@@ -1359,6 +1358,7 @@ window.onload = function () {
 			getAccessToken(false)
 				.then(hasAccount => {
 					document.getElementById(hasAccount ? 'updateAccount' : 'restoreAccount').classList.remove('d-none');
+					document.getElementById(hasAccount ? 'restoreAccount' : 'updateAccount').classList.add('d-none');
 				})
 				.finally(() => {
 					changePage('manageAccount', 'Manage your account', false);
@@ -1424,6 +1424,17 @@ window.onload = function () {
 			window.location.reload();
 		});
 	}
+	setInterval(() => {
+		getAccessToken(false)
+			.then(hasAccount => {
+				if (hasAccount) {
+					document.getElementById('welcomeGreeting').innerText = 'back';
+				}
+			})
+			.catch(error => {
+				console.warn(error);
+			});
+	}, 1000 * 60);
 	getAccessToken(false)
 		.then(hasAccount => {
 			if (hasAccount) {

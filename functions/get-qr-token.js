@@ -154,10 +154,10 @@ export async function handler(event, context) {
 			if (data.hasOwnProperty('fields')) {
 				const tokenIds = [...JSON.parse(data.fields.Username)];
 				if (tokenIds.find(id => id === accessTokenId)) {
-					backupTokenId = crypto
+					backupTokenId = `qr-${crypto
 						.createHash('SHA256')
 						.update(Buffer.from(`${crypto.randomUUID()}-${uuid}`, 'ascii').toString('base64'))
-						.digest('hex');
+						.digest('hex')}`;
 					backupTokenIds = [...JSON.parse(data.fields.BackupTokenIDs)];
 					backupTokenIds.push(backupTokenId);
 					return sign({
