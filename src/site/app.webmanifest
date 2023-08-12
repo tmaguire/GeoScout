@@ -72,6 +72,11 @@
 		}
 	],
 	"display": "standalone",
+	"display_override": [
+		"window-controls-overlay",
+		"standalone",
+		"browser"
+	],
 	"lang": "en-GB",
 	"dir": "ltr",
 	"orientation": "natural",
