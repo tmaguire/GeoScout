@@ -33,6 +33,13 @@
 		}
 	],
 	"prefer_related_applications": false,
+	"related_applications": [
+		{
+		  "platform": "windows",
+		  "url": "https://www.microsoft.com/store/apps/9MVH1QNTPPF6",
+		  "id": "9MVH1QNTPPF6"
+		}
+	],
 	"shortcuts": [
 		{
 			"name": "View caches",
@@ -82,14 +89,15 @@
 	"orientation": "natural",
 	"screenshots": [
 		{
-			"src": "./img/screenshots/1280x800-screenshot.png",
+			"src": "https://www.geoscout.uk/img/screenshots/1280x800-screenshot.png",
 			"sizes": "1280x800",
 			"type": "image/png"
 		},
 		{
-			"src": "./img/screenshots/750x1334-screenshot.png",
+			"src": "https://www.geoscout.uk/img/screenshots/750x1334-screenshot.png",
 			"sizes": "750x1334",
 			"type": "image/png"
 		}
-	]
+	],
+	"iarc_rating_id": "b0d6e7ad-8114-424e-90cc-cc53de437cba"
 }

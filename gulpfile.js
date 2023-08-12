@@ -157,4 +157,9 @@ function serviceWorker() {
 		.pipe(dest('dist/'));
 }
 
-exports.default = parallel(series(parallel(bundleMainJs, bundleOfflineJs, series(copyIcons, bundleCss), sitePages, copyImg, copySite, browserCompat, serviceWorker), sri));
+function copyQrCodeModule() {
+	return src('./node_modules/qr-scanner/qr-scanner-worker.min.js')
+		.pipe(dest('dist/js/'));
+}
+
+exports.default = parallel(series(parallel(bundleMainJs, bundleOfflineJs, series(copyIcons, bundleCss), sitePages, copyImg, copySite, copyQrCodeModule, browserCompat, serviceWorker), sri));

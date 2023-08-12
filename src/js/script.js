@@ -298,7 +298,7 @@ function loadCachesMapPage() {
 			return loader.load();
 		})
 		.then(google => {
-			mapContainer.innerHTML = '<div id="mapFilter"></div><div id="mainMap" class="rounded"></div><div class="my-3 text-center"><a href="viewCachesTable" class="text-decoration-none" data-navigo="true"><i class="bi bi-table" aria-hidden="true"></i>&nbsp;View map data as a table</a></div>';
+			mapContainer.innerHTML = '<div id="mapFilter"></div><div id="mainMap" class="rounded shadow"></div><div class="my-3 text-center"><a href="viewCachesTable" class="text-decoration-none" data-navigo="true"><i class="bi bi-table" aria-hidden="true"></i>&nbsp;View map data as a table</a></div>';
 			router.updatePageLinks();
 			mainMap = null;
 			mainMap = new google.maps.Map(document.getElementById('mainMap'), {
@@ -1089,14 +1089,14 @@ function loadRestoreCode() {
 		html: 'Restore your GeoScout account using a QR code generated on another device.<br><br><video id="webcamFeed" class="w-100 rounded"></video>',
 		showCancelButton: () => !Swal.isLoading(),
 		showConfirmButton: false,
-		showLoaderOnConfirm: true,
+		showLoaderOnConfirm: false,
 		buttonsStyling: false,
 		customClass: {
 			loader: 'custom-loader',
 			cancelButton: 'btn btn-link mx-1',
 		},
 		loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
-		allowOutsideClick: () => !Swal.isLoading(),
+		allowOutsideClick: false,
 		backdrop: true,
 		preConfirm: () => {
 			Swal.getCancelButton().setAttribute('hidden', true);
@@ -1104,6 +1104,7 @@ function loadRestoreCode() {
 				qrScanner.stop();
 				qrScanner.destroy();
 				qrScanner = null;
+				document.getElementById('webcamFeed').outerHTML = loadingGif;
 			} catch { }
 			return fetch('./api/exchange-qr-token', {
 				method: 'POST',
@@ -1119,22 +1120,31 @@ function loadRestoreCode() {
 				});
 		},
 		didClose: () => {
-			try {
-				qrScanner.stop();
-				qrScanner.destroy();
-				qrScanner = null;
-			} catch { }
+			if (QrScanner.hasCamera()) {
+				try {
+					qrScanner.stop();
+					qrScanner.destroy();
+					qrScanner = null;
+				} catch { }
+			}
 			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
 		},
 		didOpen: () => {
-			const videoElem = document.getElementById('webcamFeed');
-			qrScanner = new QrScanner(videoElem, result => {
-				qrCodeToken = result.data;
-				Swal.clickConfirm();
-			}, {
-				returnDetailedScanResult: true
-			});
-			qrScanner.start();
+			if (QrScanner.hasCamera()) {
+				const videoElem = document.getElementById('webcamFeed');
+				qrScanner = new QrScanner(videoElem, result => {
+					console.log(result);
+					qrCodeToken = result.data;
+					Swal.clickConfirm();
+				}, {
+					returnDetailedScanResult: true,
+					preferredCamera: 'environment',
+					highlightScanRegion: true,
+					highlightCodeOutline: true,
+
+				});
+				qrScanner.start();
+			}
 		}
 	})
 		.then(result => {
@@ -1148,6 +1158,7 @@ function loadRestoreCode() {
 		})
 		.catch(error => {
 			console.log(error);
+			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
 			showError(error, true);
 		});
 }

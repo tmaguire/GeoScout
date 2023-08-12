@@ -182,7 +182,7 @@ export async function handler(event, context) {
 			return {
 				statusCode: 500,
 				body: JSON.stringify({
-					error: 'Unable to generate access token',
+					error: 'Unable to use this QR code, please generate a new one to scan',
 					errorDebug: error
 				}),
 				headers
