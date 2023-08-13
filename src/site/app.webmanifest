@@ -1,6 +1,7 @@
 {
 	"name": "GeoScout",
 	"short_name": "GeoScout",
+	"id": "/",
 	"description": "Witham Scouts Geocaching project (GeoScout)",
 	"scope": "https://www.geoscout.uk/",
 	"start_url": "https://www.geoscout.uk/",
@@ -35,9 +36,14 @@
 	"prefer_related_applications": false,
 	"related_applications": [
 		{
-		  "platform": "windows",
-		  "url": "https://www.microsoft.com/store/apps/9MVH1QNTPPF6",
-		  "id": "9MVH1QNTPPF6"
+			"platform": "windows",
+			"url": "https://www.microsoft.com/store/apps/9MVH1QNTPPF6",
+			"id": "9MVH1QNTPPF6"
+		},
+		{
+			"platform": "play",
+			"url": "",
+			"id": ""
 		}
 	],
 	"shortcuts": [
@@ -89,15 +95,29 @@
 	"orientation": "natural",
 	"screenshots": [
 		{
-			"src": "https://www.geoscout.uk/img/screenshots/1280x800-screenshot.png",
+			"src": "https://www.geoscout.uk/img/1280x800-screenshot.png",
 			"sizes": "1280x800",
 			"type": "image/png"
 		},
 		{
-			"src": "https://www.geoscout.uk/img/screenshots/750x1334-screenshot.png",
+			"src": "https://www.geoscout.uk/img/750x1334-screenshot.png",
 			"sizes": "750x1334",
 			"type": "image/png"
 		}
 	],
-	"iarc_rating_id": "b0d6e7ad-8114-424e-90cc-cc53de437cba"
+	"iarc_rating_id": "b0d6e7ad-8114-424e-90cc-cc53de437cba",
+	"edge_side_panel": {
+		"preferred_width": 480
+	},
+	"launch_handler": {
+		"client_mode": [
+			"auto"
+		]
+	},
+	"handle_links": "auto",
+	"categories": [
+		"entertainment",
+		"fitness",
+		"kids"
+	]
 }

@@ -15,7 +15,7 @@ const {
 	appName,
 	author,
 	appUrl,
- appBlurb
+	appBlurb
 } = require('./package.json');
 const sass = require('gulp-sass')(require('sass'));
 const {
@@ -94,7 +94,10 @@ function bundleCss() {
 }
 
 function copyImg() {
-	return src('./src/img/*')
+	return src([
+		'./src/img/*',
+		'./src/img/screenshots/*'
+	])
 		.pipe(dest('dist/img/'));
 }
 
@@ -114,7 +117,7 @@ function sitePages() {
 				appName,
 				author,
 				appUrl,
-   appBlurb
+				appBlurb
 			},
 			filters: {
 				markdown: marked.options({ mangle: false, headerIds: false, headerPrefix: false }).parse
@@ -166,7 +169,7 @@ function copyQrCodeModule() {
 
 function copyAppResources() {
 	return src('./src/app/*')
-	.pipe(dest('./dist/.well-known/'))
+		.pipe(dest('./dist/.well-known/'));
 }
 
 exports.default = parallel(series(parallel(bundleMainJs, bundleOfflineJs, series(copyIcons, bundleCss), sitePages, copyImg, copySite, copyQrCodeModule, browserCompat, serviceWorker, copyAppResources), sri));
