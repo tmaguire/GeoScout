@@ -14,7 +14,8 @@ const {
 	version,
 	appName,
 	author,
-	appUrl
+	appUrl,
+ appBlurb
 } = require('./package.json');
 const sass = require('gulp-sass')(require('sass'));
 const {
@@ -112,7 +113,8 @@ function sitePages() {
 				licenses,
 				appName,
 				author,
-				appUrl
+				appUrl,
+   appBlurb
 			},
 			filters: {
 				markdown: marked.options({ mangle: false, headerIds: false, headerPrefix: false }).parse
