@@ -164,4 +164,9 @@ function copyQrCodeModule() {
 		.pipe(dest('dist/js/'));
 }
 
-exports.default = parallel(series(parallel(bundleMainJs, bundleOfflineJs, series(copyIcons, bundleCss), sitePages, copyImg, copySite, copyQrCodeModule, browserCompat, serviceWorker), sri));
+function copyAppResources() {
+	return src('./src/app/*')
+	.pipe(dest('./dist/.well-known/'))
+}
+
+exports.default = parallel(series(parallel(bundleMainJs, bundleOfflineJs, series(copyIcons, bundleCss), sitePages, copyImg, copySite, copyQrCodeModule, browserCompat, serviceWorker, copyAppResources), sri));
