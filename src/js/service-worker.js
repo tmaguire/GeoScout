@@ -35,7 +35,9 @@ let resourcesToCache = [
 	'./img/cabletie-example.webp',
 	// Offline page
 	'./offline.html',
-	'./js/offline-/* @echo version */.min.js'
+	'./js/offline-/* @echo version */.min.js',
+	// Web manifest
+	'./app.webmanifest'
 ];
 
 self.addEventListener('install', event => {
@@ -75,11 +77,21 @@ self.addEventListener('fetch', event => {
 			case 'document':
 			case 'style':
 			case 'script':
-			case 'font':
 			case 'image': {
 				event.respondWith(
 					caches
 						.match(event.request)
+						.then(function (response) {
+							return response || fetch(event.request);
+						}));
+				return;
+			}
+			case 'font': {
+				event.respondWith(
+					caches
+						.match(event.request, {
+							ignoreSearch: true
+						})
 						.then(function (response) {
 							return response || fetch(event.request);
 						}));
