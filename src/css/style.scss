@@ -57,7 +57,12 @@ html {
 }
 
 body {
+	background-color: var(--bs-primary);
 	position: relative;
+}
+
+#app {
+	background-color: white;
 }
 
 .custom-loader {
@@ -67,10 +72,6 @@ body {
 
 .btn-placeholder {
 	width: 90px !important;
-}
-
-.message-area {
-	height: 100px !important;
 }
 
 .legend {
@@ -163,4 +164,16 @@ input[type='number']::-webkit-outer-spin-button {
 .gs-your-device {
 	border-top: solid var(--bs-secondary) !important;
 	border-bottom: solid var(--bs-secondary) !important;
+}
+
+.promo-img {
+	background-size: cover;
+}
+
+.promo-container {
+	padding: unset !important;
+}
+
+.promo-desktop {
+	max-width: 490px;
 }

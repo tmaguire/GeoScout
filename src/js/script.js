@@ -70,8 +70,24 @@ function newAccessToken() {
 		});
 }
 
+// Parse access token to populate UI
+function parseAccessToken(token) {
+	return new Promise((resolve, reject) => {
+		try {
+			if (!token) {
+				resolve(false);
+			}
+			const base64Url = token.split('.')[1];
+			const base64 = String(base64Url).replaceAll('-', '+').replaceAll('_', '/');
+			resolve(JSON.parse(window.atob(base64)));
+		} catch (error) {
+			reject(error);
+		}
+	});
+}
+
 // Error Message Function
-function showError(error, button) {
+function showError(error = 'An issue occurred', button = false, goBackToPage = false) {
 	Swal.fire({
 		title: error,
 		icon: 'error',
@@ -85,6 +101,11 @@ function showError(error, button) {
 		allowEnterKey: button,
 		didOpen: () => {
 			Swal.hideLoading();
+		},
+		didClose: () => {
+			if (goBackToPage) {
+				router.navigate(goBackToPage);
+			}
 		}
 	});
 }
@@ -428,7 +449,7 @@ function loadCachesMapPage() {
 
 		})
 		.catch(error => {
-			showError(error, true);
+			showError(error, true, 'home');
 		});
 	changePage('viewCaches', 'View caches', false);
 }
@@ -515,7 +536,7 @@ function loadCachesTablePage() {
 					search: {
 						placeholder: 'Search by Cache ID'
 					}
-				},
+				}
 			})
 				.render(document.getElementById('table'));
 			return table;
@@ -563,7 +584,7 @@ function loadCachesTablePage() {
 			router.updatePageLinks();
 		})
 		.catch(error => {
-			showError(error, false);
+			showError(error, true, 'home');
 		});
 	changePage('viewCachesTable', 'View caches', false);
 }
@@ -639,7 +660,7 @@ function loadCachePage(id) {
 			}
 		})
 		.catch(error => {
-			showError(error, false);
+			showError(error, true, 'viewCaches');
 		});
 	changePage('viewCache', `Cache ${id}`, id);
 }
@@ -688,6 +709,7 @@ function loadFoundCachePage(id) {
 			inputmode: 'numeric',
 			pattern: '[0-9]*',
 			'data-lpignore': true,
+			'data-1p-ignore': true,
 			'data-form-type': 'other',
 			maxlength: 5
 		},
@@ -696,6 +718,7 @@ function loadFoundCachePage(id) {
 		customClass: {
 			cancelButton: 'btn btn-link m-1',
 			confirmButton: 'btn btn-primary m-1 shadow',
+			input: 'form-control swal2-file',
 			loader: 'custom-loader'
 		},
 		loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Verifying code...</span></div>',
@@ -712,6 +735,7 @@ function loadFoundCachePage(id) {
 			}
 		},
 		preConfirm: (data) => {
+			Swal.getCancelButton().setAttribute('hidden', true);
 			return getAccessToken(true)
 				.then(accessToken => {
 					return fetch('./api/found-cache', {
@@ -904,7 +928,7 @@ function loadFoundCachesPage() {
 			router.updatePageLinks();
 		})
 		.catch(error => {
-			showError(error, true);
+			showError(error, true, 'home');
 		});
 	changePage('foundCaches', 'Found caches', false);
 }
@@ -1011,7 +1035,7 @@ function loadLeaderboardPage() {
 			}, 1000);
 		})
 		.catch(error => {
-			showError(error, true);
+			showError(error, true, 'home');
 		});
 	changePage('leaderboard', 'Leaderboard', false);
 }
@@ -1076,6 +1100,7 @@ function loadRestoreFile() {
 		})
 		.catch(error => {
 			console.log(error);
+			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
 			showError(error, true);
 		});
 }
@@ -1227,6 +1252,7 @@ function createRestoreFile() {
 		})
 		.catch(error => {
 			console.log(error);
+			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
 			showError(error, true);
 		});
 }
@@ -1295,6 +1321,7 @@ function createRestoreCode() {
 		})
 		.catch(error => {
 			console.log(error);
+			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
 			showError(error, true);
 		});
 }
@@ -1314,6 +1341,19 @@ window.onload = function () {
 		.on('/home', function () {
 			// router.navigate('/holding', { historyAPIMethod: 'replaceState' });
 			changePage('home', 'Home', false);
+			getAccessToken(false)
+				.then(hasAccount => {
+					if (hasAccount) {
+						document.getElementById('welcomeGreeting').innerText = 'back';
+						return parseAccessToken(hasAccount)
+							.then(accountDetails => {
+								document.getElementById('welcomeGreeting').innerText = `back ${accountDetails.sub}`;
+							});
+					}
+				})
+				.catch(error => {
+					console.warn(error);
+				});
 		})
 		.on('/viewCaches', function () {
 			// router.navigate('/holding', { historyAPIMethod: 'replaceState' });
@@ -1364,7 +1404,7 @@ window.onload = function () {
 					changePage('manageAccount', 'Manage your account', false);
 				})
 				.catch(error => {
-					showError(error, false);
+					showError(error, true, 'home');
 				});
 		})
 		.on('/createFile', function () {
@@ -1424,24 +1464,4 @@ window.onload = function () {
 			window.location.reload();
 		});
 	}
-	setInterval(() => {
-		getAccessToken(false)
-			.then(hasAccount => {
-				if (hasAccount) {
-					document.getElementById('welcomeGreeting').innerText = 'back';
-				}
-			})
-			.catch(error => {
-				console.warn(error);
-			});
-	}, 1000 * 60);
-	getAccessToken(false)
-		.then(hasAccount => {
-			if (hasAccount) {
-				document.getElementById('welcomeGreeting').innerText = 'back';
-			}
-		})
-		.catch(error => {
-			console.warn(error);
-		});
 };

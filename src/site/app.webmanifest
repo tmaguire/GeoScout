@@ -33,7 +33,7 @@
 			"purpose": "monochrome"
 		}
 	],
-	"prefer_related_applications": false,
+	"prefer_related_applications": true,
 	"related_applications": [
 		{
 			"platform": "windows",
@@ -42,8 +42,8 @@
 		},
 		{
 			"platform": "play",
-			"url": "",
-			"id": ""
+			"url": "https://play.google.com/store/apps/details?id=uk.geoscout.www.twa",
+			"id": "uk.geoscout.www.twa"
 		}
 	],
 	"shortcuts": [

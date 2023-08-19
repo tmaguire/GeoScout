@@ -13,6 +13,7 @@
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 	<meta name="apple-mobile-web-app-title" content="@@appName" />
+	<!-- <meta name="apple-itunes-app" content="app-id=6462697525"> -->
 	<link rel="apple-touch-icon" sizes="192x192" href="./img/maskable.png" />
 	<link rel="apple-touch-startup-image" sizes="192x192" href="./img/splash.png" />
 	<link rel="canonical" href="@@appUrl" />
@@ -74,6 +75,41 @@
 					<div class="row justify-content-center home-tiles">
 						@@loop('./src/includes/home-tiles.html','../includes/pages.json')
 					</div>
+					<!-- Badge promo -->
+					<div class="row justify-content-center">
+						<!-- Desktop container -->
+						<div class="card text-bg-dark rounded m-3 shadow promo-container promo-desktop d-none d-sm-block">
+							<picture>
+								<source srcset="./img/badge-promo.webp" type="image/webp" />
+								<source srcset="./img/badge-promo.png" type="image/png" />
+								<img src="./img/badge-promo.png" class="card-img promo-img"
+									alt="Three GeoScout badges being held up against a green bush" loading="lazy" />
+							</picture>
+							<div class="card-img-overlay mt-1">
+								<h2 class="card-title text-white">Get a GeoScout badge!</h2>
+								<p class="card-text text-white">We have produced GeoScout badges for this year priced
+									at £1.50 each - perfect for a campfire blanket!</p>
+								<a href="mailto:inbox@geoscout.uk?subject=Order%20a%20badge&body=Hi%20GeoScout%20Team!%0D%0A%0D%0AI%20would%20like%20to%20order%20X%20GeoScout%20campfire%20blanket%20badge(s).%0D%0A%0D%0AKind%20regards%2C%0D%0A%0D%0AA%20Geocacher"
+									class="btn btn-secondary shadow">Order a badge</a>
+							</div>
+						</div>
+						<!-- Mobile container -->
+						<div class="card text-bg-dark rounded m-3 shadow promo-container d-block d-sm-none">
+							<picture>
+								<source srcset="./img/badge-promo-mobile.webp" type="image/webp" />
+								<source srcset="./img/badge-promo-mobile.png" type="image/png" />
+								<img src="./img/badge-promo-mobile.png" class="card-img promo-img"
+									alt="Three GeoScout badges being held up against a green bush" loading="lazy" />
+							</picture>
+							<div class="card-img-overlay mt-1">
+								<h2 class="card-title text-white">Get a GeoScout badge!</h2>
+								<p class="card-text text-white">We have produced GeoScout badges for this year priced
+									at £1.50 each - perfect for a campfire blanket!</p>
+								<a href="mailto:inbox@geoscout.uk?subject=Order%20a%20badge&body=Hi%20GeoScout%20Team!%0D%0A%0D%0AI%20would%20like%20to%20order%20X%20GeoScout%20campfire%20blanket%20badge(s).%0D%0A%0D%0AKind%20regards%2C%0D%0A%0D%0AGeocacher"
+									class="btn btn-secondary shadow">Order a badge</a>
+							</div>
+						</div>
+					</div>
 				</div>
 			</section>
 			<!-- Manage account screen -->
@@ -83,6 +119,8 @@
 						<i class="bi bi-person-gear" aria-hidden="true"></i>&nbsp;Manage your account
 					</h1>
 					<div id="restoreAccount" class="row home-tiles justify-content-center d-none">
+						<p class="text-center">Use this page to restore an account that is on another device (using a QR
+							code) or from a backup file generated previously.</p>
 						<div class="col-12 col-md-6 col-lg-4">
 							<a href="restoreCode" class="btn btn-sq-lg btn-primary shadow"
 								data-navigo-options="updateBrowserURL: false, historyAPIMethod: replaceState"
@@ -103,6 +141,8 @@
 						</div>
 					</div>
 					<div id="updateAccount" class="row home-tiles justify-content-center d-none">
+						<p class="text-center">Use this page to generate a QR code for use on an additional device or
+							generate a backup file so you don't lose access to your account.</p>
 						<div class="col-12 col-md-6 col-lg-4">
 							<a href="createCode" class="btn btn-sq-lg btn-primary shadow"
 								data-navigo-options="updateBrowserURL: false, historyAPIMethod: replaceState"
@@ -366,7 +406,7 @@
 						<picture>
 							<source srcset="./img/group.webp" type="image/webp" />
 							<source srcset="./img/group.png" type="image/png" />
-							<img src="./img/group.png" class="footer-img" alt="Witham Scouts logo" loading="lazy"
+							<img src="./img/group.png" class="footer-img mb-5" alt="Witham Scouts logo" loading="lazy"
 								height="100" width="110" />
 						</picture>
 					</a>

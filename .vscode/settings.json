@@ -1,9 +1,17 @@
 {
-	"spellright.language": [
-		"en"
-	],
-	"spellright.documentTypes": [
-		"latex",
-		"plaintext"
-	]
+  "spellright.language": [
+    "en"
+  ],
+  "spellright.documentTypes": [
+    "latex",
+    "plaintext"
+  ],
+  "deno.enable": true,
+  "deno.enablePaths": [
+    "netlify/edge-functions",
+	"edge"
+  ],
+  "deno.unstable": true,
+  "deno.importMap": ".netlify/edge-functions-import-map.json",
+  "deno.path": "C:\\Users\\tmagu\\AppData\\Roaming\\netlify\\Config\\deno-cli\\deno.exe"
 }
