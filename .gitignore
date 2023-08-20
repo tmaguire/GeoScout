@@ -112,3 +112,6 @@ thirdparty-licenses.json
 
 # Local Netlify folder
 .netlify
+
+# Ignore macOS files
+.DS_Store

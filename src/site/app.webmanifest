@@ -99,13 +99,33 @@
 	"orientation": "natural",
 	"screenshots": [
 		{
-			"src": "https://www.geoscout.uk/img/1280x800-screenshot.png",
+			"src": "https://www.geoscout.uk/img/mobile-home.png",
+			"sizes": "750x1334",
+			"type": "image/png"
+		},
+		{
+			"src": "https://www.geoscout.uk/img/mobile-map.png",
+			"sizes": "750x1334",
+			"type": "image/png"
+		},
+		{
+			"src": "https://www.geoscout.uk/img/mobile-about.png",
+			"sizes": "750x1334",
+			"type": "image/png"
+		},
+		{
+			"src": "https://www.geoscout.uk/img/desktop-home.png",
 			"sizes": "1280x800",
 			"type": "image/png"
 		},
 		{
-			"src": "https://www.geoscout.uk/img/750x1334-screenshot.png",
-			"sizes": "750x1334",
+			"src": "https://www.geoscout.uk/img/desktop-map.png",
+			"sizes": "1280x800",
+			"type": "image/png"
+		},
+		{
+			"src": "https://www.geoscout.uk/img/desktop-about.png",
+			"sizes": "1280x800",
 			"type": "image/png"
 		}
 	],
