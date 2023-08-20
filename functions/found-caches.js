@@ -90,7 +90,7 @@ export async function handler(event, context) {
 			userId = decodedToken.sub;
 			tokenId = decodedToken.jwtId;
 			return client
-				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,Total,FoundCaches,Username)&$select=id,fields&$orderby=fields/Total desc,fields/Title`)
+				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,Total,FoundCaches,Username,BackupBanner_x003f_)&$select=id,fields&$orderby=fields/Total desc,fields/Title`)
 				.get();
 		})
 		.then(data => {
@@ -104,6 +104,7 @@ export async function handler(event, context) {
 					found: '',
 					total: '',
 					position: '',
+					backupOffer: false,
 					userId
 				};
 				data.value.forEach(user => {
@@ -111,6 +112,7 @@ export async function handler(event, context) {
 						found: [...JSON.parse(user.fields.FoundCaches)],
 						total: user.fields.Total,
 						userId: user.fields.Title,
+						backup: !Boolean(user.fields.BackupBanner_x003f_)
 					});
 					if (user.fields.Title === userId) {
 						const tokenIds=[...JSON.parse(user.fields.Username)];
@@ -132,6 +134,7 @@ export async function handler(event, context) {
 						obj.found = array[i].found;
 						obj.total = array[i].total;
 						obj.position = array[i].position;
+						obj.backupOffer = array[i].backup
 					}
 				}
 				return obj;

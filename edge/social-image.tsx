@@ -1,8 +1,17 @@
 import React from "https://esm.sh/react@18.2.0";
 import { ImageResponse } from "https://deno.land/x/og_edge@0.0.6/mod.ts";
+// Dictionary list for usernames
+const usernameList = [
+	'Red', 'Yellow', 'Green', 'Teal', 'Blue', 'Purple', 'Amber', 'Orange', 'Pink'
+];
 
 export default function handler(req: Request) {
 	const url = new URL(req.url);
+	const username = url.pathname.length > 7 ? url.pathname.substring(7) : false;
+	let useUsername = false;
+	if (username) {
+		useUsername = RegExp(`^(${usernameList.join('|')})-[1-9][0-9][0-9]$`).test(username);
+	}
 	return new ImageResponse(
 		(
 			<div
@@ -19,7 +28,7 @@ export default function handler(req: Request) {
 					color: 'white'
 				}}
 			>
-				I'm geocaching with GeoScout{url.pathname.length > 9 ? ` as ${url.pathname.substring(9)}` : ''}<br />🧭🗺️🏆
+				I'm geocaching with GeoScout{useUsername ? ` as ${username}` : ''}<br />🧭🗺️🏆
 			</div>
 		), {
 		emoji: 'fluent'

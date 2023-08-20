@@ -18,7 +18,7 @@ included_files = ["functions/cert.pem"]
 node_bundler = "esbuild"
 [[edge_functions]]
 function = "social-image"
-path = "/share-*"
+path = "/share*"
 [[redirects]]
 force = true
 from = "https://geoscout.netlify.app/*"

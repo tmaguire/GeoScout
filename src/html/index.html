@@ -5,18 +5,27 @@
 	<meta charset="utf-8" />
 	<title>@@appName</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+	<!-- Page metatags -->
 	<meta name="description" content="@@appBlurb" />
 	<meta name="author" content="@@author" />
+	<link rel="icon" href="./img/favicon.png" />
+	<link rel="canonical" href="@@appUrl" />
+	<!-- Sharing metatags -->
+	<meta property="og:description" content="@@appBlurb" />
+	<meta property="og:image" content="@@appUrl/share" />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta property="og:title" content="@@appName" />
+	<meta property="og:url" content="@@appUrl" />
 	<!-- Bundled CSS -->
 	<link rel="stylesheet" type="text/css" href="./css/bundle-@@version.min.css" />
-	<link rel="icon" href="./img/favicon.png" />
+	<!-- Web app settings -->
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 	<meta name="apple-mobile-web-app-title" content="@@appName" />
 	<!-- <meta name="apple-itunes-app" content="app-id=6462697525"> -->
 	<link rel="apple-touch-icon" sizes="192x192" href="./img/maskable.png" />
 	<link rel="apple-touch-startup-image" sizes="192x192" href="./img/splash.png" />
-	<link rel="canonical" href="@@appUrl" />
 	<!-- Web-app Manifest -->
 	<link rel="manifest" href="./app.webmanifest" />
 	<!-- Theme colour -->
@@ -78,7 +87,8 @@
 					<!-- Badge promo -->
 					<div class="row justify-content-center">
 						<!-- Desktop container -->
-						<div class="card text-bg-dark rounded m-3 shadow promo-container promo-desktop d-none d-sm-block">
+						<div
+							class="card text-bg-dark rounded m-3 shadow promo-container promo-desktop d-none d-sm-block">
 							<picture>
 								<source srcset="./img/badge-promo.webp" type="image/webp" />
 								<source srcset="./img/badge-promo.png" type="image/png" />
