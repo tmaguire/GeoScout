@@ -6,7 +6,7 @@
 	"scope": "https://www.geoscout.uk/",
 	"start_url": "https://www.geoscout.uk/",
 	"background_color": "#ffffff",
-	"theme_color": "#7413DC",
+	"theme_color": "#7413dc",
 	"icons": [
 		{
 			"src": "https://www.geoscout.uk/img/icon.png",
@@ -44,6 +44,10 @@
 			"platform": "play",
 			"url": "https://play.google.com/store/apps/details?id=uk.geoscout.www.twa",
 			"id": "uk.geoscout.www.twa"
+		},
+		{
+			"platform": "webapp",
+			"url": "https://www.geoscout.uk/app.webmanifest"
 		}
 	],
 	"shortcuts": [
