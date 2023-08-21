@@ -134,7 +134,7 @@ export async function handler(event, context) {
 						obj.found = array[i].found;
 						obj.total = array[i].total;
 						obj.position = array[i].position;
-						obj.backupOffer = array[i].backup
+						obj.backupOffer = array[i].backup;
 					}
 				}
 				return obj;
