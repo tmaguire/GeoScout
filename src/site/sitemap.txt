@@ -6,4 +6,3 @@ https://www.geoscout.uk/about
 https://www.geoscout.uk/terms
 https://www.geoscout.uk/privacy
 https://www.geoscout.uk/disclaimer
-https://www.geoscout.uk/openSourceLicenses

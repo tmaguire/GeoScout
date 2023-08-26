@@ -2,7 +2,7 @@
 	"name": "GeoScout",
 	"short_name": "GeoScout",
 	"id": "/",
-	"description": "Witham Scouts Geocaching project (GeoScout)",
+	"description": "Grab your smartphone and get Geocaching over the summer holidays with our geocache challenge. Geocaching is a fantastic way to enjoy the outdoors exploring new areas and keeping fit.",
 	"scope": "https://www.geoscout.uk/",
 	"start_url": "https://www.geoscout.uk/",
 	"background_color": "#ffffff",

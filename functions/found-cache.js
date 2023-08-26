@@ -191,7 +191,7 @@ export async function handler(event, context) {
 			return {
 				statusCode: 200,
 				body: JSON.stringify({
-					success: `You've found Cache ${cacheId}!`
+					success: `You've found cache ${cacheId}!`
 				}),
 				headers
 			};
@@ -220,7 +220,7 @@ export async function handler(event, context) {
 					statusCode: 403,
 					body: JSON.stringify({
 						error: "You've already found this cache!",
-						errorDebug: 'Your User ID has already found this cache - contact support@geoscout.uk if you believe this is an error'
+						errorDebug: 'Your User ID has already found this cache - contact support@geoscout.uk if you believe this is incorrect'
 					}),
 					headers
 				};
