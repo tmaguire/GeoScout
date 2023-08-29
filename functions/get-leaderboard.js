@@ -80,7 +80,7 @@ export async function handler(event, context) {
 			}
 			// Get items from list
 			return client
-				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,Total)&$select=id,fields&$orderby=fields/Total desc,fields/Title&$filter=fields/Total ne 0&$top=3000`)
+				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,Total,FoundCaches)&$select=id,fields&$orderby=fields/Total desc,fields/Title&$filter=fields/Total ne 0&$top=3000`)
 				.get();
 		})
 		.then(data => {
@@ -92,7 +92,8 @@ export async function handler(event, context) {
 					const fields = user.fields;
 					array.push({
 						userId: fields.Title,
-						found: fields.Total
+						found: fields.Total,
+						lastUpdate: [...JSON.parse(fields.FoundCaches)][[...JSON.parse(fields.FoundCaches)].length - 1].date
 					});
 				});
 				return array;
@@ -105,13 +106,17 @@ export async function handler(event, context) {
 		})
 		.then(array => {
 			let position = 1;
-			for (var i = 0; i < array.length; i++) {
+			for (let i = 0; i < array.length; i++) {
 				if (i > 0 && array[i].found < array[i - 1].found) {
 					position++;
 				}
 				array[i].position = position;
 			}
 			return array;
+		})
+		.then(data => {
+			data.sort((a, b) => a.position - b.position || new Date(a.lastUpdate) - new Date(b.lastUpdate));
+			return data;
 		})
 		.then(leaderboard => {
 			return {

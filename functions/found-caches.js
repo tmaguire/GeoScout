@@ -125,7 +125,7 @@ export async function handler(event, context) {
 					return b.total - a.total;
 				});
 				let position = 1;
-				for (var i = 0; i < array.length; i++) {
+				for (let i = 0; i < array.length; i++) {
 					if (i > 0 && array[i].found < array[i - 1].found) {
 						position++;
 					}
