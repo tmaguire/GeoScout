@@ -705,13 +705,18 @@ function loadFoundCachePage(id) {
 		text: "If you've found this cache, please enter the 5-digit code below to mark it as found:",
 		input: 'text',
 		inputAttributes: {
-			autocomplete: 'off',
+			// Set virtual keyboard to numbers only mode
 			inputmode: 'numeric',
+			// Regex for numbers only and length of 5 characters
 			pattern: '[0-9]*',
+			maxlength: 5,
+			// Ignore autofill via browser/password manager(s)
+			autocomplete: 'off',
 			'data-lpignore': true,
 			'data-1p-ignore': true,
 			'data-form-type': 'other',
-			maxlength: 5
+			// Change hint for virtual keyboard enter key
+			enterkeyhint: 'go'
 		},
 		showCancelButton: true,
 		buttonsStyling: false,
@@ -1457,10 +1462,13 @@ window.onload = function () {
 			});
 		// Set event handler for refresh app button
 		updateBtn.addEventListener('click', (event) => {
+			// Prevent any default events
 			event.preventDefault();
+			// Tell the new service worker to skip waiting and replace the old service worker
 			newWorker.postMessage({
 				action: 'skipWaiting'
 			});
+			// Reload the page
 			window.location.reload();
 		});
 	}

@@ -9,7 +9,7 @@
   "deno.enable": true,
   "deno.enablePaths": [
     "netlify/edge-functions",
-	"edge"
+    "edge"
   ],
   "deno.unstable": true,
   "deno.importMap": ".netlify/edge-functions-import-map.json",

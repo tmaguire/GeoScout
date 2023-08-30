@@ -13,7 +13,7 @@
 		"type": "git",
 		"url": "git+https://github.com/tmaguire/GeoScout.git"
 	},
-	"author": "Tom Maguire (1st Witham Scout Group)",
+	"author": "Tom Maguire (1st Witham Scouts)",
 	"license": "MIT",
 	"bugs": {
 		"url": "https://github.com/tmaguire/GeoScout/issues"
