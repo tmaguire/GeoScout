@@ -116,6 +116,7 @@ export async function handler(event, context) {
 			// Get items from list
 			return client
 				.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,W3WLocation,Coordinates,Found,Suspended)&$select=id,fields&$filter=fields/Title eq '${cacheId}'`)
+				.header('Prefer','HonorNonIndexedQueriesWarningMayFailRandomly')
 				.get();
 		})
 		.then(data => {
@@ -135,6 +136,7 @@ export async function handler(event, context) {
 			};
 			return client
 				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$filter=fields/Title eq '${userId ? userId : ''}'`)
+				.header('Prefer','HonorNonIndexedQueriesWarningMayFailRandomly')
 				.get();
 		})
 		.then(data => {

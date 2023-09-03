@@ -138,6 +138,7 @@ export async function handler(event, context) {
 			recordId = decodedToken.oid;
 			return client
 				.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,CableTieCode,Found)&$select=id,fields&$filter=fields/Title eq '${cacheId}'`)
+				.header('Prefer','HonorNonIndexedQueriesWarningMayFailRandomly')
 				.get();
 		})
 		.then(data => {
@@ -150,6 +151,7 @@ export async function handler(event, context) {
 			};
 			return client
 				.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?$expand=fields($select=Title,FoundCaches,Total,Username)&$select=id,fields&$filter=fields/Title eq '${userId}'`)
+				.header('Prefer','HonorNonIndexedQueriesWarningMayFailRandomly')
 				.get();
 		})
 		.then(data => {

@@ -91,12 +91,18 @@ export async function handler(event, context) {
 					requests: [{
 						id: 'caches',
 						method: 'GET',
-						url: `/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields&$filter=fields/Suspended eq 0`
+						url: `/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields&$filter=fields/Suspended eq 0`,
+						headers: {
+							'Prefer': 'HonorNonIndexedQueriesWarningMayFailRandomly'
+						}
 					},
 					{
 						id: 'user',
 						method: 'GET',
-						url: `/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$filter=fields/Title eq '${userId ? userId : ''}'`
+						url: `/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$filter=fields/Title eq '${userId ? userId : ''}'`,
+						headers: {
+							'Prefer': 'HonorNonIndexedQueriesWarningMayFailRandomly'
+						}
 					}]
 				});
 		})
