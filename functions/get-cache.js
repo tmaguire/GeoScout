@@ -115,15 +115,14 @@ export async function handler(event, context) {
 			}
 			// Get items from list
 			return client
-				.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,W3WLocation,Coordinates,Found,Suspended)&$select=id,fields&$filter=fields/Title eq '${cacheId}'`)
-				.header('Prefer','HonorNonIndexedQueriesWarningMayFailRandomly')
+				// .api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,W3WLocation,Coordinates,Found,Suspended)&$select=id,fields&$filter=fields/Title eq '${cacheId}'`)
+				.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,W3WLocation,Coordinates,Found,Suspended)&$select=id,fields`)
+				.header('Prefer', 'allowthrottleablequeries')
 				.get();
 		})
 		.then(data => {
-			if (data.value.length === 0) {
-				throw 'Cache has been suspended or does not exist';
-			}
-			const fields = data.value[0].fields;
+			const cacheRecord = data.value.find(record => record.fields.Title === cacheId);
+			const fields = cacheRecord.fields;
 			returnObj = {
 				location: fields.W3WLocation,
 				coordinates: fields.Coordinates,
@@ -135,12 +134,14 @@ export async function handler(event, context) {
 				suspended: fields.Suspended
 			};
 			return client
-				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$filter=fields/Title eq '${userId ? userId : ''}'`)
-				.header('Prefer','HonorNonIndexedQueriesWarningMayFailRandomly')
+				// .api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$filter=fields/Title eq '${userId ? userId : ''}'`)
+				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields`)
+				.header('Prefer', 'allowthrottleablequeries')
 				.get();
 		})
 		.then(data => {
-			if (data.value.length === 1) {
+			const userRecord = data.value.find(record => record.fields.Title === userId);
+			if (userRecord) {
 				const found = [...JSON.parse(data.value[0].fields.FoundCaches)];
 				if (found.find(cache => (cache.id === cacheId))) {
 					returnObj.found = true;

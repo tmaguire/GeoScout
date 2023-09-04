@@ -80,8 +80,9 @@ export async function handler(event, context) {
 			}
 			// Get items from list
 			return client
-				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,Total,FoundCaches)&$select=id,fields&$orderby=fields/Total desc,fields/Title&$filter=fields/Total ne 0&$top=3000`)
-				.header('Prefer','HonorNonIndexedQueriesWarningMayFailRandomly')
+				// .api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,Total,FoundCaches)&$select=id,fields&$orderby=fields/Total desc,fields/Title&$filter=fields/Total ne 0&$top=3000`)
+				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,Total,FoundCaches)&$select=id,fields&$top=3000`)
+				.header('Prefer','allowthrottleablequeries')
 				.get();
 		})
 		.then(data => {
@@ -91,11 +92,13 @@ export async function handler(event, context) {
 				const array = [];
 				data.value.forEach(user => {
 					const fields = user.fields;
-					array.push({
-						userId: fields.Title,
-						found: fields.Total,
-						lastUpdate: [...JSON.parse(fields.FoundCaches)][[...JSON.parse(fields.FoundCaches)].length - 1].date
-					});
+					if (fields.Total !== 0) {
+						array.push({
+							userId: fields.Title,
+							found: fields.Total,
+							lastUpdate: [...JSON.parse(fields.FoundCaches)][[...JSON.parse(fields.FoundCaches)].length - 1].date
+						});
+					}
 				});
 				return array;
 			}

@@ -91,19 +91,21 @@ export async function handler(event, context) {
 					requests: [{
 						id: 'caches',
 						method: 'GET',
-						url: `/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields&$filter=fields/Suspended eq 0`,
+						// url: `/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields&$filter=fields/Suspended eq 0`,
+						url: `/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields&$top=3000`,
 						headers: {
-							'Prefer': 'HonorNonIndexedQueriesWarningMayFailRandomly'
+							'Prefer': 'allowthrottleablequeries'
 						}
 					},
-					{
+					(userId && {
 						id: 'user',
 						method: 'GET',
-						url: `/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$filter=fields/Title eq '${userId ? userId : ''}'`,
+						// url: `/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$filter=fields/Title eq '${userId}'`,
+						url: `/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$top=3000`,
 						headers: {
-							'Prefer': 'HonorNonIndexedQueriesWarningMayFailRandomly'
+							'Prefer': 'allowthrottleablequeries'
 						}
-					}]
+					})]
 				});
 		})
 		.then(data => {
@@ -143,20 +145,35 @@ export async function handler(event, context) {
 		.then(user => {
 			if (user.length === 0) {
 				return returnObj;
-			} else if (user.length === 1) {
-				const found = [...JSON.parse(user[0].fields.FoundCaches)];
-				found.forEach(item => {
-					try {
-						const cache = returnObj.caches.find(cache => (cache.id === item.id));
-						cache.found = true;
-					} catch {
-						console.log('Found cache is suspended - skipping over it');
-					}
-				});
-				return returnObj;
 			} else {
-				throw 'Duplicate User ID!';
+				const userRecord = user.find(record => (record.fields.Title === userId));
+				if (userRecord) {
+					const found = [...JSON.parse(userRecord.fields.FoundCaches)];
+					found.forEach(item => {
+						try {
+							const cache = returnObj.caches.find(cache => (cache.id === item.id));
+							cache.found = true;
+						} catch {
+							console.log('Found cache is suspended - skipping over it');
+						}
+					});
+				}
+				return returnObj;
 			}
+			// } else if (user.length === 1) {
+			// 	const found = [...JSON.parse(user[0].fields.FoundCaches)];
+			// 	found.forEach(item => {
+			// 		try {
+			// 			const cache = returnObj.caches.find(cache => (cache.id === item.id));
+			// 			cache.found = true;
+			// 		} catch {
+			// 			console.log('Found cache is suspended - skipping over it');
+			// 		}
+			// 	});
+			// 	return returnObj;
+			// } else {
+			// 	throw 'Duplicate User ID!';
+			// }
 		})
 		.then(obj => {
 			return {

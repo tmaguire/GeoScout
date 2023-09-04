@@ -137,22 +137,29 @@ export async function handler(event, context) {
 			tokenId = decodedToken.jwtId;
 			recordId = decodedToken.oid;
 			return client
-				.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,CableTieCode,Found)&$select=id,fields&$filter=fields/Title eq '${cacheId}'`)
-				.header('Prefer','HonorNonIndexedQueriesWarningMayFailRandomly')
+				// .api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,CableTieCode,Found)&$select=id,fields&$filter=fields/Title eq '${cacheId}'`)
+				.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,CableTieCode,Found)&$select=id,fields`)
+				.header('Prefer','allowthrottleablequeries')
 				.get();
 		})
 		.then(data => {
-			if (data.value[0].fields.CableTieCode !== String(cacheCode)) {
-				throw 'Invalid code';
+			const cacheRecord = data.value.find(record => record.fields.Title === cacheId);
+			if (cacheRecord) {
+				if (cacheRecord.fields.CableTieCode !== String(cacheCode)) {
+					throw 'Invalid code';
+				}
+				currentStats = {
+					count: Number(cacheRecord.fields.Found),
+					id: cacheRecord.id
+				};
+				return client
+					// .api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?$expand=fields($select=Title,FoundCaches,Total,Username)&$select=id,fields&$filter=fields/Title eq '${userId}'`)
+					.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?$expand=fields($select=Title,FoundCaches,Total,Username)&$select=id,fields`)
+					.header('Prefer','allowthrottleablequeries')
+					.get();
+			} else {
+				throw 'Invalid cache';
 			}
-			currentStats = {
-				count: Number(data.value[0].fields.Found),
-				id: data.value[0].id
-			};
-			return client
-				.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?$expand=fields($select=Title,FoundCaches,Total,Username)&$select=id,fields&$filter=fields/Title eq '${userId}'`)
-				.header('Prefer','HonorNonIndexedQueriesWarningMayFailRandomly')
-				.get();
 		})
 		.then(data => {
 			if (data.hasOwnProperty('fields')) {
