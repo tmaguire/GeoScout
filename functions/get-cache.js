@@ -142,7 +142,7 @@ export async function handler(event, context) {
 		.then(data => {
 			const userRecord = data.value.find(record => record.fields.Title === userId);
 			if (userRecord) {
-				const found = [...JSON.parse(data.value[0].fields.FoundCaches)];
+				const found = [...JSON.parse(userRecord.fields.FoundCaches)];
 				if (found.find(cache => (cache.id === cacheId))) {
 					returnObj.found = true;
 				}
