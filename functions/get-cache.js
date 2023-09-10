@@ -115,8 +115,8 @@ export async function handler(event, context) {
 			}
 			// Get items from list
 			return client
-				// .api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,W3WLocation,Coordinates,Found,Suspended)&$select=id,fields&$filter=fields/Title eq '${cacheId}'`)
-				.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,W3WLocation,Coordinates,Found,Suspended)&$select=id,fields&$top=3000`)
+				.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,W3WLocation,Coordinates,Found,Suspended)&$select=id,fields&$filter=fields/Title eq '${cacheId}'`)
+				// .api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,W3WLocation,Coordinates,Found,Suspended)&$select=id,fields&$top=3000`)
 				.header('Prefer', 'allowthrottleablequeries')
 				.get();
 		})
@@ -134,8 +134,8 @@ export async function handler(event, context) {
 				suspended: fields.Suspended
 			};
 			return client
-				// .api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$filter=fields/Title eq '${userId ? userId : ''}'`)
-				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$top=3000`)
+				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$filter=fields/Title eq '${userId ? userId : ''}'`)
+				// .api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$top=3000`)
 				.header('Prefer', 'allowthrottleablequeries')
 				.get();
 		})

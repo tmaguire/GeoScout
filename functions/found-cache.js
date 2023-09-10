@@ -137,8 +137,8 @@ export async function handler(event, context) {
 			tokenId = decodedToken.jwtId;
 			recordId = decodedToken.oid;
 			return client
-				// .api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,CableTieCode,Found)&$select=id,fields&$filter=fields/Title eq '${cacheId}'`)
-				.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,CableTieCode,Found)&$select=id,fields&$top=3000`)
+				.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,CableTieCode,Found)&$select=id,fields&$filter=fields/Title eq '${cacheId}'`)
+				// .api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,CableTieCode,Found)&$select=id,fields&$top=3000`)
 				.header('Prefer','allowthrottleablequeries')
 				.get();
 		})
@@ -153,8 +153,8 @@ export async function handler(event, context) {
 					id: cacheRecord.id
 				};
 				return client
-					// .api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?$expand=fields($select=Title,FoundCaches,Total,Username)&$select=id,fields&$filter=fields/Title eq '${userId}'`)
-					.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?$expand=fields($select=Title,FoundCaches,Total,Username)&$select=id,fields&$top=3000`)
+					.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?$expand=fields($select=Title,FoundCaches,Total,Username)&$select=id,fields&$filter=fields/Title eq '${userId}'`)
+					// .api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?$expand=fields($select=Title,FoundCaches,Total,Username)&$select=id,fields&$top=3000`)
 					.header('Prefer','allowthrottleablequeries')
 					.get();
 			} else {

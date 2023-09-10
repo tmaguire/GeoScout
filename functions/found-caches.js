@@ -90,8 +90,8 @@ export async function handler(event, context) {
 			userId = decodedToken.sub;
 			tokenId = decodedToken.jwtId;
 			return client
-				// .api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,Total,FoundCaches,Username,BackupBanner_x003f_)&$select=id,fields&$orderby=fields/Total desc,fields/Title`)
-				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,Total,FoundCaches,Username,BackupBanner_x003f_)&$select=id,fields&$top=3000`)
+				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,Total,FoundCaches,Username,BackupBanner_x003f_)&$select=id,fields&$orderby=fields/Total desc,fields/Title`)
+				// .api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,Total,FoundCaches,Username,BackupBanner_x003f_)&$select=id,fields&$top=3000`)
 				.header('Prefer','allowthrottleablequeries')
 				.get();
 		})

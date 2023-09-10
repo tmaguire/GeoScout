@@ -91,21 +91,21 @@ export async function handler(event, context) {
 					requests: [{
 						id: 'caches',
 						method: 'GET',
-						// url: `/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields&$filter=fields/Suspended eq 0`,
-						url: `/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields&$top=3000`,
+						url: `/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields&$filter=fields/Suspended eq 0`,
+						// url: `/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields&$top=3000`,
 						headers: {
 							'Prefer': 'allowthrottleablequeries'
 						}
 					},
-					(userId && {
+					{
 						id: 'user',
 						method: 'GET',
-						// url: `/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$filter=fields/Title eq '${userId}'`,
-						url: `/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$top=3000`,
+						url: `/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$filter=fields/Title eq '${userId}'`,
+						// url: `/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$top=3000`,
 						headers: {
 							'Prefer': 'allowthrottleablequeries'
 						}
-					})]
+					}]
 				});
 		})
 		.then(data => {
