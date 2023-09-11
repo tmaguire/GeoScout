@@ -1173,6 +1173,8 @@ function loadRestoreCode() {
 
 				});
 				qrScanner.start();
+			} else {
+				throw "Your device doesn't have a camera (or you haven't allowed permissions for GeoScout to access it), which is required for this feature";
 			}
 		}
 	})
@@ -1470,6 +1472,21 @@ window.onload = function () {
 			});
 			// Reload the page
 			window.location.reload();
+		});
+	}
+	// Set up listeners for survey link
+	const surveyLinkBanner = document.getElementById('surveyLink');
+	// Check if already dismissed
+	if (localStorage.getItem('surveyPrompt2023')) {
+		// Remove (without locking main thread)
+		try {
+			surveyLinkBanner.remove();
+		} catch { }
+	} else {
+		// Set listener to store dismissal event in local storage
+		surveyLinkBanner.addEventListener('closed.bs.alert', function () {
+			// Set key in local storage (if able)
+			localStorage.setItem('surveyPrompt2023', true);
 		});
 	}
 };
