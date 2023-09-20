@@ -1477,16 +1477,13 @@ window.onload = function () {
 	// Set up listeners for survey link
 	const surveyLinkBanner = document.getElementById('surveyLink');
 	// Check if already dismissed
-	if (localStorage.getItem('surveyPrompt2023')) {
-		// Remove (without locking main thread)
-		try {
-			surveyLinkBanner.remove();
-		} catch { }
-	} else {
-		// Set listener to store dismissal event in local storage
+	if (!sessionStorage.getItem('surveyPromptClosed')) {
+		// Unhide banner
+		surveyLinkBanner.classList.remove('d-none');
+		// Set listener to store dismissal event in session storage
 		surveyLinkBanner.addEventListener('closed.bs.alert', function () {
-			// Set key in local storage (if able)
-			localStorage.setItem('surveyPrompt2023', true);
+			// Set key in session storage (if able)
+			sessionStorage.setItem('surveyPromptClosed', true);
 		});
 	}
 };
