@@ -45,7 +45,7 @@
 		"validator": "^13.11.0"
 	},
 	"devDependencies": {
-		"@types/google.maps": "^3.54.4",
+		"@types/google.maps": "^3.54.5",
 		"dompurify": "^3.0.6",
 		"gulp": "^4.0.2",
 		"gulp-concat": "^2.6.1",
