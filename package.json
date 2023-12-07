@@ -23,7 +23,7 @@
 		"@azure/identity": "^3.4.1",
 		"@googlemaps/js-api-loader": "^1.16.2",
 		"@googlemaps/markerclusterer": "^2.5.1",
-		"@googlemaps/url-signature": "^1.0.29",
+		"@googlemaps/url-signature": "^1.0.30",
 		"@microsoft/microsoft-graph-client": "^3.0.7",
 		"@netlify/functions": "^2.4.0",
 		"@popperjs/core": "^2.11.8",
