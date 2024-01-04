@@ -28,7 +28,7 @@
 		"@netlify/functions": "^2.4.1",
 		"@popperjs/core": "^2.11.8",
 		"bootstrap": "^5.3.2",
-		"bootstrap-icons": "^1.11.2",
+		"bootstrap-icons": "^1.11.3",
 		"boring-avatars": "^1.10.1",
 		"geodesy": "^2.4.0",
 		"gridjs": "^6.0.6",
