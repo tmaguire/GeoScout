@@ -43,7 +43,7 @@ function licensePrep() {
 const licenses = licensePrep();
 
 function sri() {
-	return src('dist/*.html')
+	return src('dist/*.html', { encoding: false })
 		.pipe(sriHash({
 			algo: 'sha512',
 			relative: true
@@ -62,7 +62,7 @@ function bundleMainJs() {
 		'./node_modules/@googlemaps/markerclusterer/dist/index.min.js',
 		'./node_modules/qr-scanner/qr-scanner.umd.min.js',
 		'./src/js/script.js'
-	])
+	], { encoding: false })
 		.pipe(concat(`main-${version}.min.js`))
 		.pipe(uglify())
 		.pipe(dest('dist/js/'));
@@ -72,7 +72,7 @@ function bundleOfflineJs() {
 	return src([
 		'./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js',
 		'./src/js/offline.js'
-	])
+	], { encoding: false })
 		.pipe(concat(`offline-${version}.min.js`))
 		.pipe(uglify())
 		.pipe(dest('dist/js/'));
@@ -85,7 +85,7 @@ function bundleCss() {
 		'./node_modules/sweetalert2/dist/sweetalert2.min.css',
 		'./node_modules/gridjs/dist/theme/mermaid.min.css',
 		'./node_modules/outdated-browser-rework/dist/style.css'
-	])
+	], { encoding: false })
 		.pipe(concat(`bundle-${version}.min.css`))
 		.pipe(sass.sync({
 			outputStyle: 'compressed'
@@ -97,17 +97,17 @@ function copyImg() {
 	return src([
 		'./src/img/*',
 		'./src/img/screenshots/*'
-	])
+	], { encoding: false })
 		.pipe(dest('dist/img/'));
 }
 
 function copyIcons() {
-	return src('./node_modules/bootstrap-icons/font/fonts/*')
+	return src('./node_modules/bootstrap-icons/font/fonts/*', { encoding: false })
 		.pipe(dest('dist/css/fonts/'));
 }
 
 function sitePages() {
-	return src('./src/html/*.html')
+	return src('./src/html/*.html', { encoding: false })
 		.pipe(fileInclude({
 			prefix: '@@',
 			basepath: '@root',
@@ -132,7 +132,7 @@ function sitePages() {
 }
 
 function copySite() {
-	return src('./src/site/*')
+	return src('./src/site/*', { encoding: false })
 		.pipe(dest('dist/'));
 }
 
@@ -140,16 +140,14 @@ function browserCompat() {
 	return src([
 		'./node_modules/outdated-browser-rework/dist/outdated-browser-rework.min.js',
 		'./src/js/browser-compat.js'
-	])
+	], { encoding: false })
 		.pipe(concat(`browser-compat-${version}.min.js`))
 		.pipe(uglify())
 		.pipe(dest('dist/js/'));
 }
 
 function serviceWorker() {
-	return src([
-		'./src/js/service-worker.js'
-	])
+	return src('./src/js/service-worker.js', { encoding: false })
 		.pipe(preprocess({
 			context: {
 				version,
@@ -163,12 +161,12 @@ function serviceWorker() {
 }
 
 function copyQrCodeModule() {
-	return src('./node_modules/qr-scanner/qr-scanner-worker.min.js')
+	return src('./node_modules/qr-scanner/qr-scanner-worker.min.js', { encoding: false })
 		.pipe(dest('dist/js/'));
 }
 
 function copyAppResources() {
-	return src('./src/app/*')
+	return src('./src/app/*', { encoding: false })
 		.pipe(dest('./dist/.well-known/'));
 }
 
