@@ -1,7 +1,13 @@
 /* jshint esversion:10 */
+// Constants from build process
+const appUrl = '/* @echo appUrl */';
+const appName = '/* @echo appName */';
+const googleMapsApiKey = '/* @echo googleMapsApiKey */';
+// Variables
 let mainMap = null;
 let router = null;
 let newWorker = false;
+// Loader animation
 const loadingGif = '<div class="text-center"><img src="./img/loading.gif" height="150" width="150" class="img-fluid text-center" alt="Loading animation placeholder"></div>';
 
 // Method for creating toast notifications
@@ -248,7 +254,7 @@ function handleErrors(response) {
 
 function changePage(page, title, id) {
 	// Update Canonical tag
-	document.querySelector("link[rel='canonical']").setAttribute('href', page === '404' ? 'https://www.geoscout.uk' : (id ? `https://www.geoscout.uk/${page}-${id}` : `https://www.geoscout.uk/${page}`));
+	document.querySelector("link[rel='canonical']").setAttribute('href', page === '404' ? appUrl : (id ? `${appUrl}/${page}-${id}` : `${appUrl}/${page}`));
 	// Update menu
 	document.querySelectorAll('a.nav-link').forEach(menuItem => {
 		if (menuItem.getAttribute('href') === page) {
@@ -270,7 +276,7 @@ function changePage(page, title, id) {
 	document.getElementById(page).classList.remove('d-none');
 	document.getElementById(page).removeAttribute('aria-hidden');
 	// Change document title
-	document.title = `${title} | GeoScout`;
+	document.title = `${title} | ${appName}`;
 	// Scroll to top
 	window.scrollTo({
 		top: 0,
@@ -289,7 +295,7 @@ function loadCachesMapPage() {
 	const mapContainer = document.getElementById('mapContainer');
 	mapContainer.innerHTML = loadingGif;
 	const loader = new google.maps.plugins.loader.Loader({
-		apiKey: 'AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4',
+		apiKey: googleMapsApiKey,
 		version: 'quarterly',
 		libraries: ['drawing'],
 		language: 'en',
@@ -1231,11 +1237,11 @@ function createRestoreFile() {
 				.then(response => response.json())
 				.then(handleErrors)
 				.then(backupToken => {
-					const backupFile = new File([String(backupToken.token)], `${backupToken.name}.GeoScout`, { type: 'text/plain' });
+					const backupFile = new File([DOMPurify.sanitize(String(backupToken.token))], `${backupToken.name}.GeoScout`, { type: 'text/plain' });
 					const url = URL.createObjectURL(backupFile);
 					const link = document.createElement('a');
-					link.href = url;
-					link.download = backupFile.name;
+					link.href = DOMPurify.sanitize(url);
+					link.download = DOMPurify.sanitize(backupFile.name);
 					link.setAttribute('class', 'd-none');
 					document.body.appendChild(link);
 					link.click();
@@ -1433,7 +1439,7 @@ window.onload = function () {
 	// Sort out page links
 	router.updatePageLinks();
 	// Load service worker if supported
-	if ('serviceWorker' in navigator && window.origin === 'https://www.geoscout.uk') {
+	if ('serviceWorker' in navigator && window.origin === appUrl) {
 		const updateBtn = document.getElementById('updateBtn');
 		// Register service worker
 		navigator

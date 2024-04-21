@@ -123,7 +123,7 @@ self.addEventListener('activate', event => {
 
 // Listen to messages
 self.addEventListener('message', function (event) {
-	if (event.origin !== '/* @echo appurl */') {
+	if (event.origin !== '/* @echo appUrl */') {
 		return;
 	} else {
 		if (event.data.action === 'skipWaiting') {

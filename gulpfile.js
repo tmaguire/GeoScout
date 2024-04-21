@@ -15,7 +15,8 @@ const {
 	appName,
 	author,
 	appUrl,
-	appBlurb
+	appBlurb,
+	googleMapsApiKey
 } = require('./package.json');
 const sass = require('gulp-sass')(require('sass'));
 const {
@@ -63,6 +64,14 @@ function bundleMainJs() {
 		'./node_modules/qr-scanner/qr-scanner.umd.min.js',
 		'./src/js/script.js'
 	], { encoding: false })
+		.pipe(preprocess({
+			context: {
+				version,
+				appUrl,
+				appName,
+				googleMapsApiKey
+			},
+		}))
 		.pipe(concat(`main-${version}.min.js`))
 		.pipe(uglify())
 		.pipe(dest('dist/js/'));
