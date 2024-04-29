@@ -48,7 +48,7 @@
 	},
 	"devDependencies": {
 		"@types/google.maps": "^3.55.7",
-		"dompurify": "^3.1.0",
+		"dompurify": "^3.1.1",
 		"gulp": "^5.0.0",
 		"gulp-concat": "^2.6.1",
 		"gulp-file-include": "^2.3.0",
