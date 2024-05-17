@@ -26,7 +26,7 @@
 		"@googlemaps/markerclusterer": "^2.5.3",
 		"@googlemaps/url-signature": "^1.0.34",
 		"@microsoft/microsoft-graph-client": "^3.0.7",
-		"@netlify/functions": "^2.6.3",
+		"@netlify/functions": "^2.7.0",
 		"@popperjs/core": "^2.11.8",
 		"bootstrap": "^5.3.3",
 		"bootstrap-icons": "^1.11.3",
