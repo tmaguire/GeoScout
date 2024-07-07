@@ -92,7 +92,7 @@ export async function handler(event, context) {
 			return client
 				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,Total,FoundCaches,Username,BackupBanner_x003f_)&$select=id,fields&$orderby=fields/Total desc,fields/Title`)
 				// .api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,Total,FoundCaches,Username,BackupBanner_x003f_)&$select=id,fields&$top=3000`)
-				.header('Prefer','allowthrottleablequeries')
+				.header('Prefer', 'allowthrottleablequeries')
 				.get();
 		})
 		.then(data => {
@@ -117,7 +117,7 @@ export async function handler(event, context) {
 						backup: !Boolean(user.fields.BackupBanner_x003f_)
 					});
 					if (user.fields.Title === userId) {
-						const tokenIds=[...JSON.parse(user.fields.Username)];
+						const tokenIds = [...JSON.parse(user.fields.Username)];
 						if (!tokenIds.find(id => id === tokenId)) {
 							throw 'Unable to validate your User ID';
 						}

@@ -23,6 +23,7 @@ const {
 	marked
 } = require('marked');
 const preprocess = require('gulp-preprocess');
+const gulpEsbuild = require('gulp-esbuild');
 
 function licensePrep() {
 	const licenses = require('./thirdparty-licenses.json');
@@ -53,17 +54,14 @@ function sri() {
 }
 
 function bundleMainJs() {
-	return src([
-		'./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js',
-		'./node_modules/sweetalert2/dist/sweetalert2.min.js',
-		'./node_modules/dompurify/dist/purify.min.js',
-		'./node_modules/navigo/lib/navigo.min.js',
-		'./node_modules/gridjs/dist/gridjs.production.min.js',
-		'./node_modules/@googlemaps/js-api-loader/dist/index.min.js',
-		'./node_modules/@googlemaps/markerclusterer/dist/index.min.js',
-		'./node_modules/qr-scanner/qr-scanner.umd.min.js',
-		'./src/js/script.js'
-	], { encoding: false })
+	return src('./src/js/script.mjs', { encoding: false })
+		.pipe(gulpEsbuild({
+			outfile: `main-${version}.min.js`,
+			bundle: true,
+			format: 'iife',
+			minify: true,
+			platform: 'browser'
+		}))
 		.pipe(preprocess({
 			context: {
 				version,
@@ -72,18 +70,18 @@ function bundleMainJs() {
 				googleMapsApiKey
 			},
 		}))
-		.pipe(concat(`main-${version}.min.js`))
-		.pipe(uglify())
 		.pipe(dest('dist/js/'));
 }
 
 function bundleOfflineJs() {
-	return src([
-		'./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js',
-		'./src/js/offline.js'
-	], { encoding: false })
-		.pipe(concat(`offline-${version}.min.js`))
-		.pipe(uglify())
+	return src('./src/js/offline.mjs', { encoding: false })
+		.pipe(gulpEsbuild({
+			outfile: `offline-${version}.min.js`,
+			bundle: true,
+			format: 'iife',
+			minify: true,
+			platform: 'browser'
+		}))
 		.pipe(dest('dist/js/'));
 }
 
@@ -92,8 +90,7 @@ function bundleCss() {
 		'./src/css/style.scss',
 		'./node_modules/bootstrap-icons/font/bootstrap-icons.scss',
 		'./node_modules/sweetalert2/dist/sweetalert2.min.css',
-		'./node_modules/gridjs/dist/theme/mermaid.min.css',
-		'./node_modules/outdated-browser-rework/dist/style.css'
+		'./node_modules/gridjs/dist/theme/mermaid.min.css'
 	], { encoding: false })
 		.pipe(concat(`bundle-${version}.min.css`))
 		.pipe(sass.sync({
@@ -145,16 +142,6 @@ function copySite() {
 		.pipe(dest('dist/'));
 }
 
-function browserCompat() {
-	return src([
-		'./node_modules/outdated-browser-rework/dist/outdated-browser-rework.min.js',
-		'./src/js/browser-compat.js'
-	], { encoding: false })
-		.pipe(concat(`browser-compat-${version}.min.js`))
-		.pipe(uglify())
-		.pipe(dest('dist/js/'));
-}
-
 function serviceWorker() {
 	return src('./src/js/service-worker.js', { encoding: false })
 		.pipe(preprocess({
@@ -164,14 +151,8 @@ function serviceWorker() {
 				appName
 			},
 		}))
-		.pipe(concat('service-worker.js'))
 		.pipe(uglify())
 		.pipe(dest('dist/'));
-}
-
-function copyQrCodeModule() {
-	return src('./node_modules/qr-scanner/qr-scanner-worker.min.js', { encoding: false })
-		.pipe(dest('dist/js/'));
 }
 
 function copyAppResources() {
@@ -179,4 +160,4 @@ function copyAppResources() {
 		.pipe(dest('./dist/.well-known/'));
 }
 
-exports.default = parallel(series(parallel(bundleMainJs, bundleOfflineJs, series(copyIcons, bundleCss), sitePages, copyImg, copySite, copyQrCodeModule, browserCompat, serviceWorker, copyAppResources), sri));
+exports.default = parallel(series(parallel(bundleMainJs, bundleOfflineJs, series(copyIcons, bundleCss), sitePages, copyImg, copySite, serviceWorker, copyAppResources), sri));

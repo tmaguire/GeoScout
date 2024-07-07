@@ -1,15 +1,15 @@
 [
-        {
-                "relation": [
-                        "delegate_permission/common.handle_all_urls"
-                ],
-                "target": {
-                        "namespace": "android_app",
-                        "package_name": "uk.geoscout.www.twa",
-                        "sha256_cert_fingerprints": [
-                                "F5:B2:7A:03:45:60:0D:B9:F8:15:B7:9C:4F:0C:F3:CD:3B:DD:19:E0:01:B8:72:CA:43:FF:BE:CE:30:92:97:98",
-                                "9F:F0:70:14:1E:9B:D0:59:50:B6:E0:A0:6E:D1:5E:26:F7:71:6D:DE:3D:75:5B:45:3B:95:E3:8B:BC:0D:45:AA"
-                        ]
-                }
-        }
+	{
+		"relation": [
+			"delegate_permission/common.handle_all_urls"
+		],
+		"target": {
+			"namespace": "android_app",
+			"package_name": "uk.geoscout.www.twa",
+			"sha256_cert_fingerprints": [
+				"F5:B2:7A:03:45:60:0D:B9:F8:15:B7:9C:4F:0C:F3:CD:3B:DD:19:E0:01:B8:72:CA:43:FF:BE:CE:30:92:97:98",
+				"9F:F0:70:14:1E:9B:D0:59:50:B6:E0:A0:6E:D1:5E:26:F7:71:6D:DE:3D:75:5B:45:3B:95:E3:8B:BC:0D:45:AA"
+			]
+		}
+	}
 ]

@@ -50,3 +50,5 @@ to = "/.netlify/builders/get-avatar"
 from = "/*"
 status = 200
 to = "/index.html"
+[dev]
+autoLaunch = false

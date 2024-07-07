@@ -1,4 +1,14 @@
 /* jshint esversion:10 */
+// Imports
+import 'bootstrap';
+import { Collapse } from 'bootstrap';
+import Navigo from 'navigo';
+import Swal from 'sweetalert2';
+import DOMPurify from 'dompurify';
+import { Loader } from '@googlemaps/js-api-loader';
+import { MarkerClusterer } from '@googlemaps/markerclusterer';
+import QrScanner from 'qr-scanner';
+import { Grid, html } from 'gridjs';
 // Constants from build process
 const appUrl = '/* @echo appUrl */';
 const appName = '/* @echo appName */';
@@ -285,7 +295,7 @@ function changePage(page, title, id) {
 	});
 	// Close the navbar menu (if it is open)
 	const menuToggle = document.getElementById('navbarToggler');
-	const bsCollapse = new bootstrap.Collapse(menuToggle, {
+	const bsCollapse = new Collapse(menuToggle, {
 		toggle: false
 	});
 	bsCollapse.hide();
@@ -294,15 +304,16 @@ function changePage(page, title, id) {
 function loadCachesMapPage() {
 	const mapContainer = document.getElementById('mapContainer');
 	mapContainer.innerHTML = loadingGif;
-	const loader = new google.maps.plugins.loader.Loader({
+	const loader = new Loader({
 		apiKey: googleMapsApiKey,
 		version: 'quarterly',
-		libraries: ['drawing'],
+		libraries: ['drawing', 'marker'],
 		language: 'en',
 		region: 'GB',
 		id: 'googleMapsScript'
 	});
 	let caches;
+	let cluster;
 	getAccessToken(false)
 		.then(accessToken => {
 			return fetch('./api/get-caches', {
@@ -322,13 +333,13 @@ function loadCachesMapPage() {
 			} else {
 				throw 'No caches found';
 			}
-			return loader.load();
+			return loader.importLibrary('maps');
 		})
 		.then(google => {
 			mapContainer.innerHTML = '<div id="mapFilter"></div><div id="mainMap" class="rounded shadow"></div><div class="my-3 text-center"><a href="viewCachesTable" class="text-decoration-none" data-navigo="true"><i class="bi bi-table" aria-hidden="true"></i>&nbsp;View map data as a table</a></div>';
 			router.updatePageLinks();
 			mainMap = null;
-			mainMap = new google.maps.Map(document.getElementById('mainMap'), {
+			mainMap = new google.Map(document.getElementById('mainMap'), {
 				center: {
 					lat: 51.80007,
 					lng: 0.64038
@@ -350,30 +361,24 @@ function loadCachesMapPage() {
 				mapTypeControl: false,
 				fullscreenControl: true
 			});
-			return loader.load();
+			return loader.importLibrary('marker');
 		})
 		.then(google => {
 			try {
 				const markers = caches.flatMap(cache => {
 					if (!cache.suspended) {
-						const marker = new google.maps.Marker({
+						const markerContent = document.createElement('div');
+						markerContent.textContent = DOMPurify.sanitize(cache.id);
+						markerContent.classList.add(cache.found ? 'marker-found' : 'marker-notfound');
+						const marker = new google.AdvancedMarkerElement({
 							position: {
 								lat: Number(DOMPurify.sanitize(cache.coordinates).split(',')[0]),
 								lng: Number(DOMPurify.sanitize(cache.coordinates).split(',')[1])
 							},
 							map: mainMap,
 							title: `Cache ${DOMPurify.sanitize(cache.id)}`,
-							label: {
-								text: DOMPurify.sanitize(cache.id),
-								color: '#ffffff',
-								fontSize: '16px'
-							},
-							animation: google.maps.Animation.DROP,
-							icon: {
-								url: Boolean(cache.found) ? './img/found.png' : './img/notFound.png',
-								labelOrigin: new google.maps.Point(22, 20)
-							},
-							optimized: true
+							gmpClickable: true,
+							content: markerContent
 						});
 						marker.addListener('click', () => {
 							router.navigate(`/viewCache-${cache.id}`);
@@ -383,17 +388,17 @@ function loadCachesMapPage() {
 						return [];
 					}
 				});
-				const cluster = new markerClusterer.MarkerClusterer({
+				cluster = new MarkerClusterer({
 					map: mainMap,
 					markers
 				});
-				return cluster;
+				return google;
 			} catch (error) {
 				console.warn(error);
 				throw 'Unable to load caches';
 			}
 		})
-		.then(cluster => {
+		.then(google => {
 			let currentFilter = 'all';
 			document.getElementById('mapFilter').innerHTML = `<fieldset><div class="btn-group mb-3 shadow">
 				<legend class="visually-hidden">Filter control for the map to toggle which caches are visible</legend>
@@ -419,24 +424,18 @@ function loadCachesMapPage() {
 					const markers = [];
 					caches.forEach(cache => {
 						if ((cache.found && filterMode.found || !cache.found && filterMode.notFound) && !cache.suspended) {
-							const marker = new google.maps.Marker({
+							const markerContent = document.createElement('div');
+							markerContent.textContent = DOMPurify.sanitize(cache.id);
+							markerContent.classList.add(cache.found ? 'marker-found' : 'marker-notfound');
+							const marker = new google.AdvancedMarkerElement({
 								position: {
 									lat: Number(DOMPurify.sanitize(cache.coordinates).split(',')[0]),
 									lng: Number(DOMPurify.sanitize(cache.coordinates).split(',')[1])
 								},
 								map: mainMap,
 								title: `Cache ${DOMPurify.sanitize(cache.id)}`,
-								label: {
-									text: DOMPurify.sanitize(cache.id),
-									color: '#ffffff',
-									fontSize: '16px'
-								},
-								animation: google.maps.Animation.DROP,
-								icon: {
-									url: Boolean(cache.found) ? './img/found.png' : './img/notFound.png',
-									labelOrigin: new google.maps.Point(22, 20)
-								},
-								optimized: true
+								gmpClickable: true,
+								content: markerContent
 							});
 							marker.addListener('click', () => {
 								router.navigate(`/viewCache-${cache.id}`);
@@ -452,7 +451,6 @@ function loadCachesMapPage() {
 					changeFilter(document.querySelector('input[name="mapFilterBtn"]:checked').value);
 				});
 			});
-
 		})
 		.catch(error => {
 			showError(error, true, 'home');
@@ -487,14 +485,14 @@ function loadCachesTablePage() {
 		})
 		.then(data => {
 			tableContainer.innerHTML = '<div id="tableFilter"></div><div id="table"></div><div class="my-3 text-center"><a href="viewCaches" class="text-decoration-none" data-navigo="true"><i class="bi bi-map" aria-hidden="true"></i>&nbsp;View table data in a map</a></div>';
-			const table = new gridjs.Grid({
+			const table = new Grid({
 				columns: [{
 					id: 'id',
 					name: 'Cache ID',
 					sort: {
 						enabled: true
 					},
-					formatter: (cell) => gridjs.html(`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo="true">${DOMPurify.sanitize(cell)}</a>`)
+					formatter: (cell) => html(`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo="true">${DOMPurify.sanitize(cell)}</a>`)
 				},
 				{
 					id: 'location',
@@ -504,12 +502,12 @@ function loadCachesTablePage() {
 					},
 					formatter: (location) => {
 						const locationString = String(DOMPurify.sanitize(location)).split('///')[1];
-						return gridjs.html(`<a href="https://what3words.com/${locationString}?maptype=satellite" target="_blank" translate="no">///${locationString}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a>`);
+						return html(`<a href="https://what3words.com/${locationString}?maptype=satellite" target="_blank" translate="no">///${locationString}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a>`);
 					}
 				},
 				{
 					id: 'found',
-					name: gridjs.html('Found<span class="visually-hidden"> this cache</span>?'),
+					name: html('Found<span class="visually-hidden"> this cache</span>?'),
 					sort: {
 						enabled: true
 					},
@@ -889,14 +887,14 @@ function loadFoundCachesPage() {
 					</div>
 				</div>
 				<div id="foundWrapper"></div>`;
-				new gridjs.Grid({
+				new Grid({
 					columns: [{
 						id: 'id',
 						name: 'Cache number',
 						sort: {
 							enabled: true
 						},
-						formatter: (cell) => gridjs.html(`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo="true">${DOMPurify.sanitize(cell)}</a>`)
+						formatter: (cell) => html(`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo="true">${DOMPurify.sanitize(cell)}</a>`)
 					}, {
 						id: 'date',
 						name: 'Found',
@@ -905,7 +903,7 @@ function loadFoundCachesPage() {
 						},
 						formatter: (date) => {
 							const time = new Date(date);
-							return gridjs.html(`<time datetime="${DOMPurify.sanitize(date)}">${getTimeAgo(date)}</time>`);
+							return html(`<time datetime="${DOMPurify.sanitize(date)}">${getTimeAgo(date)}</time>`);
 						}
 					}],
 					sort: true,
@@ -974,7 +972,7 @@ function loadLeaderboardPage() {
 		.then(data => {
 			if (data.leaderboard.length > 0) {
 				leaderboardContainer.innerHTML = '<div id="leaderboardWrapper"></div>';
-				new gridjs.Grid({
+				new Grid({
 					columns: [{
 						id: 'position',
 						name: 'Position',
@@ -983,7 +981,7 @@ function loadLeaderboardPage() {
 						},
 						formatter: (position) => {
 							const positionString = appendSuffix(Number(position));
-							return gridjs.html(`${positionString}${positionString === '1st' ? '&nbsp;🥇' : positionString === '2nd' ? '&nbsp;🥈' : positionString === '3rd' ? '&nbsp;🥉' : ''}`);
+							return html(`${positionString}${positionString === '1st' ? '&nbsp;🥇' : positionString === '2nd' ? '&nbsp;🥈' : positionString === '3rd' ? '&nbsp;🥉' : ''}`);
 						},
 						attributes: (cell, row) => {
 							if (cell) {
@@ -1002,7 +1000,7 @@ function loadLeaderboardPage() {
 						},
 						formatter: (userId) => {
 							const name = DOMPurify.sanitize(userId);
-							return gridjs.html(`${name}${(name === data.userId) ? '&nbsp;<strong>(You)</strong>' : ''}`);
+							return html(`${name}${(name === data.userId) ? '&nbsp;<strong>(You)</strong>' : ''}`);
 						}
 					},
 					{

@@ -82,7 +82,7 @@ export async function handler(event, context) {
 			return client
 				.api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,Total,FoundCaches)&$select=id,fields&$orderby=fields/Total desc,fields/Title&$filter=fields/Total ne 0&$top=3000`)
 				// .api(`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,Total,FoundCaches)&$select=id,fields&$top=3000`)
-				.header('Prefer','allowthrottleablequeries')
+				.header('Prefer', 'allowthrottleablequeries')
 				.get();
 		})
 		.then(data => {

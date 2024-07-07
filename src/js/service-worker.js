@@ -5,7 +5,6 @@ const cacheName = '/* @echo appName */-/* @echo version */'; // Set cache name t
 // Static resources to cache immediately
 let resourcesToCache = [
 	// Core JavaScript
-	'./js/browser-compat-/* @echo version */.min.js',
 	'./js/main-/* @echo version */.min.js',
 	// Core CSS
 	'./css/bundle-/* @echo version */.min.css',

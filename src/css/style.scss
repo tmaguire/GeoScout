@@ -177,3 +177,48 @@ input[type='number']::-webkit-outer-spin-button {
 .promo-desktop {
 	max-width: 490px;
 }
+
+/* Markers */
+.marker-found {
+	background-color: var(--bs-success);
+	border-radius: 9px;
+	color: #ffffff;
+	font-size: 14px;
+	padding: 10px 15px;
+	position: relative;
+}
+
+.marker-found::after {
+	content: '';
+	position: absolute;
+	left: 50%;
+	top: 100%;
+	transform: translate(-50%, 0);
+	width: 0;
+	height: 0;
+	border-left: 8px solid transparent;
+	border-right: 8px solid transparent;
+	border-top: 8px solid var(--bs-success);
+}
+
+.marker-notfound {
+	background-color: var(--bs-primary);
+	border-radius: 9px;
+	color: #ffffff;
+	font-size: 14px;
+	padding: 10px 15px;
+	position: relative;
+}
+
+.marker-notfound::after {
+	content: '';
+	position: absolute;
+	left: 50%;
+	top: 100%;
+	transform: translate(-50%, 0);
+	width: 0;
+	height: 0;
+	border-left: 8px solid transparent;
+	border-right: 8px solid transparent;
+	border-top: 8px solid var(--bs-primary);
+}

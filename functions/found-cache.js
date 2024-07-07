@@ -139,7 +139,7 @@ export async function handler(event, context) {
 			return client
 				.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,CableTieCode,Found)&$select=id,fields&$filter=fields/Title eq '${cacheId}'`)
 				// .api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,CableTieCode,Found)&$select=id,fields&$top=3000`)
-				.header('Prefer','allowthrottleablequeries')
+				.header('Prefer', 'allowthrottleablequeries')
 				.get();
 		})
 		.then(data => {
@@ -155,7 +155,7 @@ export async function handler(event, context) {
 				return client
 					.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?$expand=fields($select=Title,FoundCaches,Total,Username)&$select=id,fields&$filter=fields/Title eq '${userId}'`)
 					// .api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?$expand=fields($select=Title,FoundCaches,Total,Username)&$select=id,fields&$top=3000`)
-					.header('Prefer','allowthrottleablequeries')
+					.header('Prefer', 'allowthrottleablequeries')
 					.get();
 			} else {
 				throw 'Invalid cache';
