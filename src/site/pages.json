@@ -3,36 +3,42 @@
 		"nav": "Home",
 		"tile": "",
 		"icon": "compass",
-		"url": "home"
+		"url": "home",
+		"holding": true
 	},
 	{
 		"nav": "View caches",
 		"tile": "View caches",
 		"icon": "map",
-		"url": "viewCaches"
+		"url": "viewCaches",
+		"holding": false
 	},
 	{
 		"nav": "Found caches",
 		"tile": "Found caches",
 		"icon": "pin-map",
-		"url": "foundCaches"
+		"url": "foundCaches",
+		"holding": false
 	},
 	{
 		"nav": "Leaderboard",
 		"tile": "Leaderboard",
 		"icon": "trophy",
-		"url": "leaderboard"
+		"url": "leaderboard",
+		"holding": true
 	},
 	{
 		"nav": "Your account",
 		"tile": "Manage your account",
 		"icon": "person-gear",
-		"url": "manageAccount"
+		"url": "manageAccount",
+		"holding": true
 	},
 	{
 		"nav": "About",
 		"tile": "Find out more",
 		"icon": "info-circle",
-		"url": "about"
+		"url": "about",
+		"holding": true
 	}
 ]

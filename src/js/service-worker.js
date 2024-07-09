@@ -36,7 +36,9 @@ let resourcesToCache = [
 	'./offline.html',
 	'./js/offline-/* @echo version */.min.js',
 	// Web manifest
-	'./app.webmanifest'
+	'./app.webmanifest',
+	// Site pages
+	'./pages.json'
 ];
 
 self.addEventListener('install', event => {

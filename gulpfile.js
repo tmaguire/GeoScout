@@ -16,6 +16,7 @@ const {
 	author,
 	appUrl,
 	appBlurb,
+	appHolding,
 	googleMapsApiKey
 } = require('./package.json');
 const sass = require('gulp-sass')(require('sass'));
@@ -67,7 +68,8 @@ function bundleMainJs() {
 				version,
 				appUrl,
 				appName,
-				googleMapsApiKey
+				googleMapsApiKey,
+				appHolding
 			},
 		}))
 		.pipe(dest('dist/js/'));
@@ -123,7 +125,8 @@ function sitePages() {
 				appName,
 				author,
 				appUrl,
-				appBlurb
+				appBlurb,
+				appHolding
 			},
 			filters: {
 				markdown: marked.options({ mangle: false, headerIds: false, headerPrefix: false }).parse

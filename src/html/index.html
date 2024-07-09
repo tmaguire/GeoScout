@@ -51,7 +51,7 @@
 				</button>
 				<div class="collapse navbar-collapse" id="navbarToggler">
 					<ul class="navbar-nav me-auto mb-2 mb-lg-0">
-						@@loop('./src/includes/nav-links.html','../includes/pages.json')
+						@@loop('./src/includes/nav-links.html','../site/pages.json')
 					</ul>
 					<div class="d-flex">
 						<button id="updateBtn" type="button" class="btn btn-secondary d-none" disabled>
@@ -61,15 +61,15 @@
 				</div>
 			</div>
 		</nav>
-		<!-- Start survey banner -->
-		<!-- <div id="surveyLink" class="alert alert-info alert-dismissible fade show border-0 rounded-0 d-none"
+		<!-- Start backup banner -->
+		<div id="backupBanner" class="alert alert-info alert-dismissible fade show border-0 rounded-0 d-none"
 			role="alert">
-			<i class="bi bi-info-circle-fill flex-shrink-0 me-2" aria-hidden="true"></i>
-			Enjoying GeoScout? Have some thoughts on how we can improve? <a href="https://forms.office.com/e/00pRCY1Ri8"
-				class="alert-link">Let us know in the survey!</a>
+			Don't lose access to your GeoScout account! <a href="manageAccount" class="alert-link"
+				data-navigo="true">Add another device or
+				download a backup file</a>
 			<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-		</div> -->
-		<!-- End survey banner -->
+		</div>
+		<!-- End backup banner -->
 		<!-- Main web-app layout -->
 		<main class="container mt-3" id="content">
 			<!-- Loading screen -->
@@ -94,10 +94,10 @@
 				<!-- End 365 outage message -->
 				<div class="col mx-auto">
 					<h1 class="my-4 text-center">
-						<i class="bi bi-compass" aria-hidden="true"></i>&nbsp;Welcome <span id="welcomeGreeting"></span>
+						<i class="bi bi-compass" aria-hidden="true"></i>&nbsp;Welcome <span class="welcomeGreeting"></span>
 					</h1>
 					<div class="row justify-content-center home-tiles">
-						@@loop('./src/includes/home-tiles.html','../includes/pages.json')
+						@@loop('./src/includes/home-tiles.html','../site/pages.json')
 					</div>
 					<!-- Badge promo -->
 					<div class="row justify-content-center">
@@ -382,7 +382,7 @@
 			<section id="holding" class="row mx-auto d-none" aria-hidden="true">
 				<div class="col mx-auto">
 					<h1 class="my-4 text-center">
-						<i class="bi bi-compass" aria-hidden="true"></i>&nbsp;Welcome
+						<i class="bi bi-compass" aria-hidden="true"></i>&nbsp;Welcome <span class="welcomeGreeting"></span>
 					</h1>
 					@@include(markdown('./src/docs/holding.md'))
 				</div>

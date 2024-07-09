@@ -13,6 +13,7 @@ import { Grid, html } from 'gridjs';
 const appUrl = '/* @echo appUrl */';
 const appName = '/* @echo appName */';
 const googleMapsApiKey = '/* @echo googleMapsApiKey */';
+const holdingEnabled = Boolean('/* @echo appHolding */'.toLowerCase() === 'false' ? false : '/* @echo appHolding */');
 // Variables
 let mainMap = null;
 let router = null;
@@ -33,7 +34,7 @@ const showToast = Swal.mixin({
 	}
 });
 
-function getAccessToken(required) {
+function getAccessToken(required = false) {
 	return new Promise((resolve, reject) => {
 		if (localStorage.getItem('accessToken') === null || localStorage.getItem('accessToken') === '') {
 			if (required) {
@@ -314,7 +315,7 @@ function loadCachesMapPage() {
 	});
 	let caches;
 	let cluster;
-	getAccessToken(false)
+	getAccessToken()
 		.then(accessToken => {
 			return fetch('./api/get-caches', {
 				method: 'GET',
@@ -462,7 +463,7 @@ function loadCachesTablePage() {
 	const tableContainer = document.getElementById('tableContainer');
 	tableContainer.innerHTML = loadingGif;
 	let caches;
-	getAccessToken(false)
+	getAccessToken()
 		.then(accessToken => {
 			return fetch('./api/get-caches', {
 				method: 'GET',
@@ -595,7 +596,7 @@ function loadCachesTablePage() {
 
 function loadCachePage(id) {
 	resetCachePage();
-	getAccessToken(false)
+	getAccessToken()
 		.then(accessToken => {
 			return fetch('./api/get-cache', {
 				method: 'POST',
@@ -818,7 +819,7 @@ function loadFoundCachesPage() {
 	</div>`;
 	const foundContainer = document.getElementById('foundContainer');
 	foundContainer.innerHTML = loadingGif;
-	getAccessToken(false)
+	getAccessToken()
 		.then(accessToken => {
 			return fetch('./api/found-caches', {
 				method: 'GET',
@@ -956,7 +957,7 @@ function loadLeaderboardPage() {
 	</div>`;
 	const leaderboardContainer = document.getElementById('leaderboardContainer');
 	leaderboardContainer.innerHTML = loadingGif;
-	getAccessToken(false)
+	getAccessToken()
 		.then(accessToken => {
 			return fetch('./api/get-leaderboard', {
 				method: 'GET',
@@ -1216,7 +1217,7 @@ function createRestoreFile() {
 		backdrop: true,
 		preConfirm: () => {
 			Swal.getCancelButton().setAttribute('hidden', true);
-			return getAccessToken(false)
+			return getAccessToken()
 				.then(accessToken => {
 					if (accessToken) {
 						return fetch('./api/get-backup-token', {
@@ -1286,7 +1287,7 @@ function createRestoreCode() {
 		backdrop: true,
 		preConfirm: () => {
 			Swal.getCancelButton().setAttribute('hidden', true);
-			return getAccessToken(false)
+			return getAccessToken()
 				.then(accessToken => {
 					if (accessToken) {
 						return fetch('./api/get-qr-token', {
@@ -1346,45 +1347,47 @@ window.onload = function () {
 		.on('/', function () {
 			router.navigate('/home', { historyAPIMethod: 'replaceState' });
 		})
-		.on('/holding', function () {
-			changePage('holding', 'Home', false);
-		})
 		.on('/home', function () {
-			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			// changePage('home', 'Home', false);
-			// getAccessToken(false)
-			// 	.then(hasAccount => {
-			// 		if (hasAccount) {
-			// 			document.getElementById('welcomeGreeting').innerText = 'back';
-			// 			return parseAccessToken(hasAccount)
-			// 				.then(accountDetails => {
-			// 					document.getElementById('welcomeGreeting').innerText = `back ${accountDetails.sub}`;
-			// 				});
-			// 		}
-			// 	})
-			// 	.catch(error => {
-			// 		console.warn(error);
-			// 	});
+			if (holdingEnabled) {
+				router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			} else {
+				changePage('home', 'Home', false);
+			}
 		})
 		.on('/viewCaches', function () {
-			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			// loadCachesMapPage();
+			if (holdingEnabled) {
+				router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			} else {
+				loadCachesMapPage();
+			}
 		})
 		.on('/viewCachesTable', function () {
-			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			// loadCachesTablePage();
+			if (holdingEnabled) {
+				router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			} else {
+				loadCachesTablePage();
+			}
 		})
 		.on('/viewCache-:id', function (value) {
-			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			// loadCachePage(value.data.id);
+			if (holdingEnabled) {
+				router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			} else {
+				loadCachePage(value.data.id);
+			}
 		})
 		.on('/foundCaches', function () {
-			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			// loadFoundCachesPage();
+			if (holdingEnabled) {
+				router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			} else {
+				loadFoundCachesPage();
+			}
 		})
 		.on('/foundCache-:id', function (value) {
-			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			// loadFoundCachePage(value.data.id);
+			if (holdingEnabled) {
+				router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			} else {
+				loadFoundCachePage(value.data.id);
+			}
 		})
 		.on('/leaderboard', function () {
 			loadLeaderboardPage();
@@ -1406,7 +1409,7 @@ window.onload = function () {
 			router.navigate('manageAccount');
 		})
 		.on('/manageAccount', function () {
-			getAccessToken(false)
+			getAccessToken()
 				.then(hasAccount => {
 					document.getElementById(hasAccount ? 'updateAccount' : 'restoreAccount').classList.remove('d-none');
 					document.getElementById(hasAccount ? 'restoreAccount' : 'updateAccount').classList.add('d-none');
@@ -1436,6 +1439,13 @@ window.onload = function () {
 		.resolve();
 	// Sort out page links
 	router.updatePageLinks();
+	// Add holding page if active
+	if (holdingEnabled) {
+		router.on('/holding', function () {
+			changePage('holding', 'Home', false);
+		});
+		router.resolve();
+	}
 	// Load service worker if supported
 	if ('serviceWorker' in navigator && window.origin === appUrl) {
 		const updateBtn = document.getElementById('updateBtn');
@@ -1478,16 +1488,31 @@ window.onload = function () {
 			window.location.reload();
 		});
 	}
-	// // Set up listeners for survey link
-	// const surveyLinkBanner = document.getElementById('surveyLink');
-	// // Check if already dismissed
-	// if (!sessionStorage.getItem('surveyPromptClosed')) {
-	// 	// Unhide banner
-	// 	surveyLinkBanner.classList.remove('d-none');
-	// 	// Set listener to store dismissal event in session storage
-	// 	surveyLinkBanner.addEventListener('closed.bs.alert', function () {
-	// 		// Set key in session storage (if able)
-	// 		sessionStorage.setItem('surveyPromptClosed', true);
-	// 	});
-	// }
+	getAccessToken()
+		.then(hasAccount => {
+			if (hasAccount) {
+				const backupBanner = document.getElementById('backupBanner');
+				// Check if already dismissed
+				if (!localStorage.getItem('backupBannerClosed')) {
+					// Unhide banner
+					backupBanner.classList.remove('d-none');
+					// Set listener to store dismissal event in local storage
+					backupBanner.addEventListener('closed.bs.alert', function () {
+						// Set key in local storage (if able)
+						localStorage.setItem('backupBannerClosed', true);
+					});
+				}
+				const greetings = document.querySelectorAll('.welcomeGreeting');
+				greetings.forEach(greeting => {
+					greeting.innerText = 'back';
+					parseAccessToken(hasAccount)
+						.then(accountDetails => {
+							greeting.innerText = `back ${accountDetails.sub}`;
+						});
+				});
+			}
+		})
+		.catch(error => {
+			console.warn(error);
+		});
 };
