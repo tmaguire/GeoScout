@@ -127,7 +127,7 @@ function showError(error = 'An issue occurred', button = false, goBackToPage = f
 }
 
 // Loading Indicator Function
-function setLoadingIndicator(show, message) {
+function setLoadingIndicator(show = false, message = '') {
 	if (show) {
 		console.log('Show full screen loading indicator');
 		Swal.fire({
@@ -262,7 +262,7 @@ function handleErrors(response) {
 }
 
 
-function changePage(page, title, id) {
+function changePage(page = '', title = false, id = false) {
 	// Update Canonical tag
 	document.querySelector("link[rel='canonical']").setAttribute('href', page === '404' ? appUrl : (id ? `${appUrl}/${page}-${id}` : `${appUrl}/${page}`));
 	// Update menu
@@ -1346,45 +1346,45 @@ window.onload = function () {
 		.on('/', function () {
 			router.navigate('/home', { historyAPIMethod: 'replaceState' });
 		})
-		// .on('/holding', function () {
-		// 	changePage('holding', 'Home', false);
-		// })
+		.on('/holding', function () {
+			changePage('holding', 'Home', false);
+		})
 		.on('/home', function () {
-			// router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			changePage('home', 'Home', false);
-			getAccessToken(false)
-				.then(hasAccount => {
-					if (hasAccount) {
-						document.getElementById('welcomeGreeting').innerText = 'back';
-						return parseAccessToken(hasAccount)
-							.then(accountDetails => {
-								document.getElementById('welcomeGreeting').innerText = `back ${accountDetails.sub}`;
-							});
-					}
-				})
-				.catch(error => {
-					console.warn(error);
-				});
+			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			// changePage('home', 'Home', false);
+			// getAccessToken(false)
+			// 	.then(hasAccount => {
+			// 		if (hasAccount) {
+			// 			document.getElementById('welcomeGreeting').innerText = 'back';
+			// 			return parseAccessToken(hasAccount)
+			// 				.then(accountDetails => {
+			// 					document.getElementById('welcomeGreeting').innerText = `back ${accountDetails.sub}`;
+			// 				});
+			// 		}
+			// 	})
+			// 	.catch(error => {
+			// 		console.warn(error);
+			// 	});
 		})
 		.on('/viewCaches', function () {
-			// router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			loadCachesMapPage();
+			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			// loadCachesMapPage();
 		})
 		.on('/viewCachesTable', function () {
-			// router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			loadCachesTablePage();
+			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			// loadCachesTablePage();
 		})
 		.on('/viewCache-:id', function (value) {
-			// router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			loadCachePage(value.data.id);
+			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			// loadCachePage(value.data.id);
 		})
 		.on('/foundCaches', function () {
-			// router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			loadFoundCachesPage();
+			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			// loadFoundCachesPage();
 		})
 		.on('/foundCache-:id', function (value) {
-			// router.navigate('/holding', { historyAPIMethod: 'replaceState' });
-			loadFoundCachePage(value.data.id);
+			router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			// loadFoundCachePage(value.data.id);
 		})
 		.on('/leaderboard', function () {
 			loadLeaderboardPage();
@@ -1478,16 +1478,16 @@ window.onload = function () {
 			window.location.reload();
 		});
 	}
-	// Set up listeners for survey link
-	const surveyLinkBanner = document.getElementById('surveyLink');
-	// Check if already dismissed
-	if (!sessionStorage.getItem('surveyPromptClosed')) {
-		// Unhide banner
-		surveyLinkBanner.classList.remove('d-none');
-		// Set listener to store dismissal event in session storage
-		surveyLinkBanner.addEventListener('closed.bs.alert', function () {
-			// Set key in session storage (if able)
-			sessionStorage.setItem('surveyPromptClosed', true);
-		});
-	}
+	// // Set up listeners for survey link
+	// const surveyLinkBanner = document.getElementById('surveyLink');
+	// // Check if already dismissed
+	// if (!sessionStorage.getItem('surveyPromptClosed')) {
+	// 	// Unhide banner
+	// 	surveyLinkBanner.classList.remove('d-none');
+	// 	// Set listener to store dismissal event in session storage
+	// 	surveyLinkBanner.addEventListener('closed.bs.alert', function () {
+	// 		// Set key in session storage (if able)
+	// 		sessionStorage.setItem('surveyPromptClosed', true);
+	// 	});
+	// }
 };
