@@ -6,7 +6,7 @@
 	"version": "6.2.0",
 	"description": "Witham Scouts Geocaching project (GeoScout) using What3Words, Google Maps and SharePoint Online",
 	"googleMapsApiKey": "AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4",
-	"appHolding": true,
+	"appHolding": false,
 	"scripts": {
 		"build": "npm run license-check && gulp",
 		"license-check": "npx license-checker-rseidelsohn --json --relativeLicensePath --production --excludePrivatePackages --direct 0 --customPath ./thirdparty-license-types.json --nopeer > thirdparty-licenses.json"
@@ -38,6 +38,7 @@
 		"isomorphic-fetch": "^3.0.0",
 		"jwt-promisify": "^1.1.7",
 		"lambda-rate-limiter": "^4.0.0",
+		"localforage": "^1.10.0",
 		"navigo": "^8.11.1",
 		"qr-scanner": "^1.4.2",
 		"qrcode": "^1.5.3",

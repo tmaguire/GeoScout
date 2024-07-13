@@ -9,11 +9,12 @@ import { Loader } from '@googlemaps/js-api-loader';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import QrScanner from 'qr-scanner';
 import { Grid, html } from 'gridjs';
+import localforage from 'localforage';
 // Constants from build process
 const appUrl = '/* @echo appUrl */';
 const appName = '/* @echo appName */';
 const googleMapsApiKey = '/* @echo googleMapsApiKey */';
-const holdingEnabled = Boolean('/* @echo appHolding */'.toLowerCase() === 'false' ? false : '/* @echo appHolding */');
+const holdingEnabled = Boolean('/* @echo appHolding */'.toLowerCase() !== 'false');
 // Variables
 let mainMap = null;
 let router = null;
@@ -36,19 +37,28 @@ const showToast = Swal.mixin({
 
 function getAccessToken(required = false) {
 	return new Promise((resolve, reject) => {
-		if (localStorage.getItem('accessToken') === null || localStorage.getItem('accessToken') === '') {
-			if (required) {
-				try {
-					resolve(newAccessToken());
-				} catch (error) {
-					reject(error);
+		localforage.getItem('accessToken')
+			.then(accessToken => {
+				if (accessToken) {
+					resolve(accessToken);
+				} else {
+					if (localStorage.getItem('accessToken') === null || localStorage.getItem('accessToken') === '') {
+						if (required) {
+							try {
+								resolve(newAccessToken());
+							} catch (error) {
+								reject(error);
+							}
+						} else {
+							resolve(false);
+						}
+					} else {
+						// Migrate token to localforage
+						resolve(localforage.setItem('accessToken', localStorage.getItem('accessToken')));
+					}
+
 				}
-			} else {
-				resolve(false);
-			}
-		} else {
-			resolve(localStorage.getItem('accessToken'));
-		}
+			});
 	});
 }
 
@@ -82,8 +92,7 @@ function newAccessToken() {
 		.then(response => response.json())
 		.then(handleErrors)
 		.then(data => {
-			localStorage.setItem('accessToken', data.accessToken);
-			return data.accessToken;
+			return localforage.setItem('accessToken', data.accessToken);
 		});
 }
 
@@ -347,20 +356,12 @@ function loadCachesMapPage() {
 				},
 				zoom: 13,
 				minZoom: 12,
-				maxZoom: 20,
-				restriction: {
-					latLngBounds: {
-						north: 51.826601357825716,
-						east: 0.7474966992187326,
-						south: 51.773523020732,
-						west: 0.5332633007812326
-					},
-					strictBounds: true
-				},
 				mapId: '6b8e857a992e95a7',
 				streetViewControl: false,
-				mapTypeControl: false,
-				fullscreenControl: true
+				mapTypeControl: true,
+				fullscreenControl: true,
+				zoomControl: true,
+				renderingType: google.RenderingType.VECTOR
 			});
 			return loader.importLibrary('marker');
 		})
@@ -903,7 +904,6 @@ function loadFoundCachesPage() {
 							enabled: true
 						},
 						formatter: (date) => {
-							const time = new Date(date);
 							return html(`<time datetime="${DOMPurify.sanitize(date)}">${getTimeAgo(date)}</time>`);
 						}
 					}],
@@ -1091,7 +1091,7 @@ function loadRestoreFile() {
 				.then(response => response.json())
 				.then(handleErrors)
 				.then(data => {
-					localStorage.setItem('accessToken', data.accessToken);
+					localforage.setItem('accessToken', data.accessToken);
 					return true;
 				});
 		},
@@ -1149,7 +1149,7 @@ function loadRestoreCode() {
 				.then(response => response.json())
 				.then(handleErrors)
 				.then(data => {
-					localStorage.setItem('accessToken', data.accessToken);
+					localforage.setItem('accessToken', data.accessToken);
 					return true;
 				});
 		},
@@ -1493,13 +1493,13 @@ window.onload = function () {
 			if (hasAccount) {
 				const backupBanner = document.getElementById('backupBanner');
 				// Check if already dismissed
-				if (!localStorage.getItem('backupBannerClosed')) {
+				if (!localforage.getItem('backupBannerClosed')) {
 					// Unhide banner
 					backupBanner.classList.remove('d-none');
 					// Set listener to store dismissal event in local storage
 					backupBanner.addEventListener('closed.bs.alert', function () {
 						// Set key in local storage (if able)
-						localStorage.setItem('backupBannerClosed', true);
+						localforage.setItem('backupBannerClosed', true);
 					});
 				}
 				const greetings = document.querySelectorAll('.welcomeGreeting');
