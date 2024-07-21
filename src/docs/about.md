@@ -73,7 +73,7 @@ We are Beaver and Explorer Scout leaders based in Witham and
 wanted something extra for the young people of Witham to do over
 the summer holidays, the GeoScout project has been solely created by
 us for use in Witham over this summer holiday. Caches will be
-collected from the week beginning 18th of September 2023.
+collected from the week beginning 9th of September 2024.
 </p>
 <p>
 If you find a problem with a cache, a cache is missing, or you

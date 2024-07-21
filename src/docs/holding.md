@@ -11,7 +11,7 @@ loading="lazy"
 </picture>
 </div>
 <h2 class="text-center">We're busy getting GeoScout ready for Summer 2024 😮</h2>
-<p class="text-center">Thank you to everyone who has taken part in the GeoScout project in Summer 2023!</p>
+<p class="text-center">Thank you to everyone who has taken part in the GeoScout project in Summer 2023!<br><strong>GeoScout will be live from Monday 22nd July 2024! 🥳</strong></p>
 <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-3">
 <a class="btn btn-primary btn-lg px-4 gap-3" href="about" data-navigo="true">
 Learn more about GeoScout
