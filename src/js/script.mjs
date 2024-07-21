@@ -1390,7 +1390,11 @@ window.onload = function () {
 			}
 		})
 		.on('/leaderboard', function () {
-			loadLeaderboardPage();
+			if (holdingEnabled) {
+				router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+			} else {
+				loadLeaderboardPage();
+			}
 		})
 		.on('/about', function () {
 			changePage('about', 'About', false);
