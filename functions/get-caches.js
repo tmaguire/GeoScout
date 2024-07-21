@@ -91,7 +91,7 @@ export async function handler(event, context) {
 					requests: [{
 						id: 'caches',
 						method: 'GET',
-						url: `/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields&$filter=fields/Suspended eq 0`,
+						url: `/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,Coordinates,W3WLocation,Polygon,Found,Suspended)&$select=id,fields&$filter=fields/Suspended eq 0`,
 						// url: `/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields&$top=3000`,
 						headers: {
 							'Prefer': 'allowthrottleablequeries'
@@ -134,6 +134,7 @@ export async function handler(event, context) {
 				returnObj.caches.push({
 					location: fields.W3WLocation,
 					coordinates: fields.Coordinates,
+					polygon: fields.Polygon,
 					id: fields.Title,
 					found: false,
 					stats: fields.Found,

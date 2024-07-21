@@ -94,7 +94,8 @@
 				<!-- End 365 outage message -->
 				<div class="col mx-auto">
 					<h1 class="my-4 text-center">
-						<i class="bi bi-compass" aria-hidden="true"></i>&nbsp;Welcome <span class="welcomeGreeting"></span>
+						<i class="bi bi-compass" aria-hidden="true"></i>&nbsp;Welcome <span
+							class="welcomeGreeting"></span>
 					</h1>
 					<div class="row justify-content-center home-tiles">
 						@@loop('./src/includes/home-tiles.html','../site/pages.json')
@@ -196,6 +197,7 @@
 						<i class="bi bi-map" aria-hidden="true"></i>&nbsp;View caches
 						<span class="visually-hidden">as an interactive map</span>
 					</h1>
+					<div id="mapToolbar" class="mb-3"></div>
 					<div id="mapContainer">
 						<div class="text-center">
 							<img src="./img/loading.gif" class="img-fluid text-center"
@@ -382,7 +384,8 @@
 			<section id="holding" class="row mx-auto d-none" aria-hidden="true">
 				<div class="col mx-auto">
 					<h1 class="my-4 text-center">
-						<i class="bi bi-compass" aria-hidden="true"></i>&nbsp;Welcome <span class="welcomeGreeting"></span>
+						<i class="bi bi-compass" aria-hidden="true"></i>&nbsp;Welcome <span
+							class="welcomeGreeting"></span>
 					</h1>
 					@@include(markdown('./src/docs/holding.md'))
 				</div>

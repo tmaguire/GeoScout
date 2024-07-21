@@ -14,11 +14,13 @@ import localforage from 'localforage';
 const appUrl = '/* @echo appUrl */';
 const appName = '/* @echo appName */';
 const googleMapsApiKey = '/* @echo googleMapsApiKey */';
+const what3wordsApiKey = '/* @echo what3wordsApiKey */';
 const holdingEnabled = Boolean('/* @echo appHolding */'.toLowerCase() !== 'false');
 // Variables
 let mainMap = null;
 let router = null;
 let newWorker = false;
+let locationWatch = null;
 // Loader animation
 const loadingGif = '<div class="text-center"><img src="./img/loading.gif" height="150" width="150" class="img-fluid text-center" alt="Loading animation placeholder"></div>';
 
@@ -139,7 +141,6 @@ function showError(error = 'An issue occurred', button = false, goBackToPage = f
 // Loading Indicator Function
 function setLoadingIndicator(show = false, message = '') {
 	if (show) {
-		console.log('Show full screen loading indicator');
 		Swal.fire({
 			title: `${message}...`,
 			showConfirmButton: false,
@@ -155,7 +156,6 @@ function setLoadingIndicator(show = false, message = '') {
 			}
 		});
 	} else {
-		console.log('Remove full screen loading indicator');
 		Swal.close();
 	}
 }
@@ -324,6 +324,7 @@ function loadCachesMapPage() {
 	});
 	let caches;
 	let cluster;
+	let Circle;
 	getAccessToken()
 		.then(accessToken => {
 			return fetch('./api/get-caches', {
@@ -343,7 +344,11 @@ function loadCachesMapPage() {
 			} else {
 				throw 'No caches found';
 			}
-			return loader.importLibrary('maps');
+			try {
+				return window.google.maps;
+			} catch {
+				return loader.importLibrary('maps');
+			}
 		})
 		.then(google => {
 			mapContainer.innerHTML = '<div id="mapFilter"></div><div id="mainMap" class="rounded shadow"></div><div class="my-3 text-center"><a href="viewCachesTable" class="text-decoration-none" data-navigo="true"><i class="bi bi-table" aria-hidden="true"></i>&nbsp;View map data as a table</a></div>';
@@ -363,7 +368,12 @@ function loadCachesMapPage() {
 				zoomControl: true,
 				renderingType: google.RenderingType.VECTOR
 			});
-			return loader.importLibrary('marker');
+			Circle = google.Circle;
+			try {
+				return window.google.maps.marker;
+			} catch {
+				return loader.importLibrary('marker');
+			}
 		})
 		.then(google => {
 			try {
@@ -451,6 +461,125 @@ function loadCachesMapPage() {
 			['mapFilterAll', 'mapFilterNotFound', 'mapFilterFound'].forEach(element => {
 				document.getElementById(element).addEventListener('click', function () {
 					changeFilter(document.querySelector('input[name="mapFilterBtn"]:checked').value);
+				});
+			});
+			return google;
+		})
+		.then(google => {
+			// Remove existing button (just in case it's already there)
+			try {
+				document.getElementById('mapLocation').remove();
+			} catch { }
+			// Create button and add to toolbar
+			const defaultBtn = '<i class="bi bi-crosshair" aria-hidden="true"></i>&nbsp;Show your location';
+			const activeBtn = '<i class="bi bi-crosshair" aria-hidden="true"></i>&nbsp;Move map to your location';
+			const button = document.createElement('button');
+			button.setAttribute('id', 'mapLocation');
+			button.setAttribute('class', 'btn btn-primary shadow');
+			button.innerHTML = defaultBtn;
+			document.getElementById('mapToolbar').appendChild(button);
+			const locateBtn = document.getElementById('mapLocation');
+			let locationActive = false;
+			let currentUserLocation = {
+				lat: 0,
+				lng: 0
+			};
+			let marker = null;
+			let accuracy = null;
+			locateBtn.addEventListener('click', function () {
+				if (locationActive) {
+					mainMap.setCenter(currentUserLocation);
+					mainMap.setZoom(19);
+				} else {
+					locateBtn.setAttribute('disabled', true);
+					locateBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;Locating...';
+					locationWatch = navigator.geolocation.watchPosition(({ coords }) => {
+						currentUserLocation = {
+							lat: coords.latitude,
+							lng: coords.longitude,
+						};
+						if (!locationActive) {
+							mainMap.setCenter(currentUserLocation);
+							mainMap.setZoom(19);
+							locateBtn.removeAttribute('disabled');
+							locateBtn.innerHTML = activeBtn;
+							locationActive = true;
+						}
+						if (marker === null) {
+							const parser = new DOMParser();
+							const pinSvgString = '<svg height="22" width="22" xmlns="http://www.w3.org/2000/svg"><circle r="10" cx="11" cy="11" stroke="rgb(255,255,255)" stroke-width="2" fill="#4285F4" /></svg>';
+							const pinSvg = parser.parseFromString(pinSvgString, 'image/svg+xml',).documentElement;
+							marker = new google.AdvancedMarkerElement({
+								map: mainMap,
+								position: currentUserLocation,
+								content: pinSvg,
+								title: 'Your location',
+							});
+						} else {
+							marker.position = currentUserLocation;
+						}
+						if (accuracy === null) {
+							accuracy = new Circle({
+								center: currentUserLocation,
+								radius: coords.accuracy,
+								clickable: false,
+								fillColor: '#61a0bf',
+								fillOpacity: 0.4,
+								strokeColor: '#1bb6ff',
+								strokeOpacity: 0.4,
+								strokeWeight: 1,
+								zIndex: 1,
+								map: mainMap
+							});
+						} else {
+							accuracy.setCenter(currentUserLocation);
+							accuracy.setRadius(coords.accuracy);
+						}
+					}, (error) => {
+						if (error.message !== '') {
+							locateBtn.removeAttribute('disabled');
+							locateBtn.innerHTML = defaultBtn;
+							showToast.fire({
+								title: error.message,
+								icon: 'error'
+							});
+						}
+					}, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
+				}
+			});
+			return mainMap;
+		})
+		.then(map => {
+			// Cache for grid data
+			let gridData = null;
+			map.addListener('bounds_changed', function () {
+				// Get current zoom level
+				const zoom = map.getZoom();
+				// Only show grid if zoom is at least 17
+				const loadFeatures = zoom > 17;
+				if (loadFeatures) {
+					// Get bounds of map
+					const ne = map.getBounds().getNorthEast();
+					const sw = map.getBounds().getSouthWest();
+					// Call the what3words Grid API to obtain the grid squares within the current visble bounding box
+					fetch(`https://api.what3words.com/v3/grid-section?key=${what3wordsApiKey}&bounding-box=${sw.lat()},${sw.lng()},${ne.lat()},${ne.lng()}&format=geojson`)
+						.then(response => response.json())
+						.then(function (data) {
+							if (gridData !== null) {
+								for (let i = 0; i < gridData.length; i++) {
+									map.data.remove(gridData[i]);
+								}
+							}
+							// Cache grid data to clear later
+							gridData = map.data.addGeoJson(data);
+						})
+						.catch(console.error);
+				}
+				// Set the grid display style
+				map.data.setStyle({
+					visible: loadFeatures,
+					strokeColor: "#777",
+					strokeWeight: 0.5
 				});
 			});
 		})
@@ -1109,7 +1238,6 @@ function loadRestoreFile() {
 			}
 		})
 		.catch(error => {
-			console.log(error);
 			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
 			showError(error, true);
 		});
@@ -1167,7 +1295,6 @@ function loadRestoreCode() {
 			if (QrScanner.hasCamera()) {
 				const videoElem = document.getElementById('webcamFeed');
 				qrScanner = new QrScanner(videoElem, result => {
-					console.log(result);
 					qrCodeToken = result.data;
 					Swal.clickConfirm();
 				}, {
@@ -1193,7 +1320,6 @@ function loadRestoreCode() {
 			}
 		})
 		.catch(error => {
-			console.log(error);
 			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
 			showError(error, true);
 		});
@@ -1263,7 +1389,6 @@ function createRestoreFile() {
 			}
 		})
 		.catch(error => {
-			console.log(error);
 			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
 			showError(error, true);
 		});
@@ -1332,7 +1457,6 @@ function createRestoreCode() {
 			}
 		})
 		.catch(error => {
-			console.log(error);
 			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
 			showError(error, true);
 		});
@@ -1342,6 +1466,15 @@ function createRestoreCode() {
 window.onload = function () {
 	// Create router
 	router = new Navigo('/');
+	// Define hooks for all routes
+	router.hooks({
+		before: (done) => {
+			if (locationWatch !== null) {
+				navigator.geolocation.clearWatch(locationWatch);
+			}
+			done();
+		}
+	});
 	// Specify routes and resolve
 	router
 		.on('/', function () {
@@ -1478,7 +1611,7 @@ window.onload = function () {
 				});
 			})
 			.catch(error => {
-				console.log(error);
+				console.warn(error);
 			});
 		// Set event handler for refresh app button
 		updateBtn.addEventListener('click', (event) => {

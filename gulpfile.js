@@ -17,7 +17,8 @@ const {
 	appUrl,
 	appBlurb,
 	appHolding,
-	googleMapsApiKey
+	googleMapsApiKey,
+	what3wordsApiKey
 } = require('./package.json');
 const sass = require('gulp-sass')(require('sass'));
 const {
@@ -69,7 +70,8 @@ function bundleMainJs() {
 				appUrl,
 				appName,
 				googleMapsApiKey,
-				appHolding
+				appHolding,
+				what3wordsApiKey
 			},
 		}))
 		.pipe(dest('dist/js/'));

@@ -115,7 +115,7 @@ export async function handler(event, context) {
 			}
 			// Get items from list
 			return client
-				.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,W3WLocation,Coordinates,Found,Suspended)&$select=id,fields&$filter=fields/Title eq '${cacheId}'`)
+				.api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,W3WLocation,Coordinates,Found,Suspended,Polygon)&$select=id,fields&$filter=fields/Title eq '${cacheId}'`)
 				// .api(`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,W3WLocation,Coordinates,Found,Suspended)&$select=id,fields&$top=3000`)
 				.header('Prefer', 'allowthrottleablequeries')
 				.get();
@@ -126,6 +126,7 @@ export async function handler(event, context) {
 			returnObj = {
 				location: fields.W3WLocation,
 				coordinates: fields.Coordinates,
+				polygon: fields.Polygon,
 				id: fields.Title,
 				image: '',
 				gridRef: new LatLon(Number(String(fields.Coordinates).split(',')[0]), Number(String(fields.Coordinates).split(',')[1])).toOsGrid().toString(),
@@ -147,7 +148,7 @@ export async function handler(event, context) {
 					returnObj.found = true;
 				}
 			}
-			returnObj.image = signUrl(`https://maps.googleapis.com/maps/api/staticmap?center=${returnObj.coordinates}&zoom=20&markers=color:${returnObj.found ? '0x23A950' : '0x7413DC'}|${returnObj.coordinates}&size=400x400&scale=2&maptype=satellite&key=AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4`, mapsSecret).href;
+			returnObj.image = signUrl(`https://maps.googleapis.com/maps/api/staticmap?center=${returnObj.coordinates}&zoom=20&markers=color:${returnObj.found ? '0x23A950' : '0x7413DC'}|${returnObj.coordinates}&size=400x400&scale=2&maptype=satellite&key=AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4&path=color:0xff0000ff|weight:1|fillcolor:0xFFFF0033|${returnObj.polygon}`, mapsSecret).href;
 			return returnObj;
 		})
 		.then(obj => {

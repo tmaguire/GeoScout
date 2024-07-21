@@ -4,7 +4,7 @@ edge_functions = "edge"
 for = "*"
 [headers.values]
 Access-Control-Allow-Origin = "https://www.geoscout.uk"
-Content-Security-Policy = "default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com *.google.com https://*.ggpht.com *.googleusercontent.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https://*.googleapis.com https://*.gstatic.com *.google.com  *.googleusercontent.com data: https:; connect-src 'self' https://*.googleapis.com *.google.com https://*.gstatic.com data: blob:; font-src 'self' data: https://fonts.gstatic.com; manifest-src 'self'; frame-src *.google.com; worker-src 'self' blob:;"
+Content-Security-Policy = "default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com *.google.com https://*.ggpht.com *.googleusercontent.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https://*.googleapis.com https://*.gstatic.com *.google.com  *.googleusercontent.com data: https:; connect-src 'self' https://*.googleapis.com *.google.com https://*.gstatic.com https://api.what3words.com data: blob:; font-src 'self' data: https://fonts.gstatic.com; manifest-src 'self'; frame-src *.google.com; worker-src 'self' blob:;"
 Expect-CT = "max-age=86400, enforce"
 Permissions-Policy = "accelerometer=(), autoplay=(), camera=(self), cross-origin-isolated=(), encrypted-media=(self), fullscreen=(*), geolocation=(self), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(), usb=(), web-share=(self), xr-spatial-tracking=()"
 Referrer-Policy = "same-origin"
