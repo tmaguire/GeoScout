@@ -313,6 +313,8 @@ function changePage(page = '', title = false, id = false) {
 
 function loadCachesMapPage() {
 	const mapContainer = document.getElementById('mapContainer');
+	const mapToolbar = document.getElementById('mapToolbar');
+	mapToolbar.innerHTML = '';
 	mapContainer.innerHTML = loadingGif;
 	const loader = new Loader({
 		apiKey: googleMapsApiKey,
@@ -466,10 +468,6 @@ function loadCachesMapPage() {
 			return google;
 		})
 		.then(google => {
-			// Remove existing button (just in case it's already there)
-			try {
-				document.getElementById('mapLocation').remove();
-			} catch { }
 			// Create button and add to toolbar
 			const defaultBtn = '<i class="bi bi-crosshair" aria-hidden="true"></i>&nbsp;Show your location';
 			const activeBtn = '<i class="bi bi-crosshair" aria-hidden="true"></i>&nbsp;Move map to your location';
@@ -477,7 +475,7 @@ function loadCachesMapPage() {
 			button.setAttribute('id', 'mapLocation');
 			button.setAttribute('class', 'btn btn-primary shadow');
 			button.innerHTML = defaultBtn;
-			document.getElementById('mapToolbar').appendChild(button);
+			mapToolbar.appendChild(button);
 			const locateBtn = document.getElementById('mapLocation');
 			let locationActive = false;
 			let currentUserLocation = {
