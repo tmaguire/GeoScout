@@ -42,7 +42,7 @@
 		"localforage": "^1.10.0",
 		"navigo": "^8.11.1",
 		"qr-scanner": "^1.4.2",
-		"qrcode": "^1.5.3",
+		"qrcode": "^1.5.4",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"sweetalert2": "^11.12.4",
