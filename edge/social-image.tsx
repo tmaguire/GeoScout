@@ -8,10 +8,7 @@ const usernameList = [
 export default function handler(req: Request) {
 	const url = new URL(req.url);
 	const username = url.pathname.length > 7 ? url.pathname.substring(7) : false;
-	let useUsername = false;
-	if (username) {
-		useUsername = RegExp(`^(${usernameList.join('|')})-[1-9][0-9][0-9]$`).test(username);
-	}
+	const useUsername = username ? RegExp(`^(${usernameList.join('|')})-[1-9][0-9][0-9]$`).test(username) : false;
 	return new ImageResponse(
 		(
 			<div
