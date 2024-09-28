@@ -26,6 +26,7 @@ const {
 } = require('marked');
 const preprocess = require('gulp-preprocess');
 const gulpEsbuild = require('gulp-esbuild');
+const mergeStream = require('merge-stream');
 
 function licensePrep() {
 	const licenses = require('./thirdparty-licenses.json');
@@ -55,38 +56,28 @@ function sri() {
 		.pipe(dest('dist/'));
 }
 
-function bundleMainJs() {
-	return src('./src/js/script.mjs', { encoding: false })
-		.pipe(gulpEsbuild({
-			outfile: `main-${version}.min.js`,
-			bundle: true,
-			format: 'iife',
-			minify: true,
-			platform: 'browser'
-		}))
-		.pipe(preprocess({
-			context: {
-				version,
-				appUrl,
-				appName,
-				googleMapsApiKey,
-				appHolding,
-				what3wordsApiKey
-			},
-		}))
-		.pipe(dest('dist/js/'));
-}
-
-function bundleOfflineJs() {
-	return src('./src/js/offline.mjs', { encoding: false })
-		.pipe(gulpEsbuild({
-			outfile: `offline-${version}.min.js`,
-			bundle: true,
-			format: 'iife',
-			minify: true,
-			platform: 'browser'
-		}))
-		.pipe(dest('dist/js/'));
+function bundleJs() {
+	return mergeStream(['main', 'offline'].map(script => {
+		return src(`./src/js/${script}.mjs`)
+			.pipe(gulpEsbuild({
+				outfile: `${script}-${version}.min.js`,
+				bundle: true,
+				format: 'iife',
+				minify: true,
+				platform: 'browser'
+			}))
+			.pipe(preprocess({
+				context: {
+					version,
+					appUrl,
+					appName,
+					googleMapsApiKey,
+					appHolding,
+					what3wordsApiKey
+				},
+			}))
+			.pipe(dest('dist/js/'));
+	}));
 }
 
 function bundleCss() {
@@ -165,4 +156,4 @@ function copyAppResources() {
 		.pipe(dest('./dist/.well-known/'));
 }
 
-exports.default = parallel(series(parallel(bundleMainJs, bundleOfflineJs, series(copyIcons, bundleCss), sitePages, copyImg, copySite, serviceWorker, copyAppResources), sri));
+exports.default = parallel(series(parallel(bundleJs, series(copyIcons, bundleCss), sitePages, copyImg, copySite, serviceWorker, copyAppResources), sri));
