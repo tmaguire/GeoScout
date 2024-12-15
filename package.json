@@ -58,7 +58,7 @@
 		"gulp-file-include": "^2.3.0",
 		"gulp-html-minifier-terser": "^7.1.0",
 		"gulp-preprocess": "^5.0.0",
-		"gulp-sass": "^5.1.0",
+		"gulp-sass": "^6.0.0",
 		"gulp-sri-hash": "^2.2.1",
 		"gulp-uglify": "^3.0.2",
 		"license-checker-rseidelsohn": "^4.4.2",
