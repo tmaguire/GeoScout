@@ -51,6 +51,15 @@ $secondary: #003982;
 // Utilities
 @import '../../node_modules/bootstrap/scss/utilities/api';
 
+// Bootstrap Icons
+@import '../../node_modules/bootstrap-icons/font/bootstrap-icons.scss';
+
+// SweetAlert2
+@import '../../node_modules/sweetalert2/dist/sweetalert2.min.css';
+
+// GridJS
+@import '../../node_modules/gridjs/dist/theme/mermaid.min.css';
+
 // Custom styles
 html {
 	scroll-behavior: smooth;

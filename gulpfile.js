@@ -81,12 +81,7 @@ function bundleJs() {
 }
 
 function bundleCss() {
-	return src([
-		'./src/css/style.scss',
-		'./node_modules/bootstrap-icons/font/bootstrap-icons.scss',
-		'./node_modules/sweetalert2/dist/sweetalert2.min.css',
-		'./node_modules/gridjs/dist/theme/mermaid.min.css'
-	], { encoding: false })
+	return src('./src/css/style.scss', { encoding: false })
 		.pipe(concat(`bundle-${version}.min.css`))
 		.pipe(sass({
 			style: 'compressed',
