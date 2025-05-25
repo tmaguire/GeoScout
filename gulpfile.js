@@ -58,7 +58,7 @@ function sri() {
 
 function bundleJs() {
 	return mergeStream(['main', 'offline'].map(script => {
-		return src(`./src/js/${script}.mjs`)
+		return src(`./src/js/${script}.js`)
 			.pipe(gulpEsbuild({
 				outfile: `${script}-${version}.min.js`,
 				bundle: true,
@@ -88,9 +88,10 @@ function bundleCss() {
 		'./node_modules/gridjs/dist/theme/mermaid.min.css'
 	], { encoding: false })
 		.pipe(concat(`bundle-${version}.min.css`))
-		.pipe(sass.sync({
-			outputStyle: 'compressed'
-		}).on('error', sass.logError))
+		.pipe(sass({
+			style: 'compressed',
+			quietDeps: true
+		}))
 		.pipe(dest('dist/css/'));
 }
 
