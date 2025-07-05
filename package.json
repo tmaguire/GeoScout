@@ -6,7 +6,7 @@
 	"version": "6.6.4",
 	"description": "Witham Scouts Geocaching project (GeoScout) using What3Words, Google Maps and SharePoint Online",
 	"googleMapsApiKey": "AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4",
-	"what3wordsApiKey": "VLJ826YS",
+	"what3wordsApiKey": "OL112976",
 	"appHolding": true,
 	"scripts": {
 		"build": "npm run license-check && gulp",
@@ -40,7 +40,6 @@
 		"jwt-promisify": "^1.1.7",
 		"lambda-rate-limiter": "^4.0.2",
 		"localforage": "^1.10.0",
-		"merge-stream": "^2.0.0",
 		"navigo": "^8.11.1",
 		"qr-scanner": "^1.4.2",
 		"qrcode": "^1.5.4",

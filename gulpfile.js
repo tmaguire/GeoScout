@@ -26,7 +26,6 @@ const {
 } = require('marked');
 const preprocess = require('gulp-preprocess');
 const gulpEsbuild = require('gulp-esbuild');
-const mergeStream = require('merge-stream');
 
 function licensePrep() {
 	const licenses = require('./thirdparty-licenses.json');
@@ -56,8 +55,8 @@ function sri() {
 		.pipe(dest('dist/'));
 }
 
-function bundleJs() {
-	return mergeStream(['main', 'offline'].map(script => {
+function bundleMainJs() {
+	const script = 'main';
 		return src(`./src/js/${script}.js`)
 			.pipe(gulpEsbuild({
 				outfile: `${script}-${version}.min.js`,
@@ -77,7 +76,29 @@ function bundleJs() {
 				},
 			}))
 			.pipe(dest('dist/js/'));
-	}));
+}
+
+function bundleOfflineJs() {
+	const script = 'offline';
+		return src(`./src/js/${script}.js`)
+			.pipe(gulpEsbuild({
+				outfile: `${script}-${version}.min.js`,
+				bundle: true,
+				format: 'iife',
+				minify: true,
+				platform: 'browser'
+			}))
+			.pipe(preprocess({
+				context: {
+					version,
+					appUrl,
+					appName,
+					googleMapsApiKey,
+					appHolding,
+					what3wordsApiKey
+				},
+			}))
+			.pipe(dest('dist/js/'));
 }
 
 function bundleCss() {
@@ -152,4 +173,4 @@ function copyAppResources() {
 		.pipe(dest('./dist/.well-known/'));
 }
 
-exports.default = parallel(series(parallel(bundleJs, series(copyIcons, bundleCss), sitePages, copyImg, copySite, serviceWorker, copyAppResources), sri));
+exports.default = parallel(series(parallel(bundleOfflineJs, bundleMainJs, series(copyIcons, bundleCss), sitePages, copyImg, copySite, serviceWorker, copyAppResources), sri));
