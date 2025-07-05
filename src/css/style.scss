@@ -1,3 +1,5 @@
+// GridJS
+@use '../../node_modules/gridjs/dist/theme/mermaid.css';
 // Needed first for 5.2+
 @import '../../node_modules/bootstrap/scss/functions';
 
@@ -55,10 +57,7 @@ $secondary: #003982;
 @import '../../node_modules/bootstrap-icons/font/bootstrap-icons.scss';
 
 // SweetAlert2
-@import '../../node_modules/sweetalert2/dist/sweetalert2.min.css';
-
-// GridJS
-@import '../../node_modules/gridjs/dist/theme/mermaid.min.css';
+@import '../../node_modules/sweetalert2/src/sweetalert2.scss';
 
 // Custom styles
 html {
