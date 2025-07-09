@@ -25,7 +25,7 @@
 	"dependencies": {
 		"@azure/identity": "^4.10.2",
 		"@googlemaps/js-api-loader": "^1.16.10",
-		"@googlemaps/markerclusterer": "^2.5.3",
+		"@googlemaps/markerclusterer": "^2.6.2",
 		"@googlemaps/url-signature": "^1.0.40",
 		"@microsoft/microsoft-graph-client": "^3.0.7",
 		"@netlify/functions": "^4.1.9",
