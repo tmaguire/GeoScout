@@ -3,7 +3,7 @@
 	"appName": "GeoScout",
 	"appUrl": "https://www.geoscout.uk",
 	"appBlurb": "Grab your smartphone and get Geocaching over the summer holidays with our geocache challenge. Geocaching is a fantastic way to enjoy the outdoors exploring new areas and keeping fit.",
-	"version": "6.6.6",
+	"version": "6.7.0",
 	"description": "Witham Scouts Geocaching project (GeoScout) using What3Words, Google Maps and SharePoint Online",
 	"googleMapsApiKey": "AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4",
 	"what3wordsApiKey": "OL112976",
