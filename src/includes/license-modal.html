@@ -17,14 +17,14 @@
 				</p>
 				<div class="accordion" id="openSourceLicensesList">
 					@@for (var i = 0; i < licenses.length; i++) { @@include('./src/includes/license.html',
-						`+(JSON.stringify(licenses[i]))+`) } </div>
-
+						`+(JSON.stringify(licenses[i]))+`) } 
 				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-link" data-bs-dismiss="modal">
-						Close
-					</button>
-				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-link" data-bs-dismiss="modal">
+					Close
+				</button>
 			</div>
 		</div>
 	</div>
+</div>

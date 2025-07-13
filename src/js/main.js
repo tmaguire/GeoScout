@@ -287,7 +287,7 @@ function handleErrors(response) {
 }
 
 /**
- * 
+ * @function changePage
  * @param {String} [page=''] 
  * @param {false|String} [title=false] 
  * @param {false|String} [id=false] 
@@ -297,7 +297,7 @@ function changePage(page = '', title = false, id = false) {
 	document.querySelector("link[rel='canonical']").setAttribute('href', page === '404' ? appUrl : (id ? `${appUrl}/${page}-${id}` : `${appUrl}/${page}`));
 	// Update menu
 	document.querySelectorAll('a.nav-link').forEach(menuItem => {
-		if (menuItem.getAttribute('href') === page) {
+		if (menuItem.getAttribute('href') === (page === 'holding' ? 'home' : page)) {
 			menuItem.classList.add('active');
 			menuItem.setAttribute('aria-current', 'page');
 		} else {
@@ -1644,23 +1644,26 @@ window.addEventListener('load', function () {
 			if (hasAccount) {
 				const backupBanner = document.getElementById('backupBanner');
 				// Check if already dismissed
-				if (!localforage.getItem('backupBannerClosed')) {
-					// Unhide banner
-					backupBanner.classList.remove('d-none');
-					// Set listener to store dismissal event in local storage
-					backupBanner.addEventListener('closed.bs.alert', function () {
-						// Set key in local storage (if able)
-						localforage.setItem('backupBannerClosed', true);
-					});
-				}
-				const greetings = document.querySelectorAll('.welcomeGreeting');
-				greetings.forEach(greeting => {
-					greeting.innerText = 'back';
-					parseAccessToken(hasAccount)
-						.then(accountDetails => {
-							greeting.innerText = `back ${accountDetails.sub}`;
+				return localforage.getItem('backupBannerClosed')
+					.then(item => {
+						if (!item) {
+							// Unhide banner
+							backupBanner.classList.remove('d-none');
+							// Set listener to store dismissal event in local storage
+							backupBanner.addEventListener('closed.bs.alert', function () {
+								// Set key in local storage (if able)
+								localforage.setItem('backupBannerClosed', true);
+							});
+						}
+						const greetings = document.querySelectorAll('.welcomeGreeting');
+						greetings.forEach(greeting => {
+							greeting.innerText = 'back';
+							parseAccessToken(hasAccount)
+								.then(accountDetails => {
+									greeting.innerText = `back ${accountDetails.sub}`;
+								});
 						});
-				});
+					})
 			}
 		})
 		.catch(error => {

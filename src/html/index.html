@@ -4,63 +4,12 @@
 <head>
 	<meta charset="utf-8" />
 	<title>@@appName</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-	<!-- Page metatags -->
-	<meta name="description" content="@@appBlurb" />
-	<meta name="author" content="@@author" />
-	<link rel="icon" href="./img/favicon.png" />
-	<link rel="canonical" href="@@appUrl" />
-	<!-- Sharing metatags -->
-	<meta property="og:description" content="@@appBlurb" />
-	<meta property="og:image" content="@@appUrl/share" />
-	<meta property="og:image:width" content="1200" />
-	<meta property="og:image:height" content="630" />
-	<meta property="og:title" content="@@appName" />
-	<meta property="og:url" content="@@appUrl" />
-	<!-- Bundled CSS -->
-	<link rel="stylesheet" type="text/css" href="./css/bundle-@@version.min.css" />
-	<!-- Web app settings -->
-	<meta name="apple-mobile-web-app-capable" content="yes" />
-	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-	<meta name="apple-mobile-web-app-title" content="@@appName" />
-	<!-- <meta name="apple-itunes-app" content="app-id=6462697525"> -->
-	<link rel="apple-touch-icon" sizes="192x192" href="./img/maskable.png" />
-	<link rel="apple-touch-startup-image" sizes="192x192" href="./img/splash.png" />
-	<!-- Web-app Manifest -->
-	<link rel="manifest" href="./app.webmanifest" />
-	<!-- Theme colour -->
-	<meta name="theme-color" content="#7413DC" />
+	@@include('./src/includes/head.html')
 </head>
 
 <body>
 	<div id="app">
-		<a href="#content" class="visually-hidden-focusable">Skip to main content</a>
-		<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-			<div class="container-fluid">
-				<a href="/" class="navbar-brand" data-navigo="true">
-					<picture>
-						<source srcset="./img/logo.webp" type="image/webp" />
-						<img src="./img/logo.png" height="30" width="33" class="d-inline-block align-top"
-							alt="Scouting fleur-de-lis logo" />
-					</picture>
-					<span class="ms-1 d-inline">@@appName</span>
-				</a>
-				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggler"
-					aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
-					<span class="navbar-toggler-icon"></span>
-				</button>
-				<div class="collapse navbar-collapse" id="navbarToggler">
-					<ul class="navbar-nav me-auto mb-2 mb-lg-0">
-						@@loop('./src/includes/nav-links.html','../site/pages.json')
-					</ul>
-					<div class="d-flex">
-						<button id="updateBtn" type="button" class="btn btn-secondary d-none" disabled>
-							Update web-app
-						</button>
-					</div>
-				</div>
-			</div>
-		</nav>
+		@@include('./src/includes/navbar.html')
 		<!-- Start backup banner -->
 		<div id="backupBanner" class="alert alert-info alert-dismissible fade show border-0 rounded-0 d-none"
 			role="alert">
@@ -114,8 +63,8 @@
 							</picture>
 							<div class="card-img-overlay mt-1">
 								<h2 class="card-title text-white">Get a GeoScout badge!</h2>
-								<p class="card-text text-white">We have produced GeoScout badges for this year priced
-									at £1.50 each - perfect for a campfire blanket!</p>
+								<p class="card-text text-white">We have GeoScout badges for your campfire blanket priced
+									at £1.50 each!</p>
 								<a href="mailto:inbox@geoscout.uk?subject=Order%20a%20badge&body=Hi%20GeoScout%20Team!%0D%0A%0D%0AI%20would%20like%20to%20order%20X%20GeoScout%20campfire%20blanket%20badge(s).%0D%0A%0D%0AKind%20regards%2C%0D%0A%0D%0AA%20Geocacher"
 									class="btn btn-secondary shadow">Order a badge</a>
 							</div>
@@ -130,7 +79,8 @@
 							</picture>
 							<div class="card-img-overlay mt-1">
 								<h2 class="card-title text-white">Get a GeoScout badge!</h2>
-								<p class="card-text text-white">We have GeoScout badges for your campfire blanket priced at £1.50 each!</p>
+								<p class="card-text text-white">We have GeoScout badges for your campfire blanket priced
+									at £1.50 each!</p>
 								<a href="mailto:inbox@geoscout.uk?subject=Order%20a%20badge&body=Hi%20GeoScout%20Team!%0D%0A%0D%0AI%20would%20like%20to%20order%20X%20GeoScout%20campfire%20blanket%20badge(s).%0D%0A%0D%0AKind%20regards%2C%0D%0A%0D%0AGeocacher"
 									class="btn btn-secondary shadow">Order a badge</a>
 							</div>
@@ -409,38 +359,7 @@
 				</div>
 			</section>
 		</main>
-		<!-- Page footer -->
-		<footer class="container my-5 text-muted border-top">
-			<div class="row pt-3">
-				<div class="col-md-10">
-					<p>
-						@@appName v@@version | All content &copy;
-						<a href="https://www.scouts.org.uk/">The Scout Association</a>. All Rights Reserved.
-					</p>
-					<p>
-						<a href="terms" data-navigo="true">Terms and Conditions</a>
-						|
-						<a href="privacy" data-navigo="true">Privacy Policy</a>
-						|
-						<a href="disclaimer" data-navigo="true">Disclaimer</a>
-						|
-						<a data-bs-toggle="modal" href="#openSourceLicenses">Open Source Licenses</a>
-						|
-						<a href="https://www.scouts.org.uk/about-us/strategy/">#SkillsForLife</a>
-					</p>
-				</div>
-				<div class="col-md-2 text-center">
-					<a href="https://withamscouts.org.uk">
-						<picture>
-							<source srcset="./img/group.webp" type="image/webp" />
-							<source srcset="./img/group.png" type="image/png" />
-							<img src="./img/group.png" class="footer-img mb-5" alt="Witham Scouts logo" loading="lazy"
-								height="100" width="110" />
-						</picture>
-					</a>
-				</div>
-			</div>
-		</footer>
+		@@include('./src/includes/footer.html')
 		@@include('./src/includes/license-modal.html')
 	</div>
 	<script src="./js/main-@@version.min.js"></script>

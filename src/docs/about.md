@@ -45,7 +45,7 @@ Please refer to our <a href="privacy" data-navigo="true">Privacy Policy</a> for 
 
 ## Who are we and why have we made this challenge
 
-We are Beaver and Explorer Scout leaders based in Witham and wanted something extra for the young people of Witham to do over the summer holidays, the @@appName project has been solely created by us for use in Witham over this summer holiday. Caches will be collected from the week beginning 9th of September 2024.
+We are Beaver and Explorer Scout leaders based in Witham and wanted something extra for the young people of Witham to do over the summer holidays, the @@appName project has been solely created by us for use in Witham over this summer holiday. Caches will be collected from October 2025 at the latest for reuse next year.
 
 If you find a problem with a cache, a cache is missing, or you need any other information about our Geocache project, please email <inbox@geoscout.uk>.
 
