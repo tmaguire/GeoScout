@@ -31,19 +31,19 @@ loading="lazy"
 </figure>
 </div>
 
-Find the cache, enter the five-digit code from the cable tie into the web-app and see where you are on the score [leaderboard](@@appUrl/leaderboard).
+Find the cache, enter the five-digit code from the cable tie into the web-app and see where you are on the score <a href="leaderboard" data-navigo="true">leaderboard</a>.
 
 Anyone is welcome to take part, it's not just for Scouts or young people. Adult supervision may be needed dependant on the age of the young person and parental/guardian discretion should be used.
 
 The background behind Geocaching is to find (using GPS) small hidden items in the urban or rural environment hidden by a Geocacher. We have simplified this for this summer activity to ensure it's available to all. The only equipment required to take part is the use of a smartphone or tablet with a 4G data connection.
 
-There is no need to sign up or log in with personal information. We use the information provided by your device to generate a secure token to validate access to an account. This account is used to keep track of your [found caches](@@appUrl/foundCaches) and see your position on the [leaderboard](@@appUrl/leaderboard).
+There is no need to sign up or log in with personal information. We use the information provided by your device to generate a secure token to validate access to an account. This account is used to keep track of your <a href="foundCaches" data-navigo="true">found caches</a> and see your position on the <a href="leaderboard" data-navigo="true">leaderboard</a>.
 
 We only store the token ID (this is unique per device you register with your account) and found caches (cache ID and timestamp when found). No personally identifiable information is collected or stored.
 
-Please refer to our [Privacy Policy](@@appUrl/privacy) for more information.
+Please refer to our <a href="privacy" data-navigo="true">Privacy Policy</a> for more information.
 
-## Who are we and why have we made this challenge</h2>
+## Who are we and why have we made this challenge
 
 We are Beaver and Explorer Scout leaders based in Witham and wanted something extra for the young people of Witham to do over the summer holidays, the @@appName project has been solely created by us for use in Witham over this summer holiday. Caches will be collected from the week beginning 9th of September 2024.
 

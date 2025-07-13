@@ -1,4 +1,4 @@
-> **Last updated:** Wednesday 31st July 2024
+> **Last updated:** Sunday 13th July 2025
 
 This Privacy Policy describes Our policies and procedures on the collection, use and disclosure of Your information when You use the Service and tells You about Your privacy rights and how the law protects You.
 
@@ -80,10 +80,10 @@ deleted as soon as You close Your web browser.
 We use both Session and Persistent Cookies for the purposes set
 out below:
 
-|             **Type**              | **Administered by** |                                                                                                                                                                             **Purpose**                                                                                                                                                                              |
-| :-------------------------------: | :-----------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-|    Session Cookies (Essential)    |         Us          | These Cookies are essential to provide You with services available through the Website and to enable You to use some of its features. They help to authenticate users and prevent fraudulent use of user accounts. Without these Cookies, the services that You have asked for cannot be provided, and We only use these Cookies to provide You with those services. |
-| Persistent Cookies (Functionality |         Us          |                           These Cookies allow us to remember choices You make when You use the Website, such as remembering your login details or language preference. The purpose of these Cookies is to provide You with a more personal experience and to avoid You having to re-enter your preferences every time You use the Website.                           |
+|              **Type**              | **Administered by** |                                                                                                                                                                             **Purpose**                                                                                                                                                                              |
+| :--------------------------------: | :-----------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+|    Session Cookies (Essential)     |         Us          | These Cookies are essential to provide You with services available through the Website and to enable You to use some of its features. They help to authenticate users and prevent fraudulent use of user accounts. Without these Cookies, the services that You have asked for cannot be provided, and We only use these Cookies to provide You with those services. |
+| Persistent Cookies (Functionality) |         Us          |                           These Cookies allow us to remember choices You make when You use the Website, such as remembering your login details or language preference. The purpose of these Cookies is to provide You with a more personal experience and to avoid You having to re-enter your preferences every time You use the Website.                           |
 
 For more information about the cookies we use and your choices regarding cookies, please visit our Cookies Policy or the Cookies section of our Privacy Policy.
 
