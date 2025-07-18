@@ -62,7 +62,7 @@
 		"gulp-sri-hash": "^2.2.1",
 		"gulp-uglify": "^3.0.2",
 		"license-checker-rseidelsohn": "^4.4.2",
-		"marked": "^16.0.0",
+		"marked": "^16.1.0",
 		"sass": "^1.89.2"
 	}
 }
