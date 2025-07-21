@@ -10,8 +10,8 @@ loading="lazy"
 />
 </picture>
 </div>
-<h2 class="text-center">GeoScout is back!</h2>
-<p class="text-center"><strong>We're busy getting things sorted for 2025 - stay tuned!</strong><br>
+<h2 class="text-center">@@appName will return on Thursday 24th July 2025!</h2>
+<p class="text-center"><strong>We're busy getting the final pieces sorted for 2025!</strong><br>
 Want to help us with @@appName or provide feedback for this project? Contact us at <a href="mailto:inbox@geoscout.uk?Subject=Feedback for @@appName">inbox@geoscout.uk</a>.</p>
 <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-3">
 <a class="btn btn-primary btn-lg px-4 gap-3" href="about" data-navigo="true">
