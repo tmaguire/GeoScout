@@ -7,7 +7,7 @@
 	"description": "Witham Scouts Geocaching project (GeoScout) using What3Words, Google Maps and SharePoint Online",
 	"googleMapsApiKey": "AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4",
 	"what3wordsApiKey": "OL112976",
-	"appHolding": true,
+	"appHolding": false,
 	"scripts": {
 		"build": "npm run license-check && gulp",
 		"license-check": "npx license-checker-rseidelsohn --json --relativeLicensePath --production --excludePrivatePackages --direct 0 --customPath ./thirdparty-licenses-template.json --nopeer > thirdparty-licenses.json"
@@ -28,7 +28,7 @@
 		"@googlemaps/markerclusterer": "^2.6.2",
 		"@googlemaps/url-signature": "^1.0.40",
 		"@microsoft/microsoft-graph-client": "^3.0.7",
-		"@netlify/functions": "^4.1.12",
+		"@netlify/functions": "^4.1.15",
 		"@popperjs/core": "^2.11.8",
 		"bootstrap": "^5.3.7",
 		"bootstrap-icons": "^1.13.1",
