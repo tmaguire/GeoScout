@@ -135,7 +135,8 @@ function parseAccessToken(token) {
  * @function showError - Error message function
  * @param {String} [error='An issue occurred'] 
  * @param {Boolean} [button=false] 
- * @param {false|String} [goBackToPage=false] 
+ * @param {false|String} [goBackToPage=false]
+ * @return {void}
  */
 function showError(error = 'An issue occurred', button = false, goBackToPage = false) {
 	Swal.fire({
@@ -291,6 +292,7 @@ function handleErrors(response) {
  * @param {String} [page=''] 
  * @param {false|String} [title=false] 
  * @param {false|String} [id=false] 
+ * @returns {void}
  */
 function changePage(page = '', title = false, id = false) {
 	// Update Canonical tag

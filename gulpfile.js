@@ -57,48 +57,48 @@ function sri() {
 
 function bundleMainJs() {
 	const script = 'main';
-		return src(`./src/js/${script}.js`)
-			.pipe(gulpEsbuild({
-				outfile: `${script}-${version}.min.js`,
-				bundle: true,
-				format: 'iife',
-				minify: true,
-				platform: 'browser'
-			}))
-			.pipe(preprocess({
-				context: {
-					version,
-					appUrl,
-					appName,
-					googleMapsApiKey,
-					appHolding,
-					what3wordsApiKey
-				},
-			}))
-			.pipe(dest('dist/js/'));
+	return src(`./src/js/${script}.js`)
+		.pipe(gulpEsbuild({
+			outfile: `${script}-${version}.min.js`,
+			bundle: true,
+			format: 'iife',
+			minify: true,
+			platform: 'browser'
+		}))
+		.pipe(preprocess({
+			context: {
+				version,
+				appUrl,
+				appName,
+				googleMapsApiKey,
+				appHolding,
+				what3wordsApiKey
+			},
+		}))
+		.pipe(dest('dist/js/'));
 }
 
 function bundleOfflineJs() {
 	const script = 'offline';
-		return src(`./src/js/${script}.js`)
-			.pipe(gulpEsbuild({
-				outfile: `${script}-${version}.min.js`,
-				bundle: true,
-				format: 'iife',
-				minify: true,
-				platform: 'browser'
-			}))
-			.pipe(preprocess({
-				context: {
-					version,
-					appUrl,
-					appName,
-					googleMapsApiKey,
-					appHolding,
-					what3wordsApiKey
-				},
-			}))
-			.pipe(dest('dist/js/'));
+	return src(`./src/js/${script}.js`)
+		.pipe(gulpEsbuild({
+			outfile: `${script}-${version}.min.js`,
+			bundle: true,
+			format: 'iife',
+			minify: true,
+			platform: 'browser'
+		}))
+		.pipe(preprocess({
+			context: {
+				version,
+				appUrl,
+				appName,
+				googleMapsApiKey,
+				appHolding,
+				what3wordsApiKey
+			},
+		}))
+		.pipe(dest('dist/js/'));
 }
 
 function bundleCss() {
