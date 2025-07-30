@@ -45,7 +45,7 @@
 		"qr-scanner": "^1.4.2",
 		"qrcode": "^1.5.4",
 		"react": "^19.1.0",
-		"react-dom": "^19.1.0",
+		"react-dom": "^19.1.1",
 		"sweetalert2": "^11.22.2",
 		"validator": "^13.15.15"
 	},
