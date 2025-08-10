@@ -50,7 +50,7 @@ const headers = {
 // Start Lambda Function
 export async function handler(event, context) {
 	// Only allow GET
-	if (event.httpMethod !== 'GET') {
+	if (event.httpMethod !== 'GET' && event.httpMethod !== 'OPTIONS') {
 		return {
 			statusCode: 405,
 			body: JSON.stringify({

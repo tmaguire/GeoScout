@@ -1,6 +1,11 @@
 [build]
 edge_functions = "edge"
 [[headers]]
+for = "/.netlify/functions/*"
+[headers.values]
+Access-Control-Allow-Origin = "*"
+Access-Control-Allow-Headers = "*"
+[[headers]]
 for = "*"
 [headers.values]
 Access-Control-Allow-Origin = "https://www.geoscout.uk"

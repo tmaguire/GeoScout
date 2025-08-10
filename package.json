@@ -23,7 +23,7 @@
 	},
 	"homepage": "https://github.com/tmaguire/GeoScout#readme",
 	"dependencies": {
-		"@azure/identity": "^4.11.0",
+		"@azure/identity": "^4.11.1",
 		"@googlemaps/js-api-loader": "^1.16.10",
 		"@googlemaps/markerclusterer": "^2.6.2",
 		"@googlemaps/url-signature": "^1.0.40",
@@ -44,9 +44,9 @@
 		"navigo": "^8.11.1",
 		"qr-scanner": "^1.4.2",
 		"qrcode": "^1.5.4",
-		"react": "^19.1.0",
+		"react": "^19.1.1",
 		"react-dom": "^19.1.1",
-		"sweetalert2": "^11.22.2",
+		"sweetalert2": "^11.22.3",
 		"validator": "^13.15.15"
 	},
 	"devDependencies": {
@@ -54,7 +54,7 @@
 		"dompurify": "^3.2.6",
 		"gulp": "^5.0.1",
 		"gulp-concat": "^2.6.1",
-		"gulp-esbuild": "^0.14.0",
+		"gulp-esbuild": "^0.14.1",
 		"gulp-file-include": "^2.3.0",
 		"gulp-html-minifier-terser": "^7.1.0",
 		"gulp-preprocess": "^5.0.0",
@@ -63,6 +63,6 @@
 		"gulp-uglify": "^3.0.2",
 		"license-checker-rseidelsohn": "^4.4.2",
 		"marked": "^16.1.2",
-		"sass": "^1.89.2"
+		"sass": "^1.90.0"
 	}
 }
