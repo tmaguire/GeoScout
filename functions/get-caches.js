@@ -92,7 +92,6 @@ export async function handler(event, context) {
 						id: 'caches',
 						method: 'GET',
 						url: `/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,Coordinates,W3WLocation,Polygon,Found,Suspended)&$select=id,fields&$filter=fields/Suspended eq 0`,
-						// url: `/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,Coordinates,W3WLocation,Found,Suspended)&$select=id,fields&$top=3000`,
 						headers: {
 							'Prefer': 'allowthrottleablequeries'
 						}
@@ -101,7 +100,6 @@ export async function handler(event, context) {
 						id: 'user',
 						method: 'GET',
 						url: `/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$filter=fields/Title eq '${userId}'`,
-						// url: `/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$top=3000`,
 						headers: {
 							'Prefer': 'allowthrottleablequeries'
 						}
@@ -161,20 +159,6 @@ export async function handler(event, context) {
 				}
 				return returnObj;
 			}
-			// } else if (user.length === 1) {
-			// 	const found = [...JSON.parse(user[0].fields.FoundCaches)];
-			// 	found.forEach(item => {
-			// 		try {
-			// 			const cache = returnObj.caches.find(cache => (cache.id === item.id));
-			// 			cache.found = true;
-			// 		} catch {
-			// 			console.log('Found cache is suspended - skipping over it');
-			// 		}
-			// 	});
-			// 	return returnObj;
-			// } else {
-			// 	throw 'Duplicate User ID!';
-			// }
 		})
 		.then(obj => {
 			return {

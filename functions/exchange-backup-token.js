@@ -134,7 +134,6 @@ export async function handler(event, context) {
 			recordId = decodedToken.oid;
 			return client
 				.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?expand=fields(select=Title,FoundCaches,Total,Username,BackupTokenIDs)&$select=id,fields&filter=fields/Title eq '${userId}'`)
-				// .api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?expand=fields(select=Title,FoundCaches,Total,Username,BackupTokenIDs)&$select=id,fields&$top=3000`)
 				.header('Prefer', 'allowthrottleablequeries')
 				.get();
 		})

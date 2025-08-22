@@ -70,7 +70,6 @@ export async function handler(event, context) {
 
 	let cacheId;
 	let cacheCode;
-	let userId;
 	let token;
 	let tokenId;
 	let recordId;
@@ -133,7 +132,6 @@ export async function handler(event, context) {
 
 	return verify(token, jwtSecret, jwtOptions)
 		.then(decodedToken => {
-			userId = decodedToken.sub;
 			tokenId = decodedToken.jwtId;
 			recordId = decodedToken.oid;
 			return client
@@ -153,8 +151,7 @@ export async function handler(event, context) {
 					id: cacheRecord.id
 				};
 				return client
-					.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?$expand=fields($select=Title,FoundCaches,Total,Username)&$select=id,fields&$filter=fields/Title eq '${userId}'`)
-					// .api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?$expand=fields($select=Title,FoundCaches,Total,Username)&$select=id,fields&$top=3000`)
+					.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?$expand=fields($select=Title,FoundCaches,Total,Username)&$select=id,fields`)
 					.header('Prefer', 'allowthrottleablequeries')
 					.get();
 			} else {
