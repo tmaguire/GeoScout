@@ -18,7 +18,7 @@ import { Collapse } from 'bootstrap';
 import Navigo from 'navigo';
 import Swal from 'sweetalert2';
 import DOMPurify from 'dompurify';
-import { Loader } from '@googlemaps/js-api-loader';
+import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import QrScanner from 'qr-scanner';
 import { Grid, html } from 'gridjs';
@@ -31,7 +31,9 @@ const googleMapsApiKey = '/* @echo googleMapsApiKey */';
 const what3wordsApiKey = '/* @echo what3wordsApiKey */';
 const holdingEnabled = Boolean('/* @echo appHolding */'.toLowerCase() !== 'false');
 // Variables
+/** @type {google.maps.Map} */
 let mainMap = null;
+/** @type {Navigo} */
 let router = null;
 let newWorker = false;
 let locationWatch = null;
@@ -343,15 +345,13 @@ function loadCachesMapPage() {
 	mapToolbar.replaceChildren();
 	mapContainer.innerHTML = loadingGif;
 	changePage('viewCaches', 'View caches', false)
-	const loader = new Loader({
-		apiKey: googleMapsApiKey,
-		version: 'quarterly',
-		libraries: ['drawing', 'marker'],
-		language: 'en',
-		region: 'GB',
-		id: 'googleMapsScript'
-	});
+	setOptions({
+		key: googleMapsApiKey,
+		v: 'quarterly',
+		libraries: ['drawing', 'marker']
+	})
 	let caches;
+	/** @type {MarkerClusterer} */
 	let cluster;
 	let Circle;
 	return getAccessToken()
@@ -372,17 +372,13 @@ function loadCachesMapPage() {
 			} else {
 				throw 'No caches found';
 			}
-			try {
-				return window.google.maps;
-			} catch {
-				return loader.importLibrary('maps');
-			}
+			return importLibrary('maps');
 		})
-		.then(google => {
+		.then(() => {
 			mapContainer.innerHTML = '<div id="mapFilter"></div><div id="mainMap" class="rounded shadow"></div><div class="my-3 text-center"><a href="viewCachesTable" class="text-decoration-none" data-navigo="true"><i class="bi bi-table" aria-hidden="true"></i>&nbsp;View map data as a table</a></div>';
 			router.updatePageLinks();
 			mainMap = null;
-			mainMap = new google.Map(document.getElementById('mainMap'), {
+			mainMap = new google.maps.Map(document.getElementById('mainMap'), {
 				center: {
 					lat: 51.80007,
 					lng: 0.64038
@@ -394,23 +390,19 @@ function loadCachesMapPage() {
 				mapTypeControl: true,
 				fullscreenControl: true,
 				zoomControl: true,
-				renderingType: google.RenderingType.VECTOR
+				renderingType: 'VECTOR'
 			});
-			Circle = google.Circle;
-			try {
-				return window.google.maps.marker;
-			} catch {
-				return loader.importLibrary('marker');
-			}
+			Circle = google.maps.Circle;
+			return importLibrary('marker');
 		})
-		.then(google => {
+		.then(() => {
 			try {
 				const markers = caches.flatMap(cache => {
 					if (!cache.suspended) {
 						const markerContent = document.createElement('div');
 						markerContent.textContent = DOMPurify.sanitize(cache.id);
 						markerContent.classList.add(cache.found ? 'marker-found' : 'marker-notfound');
-						const marker = new google.AdvancedMarkerElement({
+						const marker = new google.maps.marker.AdvancedMarkerElement({
 							position: {
 								lat: Number(DOMPurify.sanitize(cache.coordinates).split(',')[0]),
 								lng: Number(DOMPurify.sanitize(cache.coordinates).split(',')[1])
@@ -432,13 +424,13 @@ function loadCachesMapPage() {
 					map: mainMap,
 					markers
 				});
-				return google;
+				return true;
 			} catch (error) {
 				console.warn(error);
 				throw 'Unable to load caches';
 			}
 		})
-		.then(google => {
+		.then(() => {
 			let currentFilter = 'all';
 			document.getElementById('mapFilter').innerHTML = `<fieldset><div class="btn-group mb-3 shadow">
 				<legend class="visually-hidden">Filter control for the map to toggle which caches are visible</legend>
@@ -467,7 +459,7 @@ function loadCachesMapPage() {
 							const markerContent = document.createElement('div');
 							markerContent.textContent = DOMPurify.sanitize(cache.id);
 							markerContent.classList.add(cache.found ? 'marker-found' : 'marker-notfound');
-							const marker = new google.AdvancedMarkerElement({
+							const marker = new google.maps.marker.AdvancedMarkerElement({
 								position: {
 									lat: Number(DOMPurify.sanitize(cache.coordinates).split(',')[0]),
 									lng: Number(DOMPurify.sanitize(cache.coordinates).split(',')[1])
@@ -492,9 +484,9 @@ function loadCachesMapPage() {
 						changeFilter(document.querySelector('input[name="mapFilterBtn"]:checked').value);
 					});
 			});
-			return google;
+			return true;
 		})
-		.then(google => {
+		.then(() => {
 			// Create button and add to toolbar
 			const defaultBtn = '<i class="bi bi-crosshair" aria-hidden="true"></i>&nbsp;Show your location';
 			const activeBtn = '<i class="bi bi-crosshair" aria-hidden="true"></i>&nbsp;Move map to your location';
@@ -534,7 +526,7 @@ function loadCachesMapPage() {
 							const parser = new DOMParser();
 							const pinSvgString = '<svg height="22" width="22" xmlns="http://www.w3.org/2000/svg"><circle r="10" cx="11" cy="11" stroke="rgb(255,255,255)" stroke-width="2" fill="#4285F4" /></svg>';
 							const pinSvg = parser.parseFromString(pinSvgString, 'image/svg+xml',).documentElement;
-							marker = new google.AdvancedMarkerElement({
+							marker = new google.maps.marker.AdvancedMarkerElement({
 								map: mainMap,
 								position: currentUserLocation,
 								content: pinSvg,
@@ -616,8 +608,9 @@ function loadCachesMapPage() {
 function loadCachesTablePage() {
 	const tableContainer = document.getElementById('tableContainer');
 	tableContainer.innerHTML = loadingGif;
+	changePage('viewCachesTable', 'View caches', false);
 	let caches;
-	getAccessToken()
+	return getAccessToken()
 		.then(accessToken => {
 			return ky.get('./api/get-caches', {
 				...(accessToken && {
@@ -745,12 +738,12 @@ function loadCachesTablePage() {
 		.catch(error => {
 			showError(error, true, 'home');
 		});
-	changePage('viewCachesTable', 'View caches', false);
 }
 
 function loadCachePage(id) {
 	resetCachePage();
-	getAccessToken()
+	changePage('viewCache', `Cache ${id}`, id);
+	return getAccessToken()
 		.then(accessToken => {
 			return ky.post('./api/get-cache', {
 				json: {
@@ -821,7 +814,6 @@ function loadCachePage(id) {
 		.catch(error => {
 			showError(error, true, 'viewCaches');
 		});
-	changePage('viewCache', `Cache ${id}`, id);
 }
 
 function resetCachePage() {
@@ -859,7 +851,7 @@ function resetCachePage() {
 
 function loadFoundCachePage(id) {
 	changePage('viewCache', `Cache ${id}`, id);
-	Swal.fire({
+	return Swal.fire({
 		title: `Found cache ${id}?`,
 		text: "If you've found this cache, please enter the 5-digit code below to mark it as found:",
 		input: 'text',
@@ -971,7 +963,8 @@ function loadFoundCachesPage() {
 	</div>`;
 	const foundContainer = document.getElementById('foundContainer');
 	foundContainer.innerHTML = loadingGif;
-	getAccessToken()
+	changePage('foundCaches', 'Found caches', false);
+	return getAccessToken()
 		.then(accessToken => {
 			return ky.get('./api/found-caches', {
 				...(accessToken && {
@@ -1090,7 +1083,6 @@ function loadFoundCachesPage() {
 		.catch(error => {
 			showError(error, true, 'home');
 		});
-	changePage('foundCaches', 'Found caches', false);
 }
 
 function loadLeaderboardPage() {
@@ -1107,7 +1099,8 @@ function loadLeaderboardPage() {
 	</div>`;
 	const leaderboardContainer = document.getElementById('leaderboardContainer');
 	leaderboardContainer.innerHTML = loadingGif;
-	getAccessToken()
+	changePage('leaderboard', 'Leaderboard', false);
+	return getAccessToken()
 		.then(accessToken => {
 			return ky.get('./api/get-leaderboard', {
 				...(accessToken && {
@@ -1196,11 +1189,10 @@ function loadLeaderboardPage() {
 		.catch(error => {
 			showError(error, true, 'home');
 		});
-	changePage('leaderboard', 'Leaderboard', false);
 }
 
 function loadRestoreFile() {
-	Swal.fire({
+	return Swal.fire({
 		title: 'Restore account using a backup file',
 		text: 'Restore your GeoScout account using a backup file created by yourself earlier or provided by GeoScout Support.',
 		showCancelButton: () => !Swal.isLoading(),
@@ -1265,7 +1257,7 @@ function loadRestoreFile() {
 function loadRestoreCode() {
 	let qrCodeToken = '';
 	let qrScanner = null;
-	Swal.fire({
+	return Swal.fire({
 		title: 'Restore from QR code',
 		html: 'Restore your GeoScout account using a QR code generated on another device.<br><br><video id="webcamFeed" class="w-100 rounded"></video>',
 		showCancelButton: () => !Swal.isLoading(),
@@ -1344,7 +1336,7 @@ function loadRestoreCode() {
 }
 
 function createRestoreFile() {
-	Swal.fire({
+	return Swal.fire({
 		title: 'Create a backup file for your account',
 		html: "Generating this file allows you to restore your account (and all the progress you've made) on any device.<br><br><strong>Please keep this file safe - anyone that has it will be able to load your GeoScout account on their device!</strong>",
 		showCancelButton: () => !Swal.isLoading(),
@@ -1412,7 +1404,7 @@ function createRestoreFile() {
 }
 
 function createRestoreCode() {
-	Swal.fire({
+	return Swal.fire({
 		title: 'Add an additional device',
 		html: "This feature allows you add an additional device to your account.<br><br><strong>Please note that a new QR code needs to be generated for each device you wish to add.",
 		showCancelButton: () => !Swal.isLoading(),
@@ -1479,7 +1471,7 @@ function createRestoreCode() {
 }
 
 // Function to start on page load
-window.addEventListener('load', function () {
+window.addEventListener('load', () => {
 	// Create router
 	router = new Navigo('/');
 	// Define hooks for all routes
@@ -1641,7 +1633,7 @@ window.addEventListener('load', function () {
 			window.location.reload();
 		});
 	}
-	getAccessToken()
+	return getAccessToken()
 		.then(hasAccount => {
 			if (hasAccount) {
 				const backupBanner = document.getElementById('backupBanner');
@@ -1665,7 +1657,7 @@ window.addEventListener('load', function () {
 									greeting.innerText = `back ${accountDetails.sub}`;
 								});
 						});
-					})
+					});
 			}
 		})
 		.catch(error => {

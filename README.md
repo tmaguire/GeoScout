@@ -7,3 +7,10 @@
 [![License](https://badgen.net/github/license/tmaguire/geoscout)](https://github.com/tmaguire/GeoScout/blob/main/LICENSE)
 
 Witham Scouts Geocaching project (GeoScout) using What3Words, Google Maps and SharePoint Online
+
+<a href="https://play.google.com/store/apps/details?id=uk.geoscout.www.twa">
+	<img src="https://raw.githubusercontent.com/pioug/google-play-badges/main/svg/English.svg" width="200"/>
+</a>
+<a href="https://apps.microsoft.com/detail/9mvh1qntppf6?referrer=appbadge&mode=direct">
+	<img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200"/>
+</a>
