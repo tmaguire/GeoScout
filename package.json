@@ -44,7 +44,7 @@
 		"navigo": "^8.11.1",
 		"qr-scanner": "^1.4.2",
 		"qrcode": "^1.5.4",
-		"react": "^19.1.1",
+		"react": "^19.2.0",
 		"react-dom": "^19.1.1",
 		"sweetalert2": "^11.23.0",
 		"validator": "^13.15.15"
