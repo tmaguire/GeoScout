@@ -38,7 +38,7 @@
 		"gridjs": "^6.2.0",
 		"isomorphic-fetch": "^3.0.0",
 		"jwt-promisify": "^1.1.7",
-		"ky": "^1.11.0",
+		"ky": "^1.12.0",
 		"lambda-rate-limiter": "^4.0.2",
 		"localforage": "^1.10.0",
 		"navigo": "^8.11.1",
