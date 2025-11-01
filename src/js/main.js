@@ -27,6 +27,8 @@ import ky from 'ky';
 // Constants from build process
 const appUrl = '/* @echo appUrl */';
 const appName = '/* @echo appName */';
+const lng = Number('/* @echo lng */');
+const lat = Number('/* @echo lat */');
 const googleMapsApiKey = '/* @echo googleMapsApiKey */';
 const what3wordsApiKey = '/* @echo what3wordsApiKey */';
 const holdingEnabled = Boolean('/* @echo appHolding */'.toLowerCase() !== 'false');
@@ -380,8 +382,8 @@ function loadCachesMapPage() {
 			mainMap = null;
 			mainMap = new google.maps.Map(document.getElementById('mainMap'), {
 				center: {
-					lat: 51.80007,
-					lng: 0.64038
+					lat,
+					lng
 				},
 				zoom: 13,
 				minZoom: 12,

@@ -7,6 +7,8 @@
 	"description": "Witham Scouts Geocaching project (GeoScout) using What3Words, Google Maps and SharePoint Online",
 	"googleMapsApiKey": "AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4",
 	"what3wordsApiKey": "OL112976",
+	"lat": 51.80007,
+	"lng": 0.64038,
 	"appHolding": true,
 	"scripts": {
 		"build": "npm run license-check && gulp",

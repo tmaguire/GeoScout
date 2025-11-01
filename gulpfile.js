@@ -18,7 +18,9 @@ const {
 	appBlurb,
 	appHolding,
 	googleMapsApiKey,
-	what3wordsApiKey
+	what3wordsApiKey,
+	lat,
+	lng
 } = require('./package.json');
 const sass = require('gulp-sass')(require('sass'));
 const {
@@ -72,7 +74,9 @@ function bundleMainJs() {
 				appName,
 				googleMapsApiKey,
 				appHolding,
-				what3wordsApiKey
+				what3wordsApiKey,
+				lat,
+				lng
 			},
 		}))
 		.pipe(dest('dist/js/'));
@@ -87,16 +91,6 @@ function bundleOfflineJs() {
 			format: 'iife',
 			minify: true,
 			platform: 'browser'
-		}))
-		.pipe(preprocess({
-			context: {
-				version,
-				appUrl,
-				appName,
-				googleMapsApiKey,
-				appHolding,
-				what3wordsApiKey
-			},
 		}))
 		.pipe(dest('dist/js/'));
 }
