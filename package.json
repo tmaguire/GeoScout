@@ -59,7 +59,7 @@
 		"gulp-esbuild": "^0.14.1",
 		"gulp-file-include": "^2.3.0",
 		"gulp-html-minifier-terser": "^7.1.0",
-		"gulp-preprocess": "^5.0.0",
+		"gulp-preprocess": "^6.0.0",
 		"gulp-sass": "^6.0.1",
 		"gulp-sri-hash": "^2.2.1",
 		"gulp-uglify": "^3.0.2",
