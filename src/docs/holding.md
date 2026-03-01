@@ -1,9 +1,9 @@
 <div class="text-center">
 <picture>
-<source srcset="./img/geoscout-logo.webp" type="image/webp" />
-<source srcset="./img/geoscout-logo.png" type="image/png" />
+<source srcset="/img/geoscout-logo.webp" type="image/webp" />
+<source srcset="/img/geoscout-logo.png" type="image/png" />
 <img
-src="./img/geoscout-logo.png"
+src="/img/geoscout-logo.png"
 class="img-fluid logo-img m-3"
 alt="@@appName logo"
 loading="lazy"

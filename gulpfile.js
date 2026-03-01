@@ -59,7 +59,7 @@ function sri() {
 
 function bundleMainJs() {
 	const script = 'main';
-	return src(`./src/js/${script}.js`)
+	return src(`./src/js/${script}.ts`)
 		.pipe(gulpEsbuild({
 			outfile: `${script}-${version}.min.js`,
 			bundle: true,
@@ -84,7 +84,7 @@ function bundleMainJs() {
 
 function bundleOfflineJs() {
 	const script = 'offline';
-	return src(`./src/js/${script}.js`)
+	return src(`./src/js/${script}.ts`)
 		.pipe(gulpEsbuild({
 			outfile: `${script}-${version}.min.js`,
 			bundle: true,
@@ -150,7 +150,14 @@ function copySite() {
 }
 
 function serviceWorker() {
-	return src('./src/js/service-worker.js', { encoding: false })
+	return src('./src/js/service-worker.ts', { encoding: false })
+		.pipe(gulpEsbuild({
+			outfile: `service-worker.js`,
+			bundle: true,
+			format: 'iife',
+			minify: true,
+			platform: 'browser'
+		}))
 		.pipe(preprocess({
 			context: {
 				version,

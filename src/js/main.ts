@@ -1,29 +1,29 @@
 /* jshint esversion:10 */
-/** 
- * @typedef {String} AccessTokenString 
- */
-/** 
- * @typedef {Object} AccessTokenObject
- * @property {String} [sub] - Subject/Display name for user
- * @property {String} [oid] - Object identifier (SharePoint List Item ID)
- * @property {String} [jwtId] - Unique identifier for JWT
- * @property {Number} [iat] - Valid since
- * @property {Number} [exp] - Valid to
- * @property {String} [aud] - Audience (www.geoscout.uk for app tokens)
- * @property {String} [iss] - Issuer (api.geoscout.uk)
- */
+type AccessTokenString = String;
+interface AccessTokenObject {
+	sub?: String;
+	oid?: String;
+	jwtId?: String;
+	iat?: Number;
+	exp?: Number;
+	aud?: String;
+	iss?: String;
+}
+
 // Imports
 import 'bootstrap';
 import { Collapse } from 'bootstrap';
 import Navigo from 'navigo';
 import Swal from 'sweetalert2';
 import DOMPurify from 'dompurify';
-import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
+import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import QrScanner from 'qr-scanner';
-import { Grid, html } from 'gridjs';
+import { Grid, html, Row } from 'gridjs';
 import localforage from 'localforage';
 import ky from 'ky';
+import { TCell } from 'gridjs/dist/src/types.js';
+import { Feature } from 'geojson';
 // Constants from build process
 const appUrl = '/* @echo appUrl */';
 const appName = '/* @echo appName */';
@@ -31,16 +31,17 @@ const lng = Number('/* @echo lng */');
 const lat = Number('/* @echo lat */');
 const googleMapsApiKey = '/* @echo googleMapsApiKey */';
 const what3wordsApiKey = '/* @echo what3wordsApiKey */';
-const holdingEnabled = Boolean('/* @echo appHolding */'.toLowerCase() !== 'false');
+const holdingEnabled = Boolean(
+	'/* @echo appHolding */'.toLowerCase() !== 'false',
+);
 // Variables
-/** @type {google.maps.Map} */
-let mainMap = null;
-/** @type {Navigo} */
-let router = null;
-let newWorker = false;
-let locationWatch = null;
+let mainMap: google.maps.Map;
+let router: Navigo;
+let newWorker: ServiceWorker | null;
+let locationWatch: number | null = null;
 // Loader animation
-const loadingGif = '<div class="text-center"><img src="./img/loading.gif" height="150" width="150" class="img-fluid text-center" alt="Loading animation placeholder"></div>';
+const loadingGif =
+	'<div class="text-center"><img src="./img/loading.gif" height="150" width="150" class="img-fluid text-center" alt="Loading animation placeholder"></div>';
 
 // Method for creating toast notifications
 const showToast = Swal.mixin({
@@ -52,22 +53,28 @@ const showToast = Swal.mixin({
 	didOpen: (toast) => {
 		toast.addEventListener('mouseenter', Swal.stopTimer);
 		toast.addEventListener('mouseleave', Swal.resumeTimer);
-	}
+	},
 });
 
 /**
  * @function getAccessToken - Retrieves an access token (if present)
  * @param {Boolean} [required=false] - Forces an access token to be generated if not already acquired
- * @returns {Promise<AccessTokenString>} - Access token
+ * @returns {Promise<AccessTokenString|false>} - Access token
  */
-function getAccessToken(required = false) {
+function getAccessToken(
+	required: boolean = false,
+): Promise<AccessTokenString | false> {
 	return new Promise((resolve, reject) => {
-		localforage.getItem('accessToken')
-			.then(accessToken => {
+		localforage
+			.getItem<AccessTokenString>('accessToken')
+			.then((accessToken) => {
 				if (accessToken) {
 					resolve(accessToken);
 				} else {
-					if (localStorage.getItem('accessToken') === null || localStorage.getItem('accessToken') === '') {
+					if (
+						localStorage.getItem('accessToken') === null ||
+						localStorage.getItem('accessToken') === ''
+					) {
 						if (required) {
 							try {
 								resolve(newAccessToken());
@@ -79,9 +86,13 @@ function getAccessToken(required = false) {
 						}
 					} else {
 						// Migrate token to localforage
-						resolve(localforage.setItem('accessToken', localStorage.getItem('accessToken')));
+						resolve(
+							localforage.setItem<AccessTokenString>(
+								'accessToken',
+								localStorage.getItem('accessToken') || '',
+							),
+						);
 					}
-
 				}
 			});
 	});
@@ -91,43 +102,52 @@ function getAccessToken(required = false) {
  * @function newAccessToken - Registers a new account and stores access token
  * @returns {Promise<AccessTokenString>} - Access token
  */
-function newAccessToken() {
+function newAccessToken(): Promise<AccessTokenString> {
 	const uuid = crypto.randomUUID().toString();
-	return ky.post('./api/get-token', {
-		json: {
-			uuid
-		}
-	})
+	return ky
+		.post('./api/get-token', {
+			json: {
+				uuid,
+			},
+		})
 		.json()
 		.then(handleErrors)
-		.then(data => {
-			return ky.post('./api/get-token', {
-				json: {
-					uuid,
-					token: data.token
-				}
-			})
+		.then((data) => {
+			return ky
+				.post('./api/get-token', {
+					json: {
+						uuid,
+						token: data.token,
+					},
+				})
 				.json();
 		})
 		.then(handleErrors)
-		.then(data => {
-			return localforage.setItem('accessToken', data.accessToken);
+		.then((data) => {
+			return localforage.setItem<AccessTokenString>(
+				'accessToken',
+				data.accessToken,
+			);
 		});
 }
 
 /**
  * @function parseAccessToken - Parse access token to populate UI
  * @param {AccessTokenString} [token] - Access token string to parse
- * @returns {Promise<AccessTokenObject>}
+ * @returns {Promise<AccessTokenObject|false>}
  */
-function parseAccessToken(token) {
+function parseAccessToken(
+	token: AccessTokenString,
+): Promise<AccessTokenObject> {
 	return new Promise((resolve, reject) => {
 		try {
 			if (!token) {
-				resolve(false);
+				throw 'Invalid token';
 			}
 			const base64Url = token.split('.')[1];
-			const base64 = String(base64Url).replaceAll('-', '+').replaceAll('_', '/');
+			const base64 = String(base64Url)
+				.replaceAll('-', '+')
+				.replaceAll('_', '/');
 			resolve(JSON.parse(window.atob(base64)));
 		} catch (error) {
 			reject(error);
@@ -137,18 +157,22 @@ function parseAccessToken(token) {
 
 /**
  * @function showError - Error message function
- * @param {String} [error='An issue occurred'] 
- * @param {Boolean} [button=false] 
+ * @param {String} [error='An issue occurred']
+ * @param {Boolean} [button=false]
  * @param {false|String} [goBackToPage=false]
  * @return {void}
  */
-function showError(error = 'An issue occurred', button = false, goBackToPage = false) {
+function showError(
+	error: string = 'An issue occurred',
+	button: boolean = false,
+	goBackToPage: false | string = false,
+): void {
 	Swal.fire({
 		title: error,
 		icon: 'error',
 		buttonsStyling: false,
 		customClass: {
-			confirmButton: 'btn btn-primary m-1 shadow'
+			confirmButton: 'btn btn-primary m-1 shadow',
 		},
 		showConfirmButton: button,
 		allowOutsideClick: button,
@@ -161,7 +185,7 @@ function showError(error = 'An issue occurred', button = false, goBackToPage = f
 			if (goBackToPage) {
 				router.navigate(goBackToPage);
 			}
-		}
+		},
 	});
 }
 
@@ -172,7 +196,11 @@ function showError(error = 'An issue occurred', button = false, goBackToPage = f
  * @param {Boolean} [hideYear=false] - Hide year from output
  * @returns {String}
  */
-function getPrettyDate(date = new Date(), prefomattedDate = false, hideYear = false) {
+function getPrettyDate(
+	date: Date = new Date(),
+	prefomattedDate: false | string = false,
+	hideYear: boolean = false,
+): string {
 	const months = [
 		'January',
 		'February',
@@ -185,7 +213,7 @@ function getPrettyDate(date = new Date(), prefomattedDate = false, hideYear = fa
 		'September',
 		'October',
 		'November',
-		'December'
+		'December',
 	];
 	const days = [
 		'Sunday',
@@ -194,18 +222,20 @@ function getPrettyDate(date = new Date(), prefomattedDate = false, hideYear = fa
 		'Wednesday',
 		'Thursday',
 		'Friday',
-		'Saturday'
+		'Saturday',
 	];
 	const day = String(date.getDate());
-	const prettyDay = `${days[date.getDay()]} ${day}${(day === '1') || (day === '21') || (day === '31') ? 'st' : (day === '2') || (day === '22') ? 'nd' : (day === '3') || (day === '23') ? 'rd' : 'th'}`;
+	const prettyDay = `${days[date.getDay()]} ${day}${day === '1' || day === '21' || day === '31' ? 'st' : day === '2' || day === '22' ? 'nd' : day === '3' || day === '23' ? 'rd' : 'th'}`;
 	const month = months[date.getMonth()];
 	const year = date.getFullYear();
-	const time = String(date.toLocaleTimeString('en-GB', {
-		hour: 'numeric',
-		minute: 'numeric',
-		hour12: true,
-		hourCycle: 'h12'
-	})).replace(/\s+/g, '');
+	const time = String(
+		date.toLocaleTimeString('en-GB', {
+			hour: 'numeric',
+			minute: 'numeric',
+			hour12: true,
+			hourCycle: 'h12',
+		}),
+	).replace(/\s+/g, '');
 	const formattedTime = `${time.split(':')[0] === '0' ? `12:${time.split(':')[1]}` : time}`;
 	if (prefomattedDate) {
 		// Today at 10:20am
@@ -222,17 +252,18 @@ function getPrettyDate(date = new Date(), prefomattedDate = false, hideYear = fa
 
 /**
  * @function getTimeAgo - Function to return formatted date based on time ago
- * @param {Date|String} [dateParam] 
+ * @param {Date|String} [dateParam]
  * @returns {String|null}
  */
-function getTimeAgo(dateParam) {
+function getTimeAgo(dateParam: Date | string): string | null {
 	if (!dateParam) {
 		return null;
 	}
-	const date = typeof dateParam === 'object' ? dateParam : new Date(dateParam);
+	const date =
+		typeof dateParam === 'object' ? dateParam : new Date(dateParam);
 	const today = new Date();
-	const yesterday = new Date(today - (24 * 60 * 60 * 1000));
-	const seconds = Math.round((today - date) / 1000);
+	const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+	const seconds = Math.round((today.getTime() - date.getTime()) / 1000);
 	const minutes = Math.round(seconds / 60);
 	const isToday = today.toDateString() === date.toDateString();
 	const isYesterday = yesterday.toDateString() === date.toDateString();
@@ -257,10 +288,10 @@ function getTimeAgo(dateParam) {
 
 /**
  * @function appendSuffix - Adds correct suffix to position number for leaderboard
- * @param {Number} [number] 
+ * @param {Number} [number]
  * @returns {String}
  */
-function appendSuffix(number) {
+function appendSuffix(number: number): string {
 	const firstPass = number % 10;
 	const secondPass = number % 100;
 	if (firstPass === 1 && secondPass !== 11) {
@@ -276,7 +307,7 @@ function appendSuffix(number) {
 }
 
 // Function to handle errors from serverless functions
-function handleErrors(response) {
+function handleErrors(response: any) {
 	// If the response has an error property
 	if (Object.prototype.hasOwnProperty.call(response, 'error')) {
 		// Throw error message
@@ -291,19 +322,28 @@ function handleErrors(response) {
 	return response;
 }
 
-/**
- * @function changePage
- * @param {String} [page=''] 
- * @param {false|String} [title=false] 
- * @param {false|String} [id=false] 
- * @returns {void}
- */
-function changePage(page = '', title = false, id = false) {
+function changePage(
+	page: string = '',
+	title: false | string = false,
+	id: false | string = false,
+): void {
 	// Update Canonical tag
-	document.querySelector("link[rel='canonical']").setAttribute('href', page === '404' ? appUrl : (id ? `${appUrl}/${page}-${id}` : `${appUrl}/${page}`));
+	document
+		.querySelector("link[rel='canonical']")
+		?.setAttribute(
+			'href',
+			page === '404'
+				? appUrl
+				: id
+					? `${appUrl}/${page}-${id}`
+					: `${appUrl}/${page}`,
+		);
 	// Update menu
-	document.querySelectorAll('a.nav-link').forEach(menuItem => {
-		if (menuItem.getAttribute('href') === (page === 'holding' ? 'home' : page)) {
+	document.querySelectorAll('a.nav-link').forEach((menuItem) => {
+		if (
+			menuItem.getAttribute('href') ===
+			(page === 'holding' ? 'home' : page)
+		) {
 			menuItem.classList.add('active');
 			menuItem.setAttribute('aria-current', 'page');
 		} else {
@@ -312,27 +352,27 @@ function changePage(page = '', title = false, id = false) {
 		}
 	});
 	// Hide all pages (except selected)
-	document.querySelectorAll('section').forEach(section => {
+	document.querySelectorAll('section').forEach((section) => {
 		if (section.id !== page) {
 			section.classList.add('d-none');
 			section.setAttribute('aria-hidden', 'true');
 		}
 	});
 	// Set page as active
-	document.getElementById(page).classList.remove('d-none');
-	document.getElementById(page).removeAttribute('aria-hidden');
+	document.getElementById(page)?.classList.remove('d-none');
+	document.getElementById(page)?.removeAttribute('aria-hidden');
 	// Change document title
 	document.title = `${title} | ${appName}`;
 	// Scroll to top
 	window.scrollTo({
 		top: 0,
 		left: 0,
-		behavior: 'smooth'
+		behavior: 'smooth',
 	});
 	// Close the navbar menu (if it is open)
 	const menuToggle = document.getElementById('navbarToggler');
 	const bsCollapse = new Collapse(menuToggle, {
-		toggle: false
+		toggle: false,
 	});
 	bsCollapse.hide();
 }
@@ -341,34 +381,34 @@ function changePage(page = '', title = false, id = false) {
  * @function loadCachesMapPage
  * @returns {Promise<void>}
  */
-function loadCachesMapPage() {
-	const mapContainer = document.getElementById('mapContainer');
-	const mapToolbar = document.getElementById('mapToolbar');
-	mapToolbar.replaceChildren();
+function loadCachesMapPage(): Promise<void> {
+	const mapContainer = document.getElementById('mapContainer') as HTMLElement;
+	const mapToolbar = document.getElementById('mapToolbar') as HTMLElement;
+	mapToolbar?.replaceChildren();
 	mapContainer.innerHTML = loadingGif;
-	changePage('viewCaches', 'View caches', false)
+	changePage('viewCaches', 'View caches', false);
 	setOptions({
 		key: googleMapsApiKey,
 		v: 'quarterly',
-		libraries: ['drawing', 'marker']
-	})
-	let caches;
-	/** @type {MarkerClusterer} */
-	let cluster;
-	let Circle;
+		libraries: ['drawing', 'marker'],
+	});
+	let caches: any[];
+	let cluster: MarkerClusterer;
+	let Circle: any;
 	return getAccessToken()
-		.then(accessToken => {
-			return ky.get('./api/get-caches', {
-				...(accessToken && {
-					headers: {
-						Authorization: `Bearer ${accessToken}`
-					}
+		.then((accessToken) => {
+			return ky
+				.get('./api/get-caches', {
+					...(accessToken && {
+						headers: {
+							Authorization: `Bearer ${accessToken}`,
+						},
+					}),
 				})
-			})
 				.json();
 		})
 		.then(handleErrors)
-		.then(data => {
+		.then((data) => {
 			if (Object.prototype.hasOwnProperty.call(data, 'caches')) {
 				caches = data.caches;
 			} else {
@@ -377,43 +417,59 @@ function loadCachesMapPage() {
 			return importLibrary('maps');
 		})
 		.then(() => {
-			mapContainer.innerHTML = '<div id="mapFilter"></div><div id="mainMap" class="rounded shadow"></div><div class="my-3 text-center"><a href="viewCachesTable" class="text-decoration-none" data-navigo="true"><i class="bi bi-table" aria-hidden="true"></i>&nbsp;View map data as a table</a></div>';
+			mapContainer.innerHTML =
+				'<div id="mapFilter"></div><div id="mainMap" class="rounded shadow"></div><div class="my-3 text-center"><a href="viewCachesTable" class="text-decoration-none" data-navigo="true"><i class="bi bi-table" aria-hidden="true"></i>&nbsp;View map data as a table</a></div>';
 			router.updatePageLinks();
-			mainMap = null;
-			mainMap = new google.maps.Map(document.getElementById('mainMap'), {
-				center: {
-					lat,
-					lng
+			mainMap = new google.maps.Map(
+				document.getElementById('mainMap') as HTMLElement,
+				{
+					center: {
+						lat,
+						lng,
+					},
+					zoom: 13,
+					minZoom: 12,
+					mapId: '6b8e857a992e95a7',
+					streetViewControl: false,
+					mapTypeControl: true,
+					fullscreenControl: true,
+					zoomControl: true,
+					renderingType: google.maps.RenderingType.VECTOR,
 				},
-				zoom: 13,
-				minZoom: 12,
-				mapId: '6b8e857a992e95a7',
-				streetViewControl: false,
-				mapTypeControl: true,
-				fullscreenControl: true,
-				zoomControl: true,
-				renderingType: 'VECTOR'
-			});
+			);
 			Circle = google.maps.Circle;
 			return importLibrary('marker');
 		})
 		.then(() => {
 			try {
-				const markers = caches.flatMap(cache => {
+				const markers = caches.flatMap((cache) => {
 					if (!cache.suspended) {
 						const markerContent = document.createElement('div');
-						markerContent.textContent = DOMPurify.sanitize(cache.id);
-						markerContent.classList.add(cache.found ? 'marker-found' : 'marker-notfound');
-						const marker = new google.maps.marker.AdvancedMarkerElement({
-							position: {
-								lat: Number(DOMPurify.sanitize(cache.coordinates).split(',')[0]),
-								lng: Number(DOMPurify.sanitize(cache.coordinates).split(',')[1])
-							},
-							map: mainMap,
-							title: `Cache ${DOMPurify.sanitize(cache.id)}`,
-							gmpClickable: true,
-							content: markerContent
-						});
+						markerContent.textContent = DOMPurify.sanitize(
+							cache.id,
+						);
+						markerContent.classList.add(
+							cache.found ? 'marker-found' : 'marker-notfound',
+						);
+						const marker =
+							new google.maps.marker.AdvancedMarkerElement({
+								position: {
+									lat: Number(
+										DOMPurify.sanitize(
+											cache.coordinates,
+										).split(',')[0],
+									),
+									lng: Number(
+										DOMPurify.sanitize(
+											cache.coordinates,
+										).split(',')[1],
+									),
+								},
+								map: mainMap,
+								title: `Cache ${DOMPurify.sanitize(cache.id)}`,
+								gmpClickable: true,
+								content: markerContent,
+							});
 						marker.addListener('click', () => {
 							router.navigate(`/viewCache-${cache.id}`);
 						});
@@ -424,7 +480,7 @@ function loadCachesMapPage() {
 				});
 				cluster = new MarkerClusterer({
 					map: mainMap,
-					markers
+					markers,
 				});
 				return true;
 			} catch (error) {
@@ -434,7 +490,8 @@ function loadCachesMapPage() {
 		})
 		.then(() => {
 			let currentFilter = 'all';
-			document.getElementById('mapFilter').innerHTML = `<fieldset><div class="btn-group mb-3 shadow">
+			(document.getElementById('mapFilter') as HTMLElement).innerHTML =
+				`<fieldset><div class="btn-group mb-3 shadow">
 				<legend class="visually-hidden">Filter control for the map to toggle which caches are visible</legend>
 				<input type="radio" class="btn-check" name="mapFilterBtn" id="mapFilterAll" autocomplete="off" value="all" checked>
 				<label class="btn btn-outline-primary rounded-start" for="mapFilterAll">All caches</label>
@@ -444,33 +501,55 @@ function loadCachesMapPage() {
 				<label class="btn btn-outline-primary" for="mapFilterFound">Caches you've found</label>
 			</div></fieldset>`;
 
-			function changeFilter(filter) {
+			function changeFilter(filter: string) {
 				if (currentFilter !== filter) {
 					cluster.clearMarkers();
 					currentFilter = filter;
-					const filterMode = (filter === 'all') ? {
-						found: true,
-						notFound: true
-					} : {
-						found: (filter === 'found'),
-						notFound: (filter === 'notFound')
-					};
-					const markers = [];
-					caches.forEach(cache => {
-						if ((cache.found && filterMode.found || !cache.found && filterMode.notFound) && !cache.suspended) {
+					const filterMode =
+						filter === 'all'
+							? {
+									found: true,
+									notFound: true,
+								}
+							: {
+									found: filter === 'found',
+									notFound: filter === 'notFound',
+								};
+					const markers: any[] = [];
+					caches.forEach((cache) => {
+						if (
+							((cache.found && filterMode.found) ||
+								(!cache.found && filterMode.notFound)) &&
+							!cache.suspended
+						) {
 							const markerContent = document.createElement('div');
-							markerContent.textContent = DOMPurify.sanitize(cache.id);
-							markerContent.classList.add(cache.found ? 'marker-found' : 'marker-notfound');
-							const marker = new google.maps.marker.AdvancedMarkerElement({
-								position: {
-									lat: Number(DOMPurify.sanitize(cache.coordinates).split(',')[0]),
-									lng: Number(DOMPurify.sanitize(cache.coordinates).split(',')[1])
-								},
-								map: mainMap,
-								title: `Cache ${DOMPurify.sanitize(cache.id)}`,
-								gmpClickable: true,
-								content: markerContent
-							});
+							markerContent.textContent = DOMPurify.sanitize(
+								cache.id,
+							);
+							markerContent.classList.add(
+								cache.found
+									? 'marker-found'
+									: 'marker-notfound',
+							);
+							const marker =
+								new google.maps.marker.AdvancedMarkerElement({
+									position: {
+										lat: Number(
+											DOMPurify.sanitize(
+												cache.coordinates,
+											).split(',')[0],
+										),
+										lng: Number(
+											DOMPurify.sanitize(
+												cache.coordinates,
+											).split(',')[1],
+										),
+									},
+									map: mainMap,
+									title: `Cache ${DOMPurify.sanitize(cache.id)}`,
+									gmpClickable: true,
+									content: markerContent,
+								});
 							marker.addListener('click', () => {
 								router.navigate(`/viewCache-${cache.id}`);
 							});
@@ -480,108 +559,139 @@ function loadCachesMapPage() {
 					cluster.addMarkers(markers);
 				}
 			}
-			['mapFilterAll', 'mapFilterNotFound', 'mapFilterFound'].forEach(element => {
-				document.getElementById(element)
-					.addEventListener('click', function () {
-						changeFilter(document.querySelector('input[name="mapFilterBtn"]:checked').value);
-					});
-			});
+			['mapFilterAll', 'mapFilterNotFound', 'mapFilterFound'].forEach(
+				(element) => {
+					document
+						.getElementById(element)
+						?.addEventListener('click', function () {
+							changeFilter(
+								(
+									document.querySelector(
+										'input[name="mapFilterBtn"]:checked',
+									) as HTMLInputElement
+								).value,
+							);
+						});
+				},
+			);
 			return true;
 		})
 		.then(() => {
 			// Create button and add to toolbar
-			const defaultBtn = '<i class="bi bi-crosshair" aria-hidden="true"></i>&nbsp;Show your location';
-			const activeBtn = '<i class="bi bi-crosshair" aria-hidden="true"></i>&nbsp;Move map to your location';
+			const defaultBtn =
+				'<i class="bi bi-crosshair" aria-hidden="true"></i>&nbsp;Show your location';
+			const activeBtn =
+				'<i class="bi bi-crosshair" aria-hidden="true"></i>&nbsp;Move map to your location';
 			const button = document.createElement('button');
 			button.setAttribute('id', 'mapLocation');
 			button.setAttribute('class', 'btn btn-primary shadow');
 			button.innerHTML = defaultBtn;
 			mapToolbar.appendChild(button);
-			const locateBtn = document.getElementById('mapLocation');
+			const locateBtn = document.getElementById(
+				'mapLocation',
+			) as HTMLElement;
 			let locationActive = false;
 			let currentUserLocation = {
 				lat: 0,
-				lng: 0
+				lng: 0,
 			};
-			let marker = null;
-			let accuracy = null;
+			let marker: google.maps.marker.AdvancedMarkerElement;
+			let accuracy: google.maps.Circle;
 			locateBtn.addEventListener('click', function () {
 				if (locationActive) {
 					mainMap.setCenter(currentUserLocation);
 					mainMap.setZoom(19);
 				} else {
-					locateBtn.setAttribute('disabled', true);
-					locateBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;Locating...';
-					locationWatch = navigator.geolocation.watchPosition(({ coords }) => {
-						currentUserLocation = {
-							lat: coords.latitude,
-							lng: coords.longitude,
-						};
-						if (!locationActive) {
-							mainMap.setCenter(currentUserLocation);
-							mainMap.setZoom(19);
-							locateBtn.removeAttribute('disabled');
-							locateBtn.innerHTML = activeBtn;
-							locationActive = true;
-						}
-						if (marker === null) {
-							const parser = new DOMParser();
-							const pinSvgString = '<svg height="22" width="22" xmlns="http://www.w3.org/2000/svg"><circle r="10" cx="11" cy="11" stroke="rgb(255,255,255)" stroke-width="2" fill="#4285F4" /></svg>';
-							const pinSvg = parser.parseFromString(pinSvgString, 'image/svg+xml',).documentElement;
-							marker = new google.maps.marker.AdvancedMarkerElement({
-								map: mainMap,
-								position: currentUserLocation,
-								content: pinSvg,
-								title: 'Your location',
-							});
-						} else {
-							marker.position = currentUserLocation;
-						}
-						if (accuracy === null) {
-							accuracy = new Circle({
-								center: currentUserLocation,
-								radius: coords.accuracy,
-								clickable: false,
-								fillColor: '#61a0bf',
-								fillOpacity: 0.4,
-								strokeColor: '#1bb6ff',
-								strokeOpacity: 0.4,
-								strokeWeight: 1,
-								zIndex: 1,
-								map: mainMap
-							});
-						} else {
-							accuracy.setCenter(currentUserLocation);
-							accuracy.setRadius(coords.accuracy);
-						}
-					}, (error) => {
-						if (error.message !== '') {
-							locateBtn.removeAttribute('disabled');
-							locateBtn.innerHTML = defaultBtn;
-							showToast.fire({
-								title: error.message,
-								icon: 'error'
-							});
-						}
-					}, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
+					locateBtn.setAttribute('disabled', 'true');
+					locateBtn.innerHTML =
+						'<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>&nbsp;Locating...';
+					locationWatch = navigator.geolocation.watchPosition(
+						({ coords }) => {
+							currentUserLocation = {
+								lat: coords.latitude,
+								lng: coords.longitude,
+							};
+							if (!locationActive) {
+								mainMap.setCenter(currentUserLocation);
+								mainMap.setZoom(19);
+								locateBtn.removeAttribute('disabled');
+								locateBtn.innerHTML = activeBtn;
+								locationActive = true;
+							}
+							if (marker === null) {
+								const parser = new DOMParser();
+								const pinSvgString =
+									'<svg height="22" width="22" xmlns="http://www.w3.org/2000/svg"><circle r="10" cx="11" cy="11" stroke="rgb(255,255,255)" stroke-width="2" fill="#4285F4" /></svg>';
+								const pinSvg = parser.parseFromString(
+									pinSvgString,
+									'image/svg+xml',
+								).documentElement;
+								marker =
+									new google.maps.marker.AdvancedMarkerElement(
+										{
+											map: mainMap,
+											position: currentUserLocation,
+											content: pinSvg,
+											title: 'Your location',
+										},
+									);
+							} else {
+								marker.position = currentUserLocation;
+							}
+							if (accuracy === null) {
+								accuracy = new google.maps.Circle({
+									center: currentUserLocation,
+									radius: coords.accuracy,
+									clickable: false,
+									fillColor: '#61a0bf',
+									fillOpacity: 0.4,
+									strokeColor: '#1bb6ff',
+									strokeOpacity: 0.4,
+									strokeWeight: 1,
+									zIndex: 1,
+									map: mainMap,
+								});
+							} else {
+								accuracy.setCenter(currentUserLocation);
+								accuracy.setRadius(coords.accuracy);
+							}
+						},
+						(error) => {
+							if (error.message !== '') {
+								locateBtn.removeAttribute('disabled');
+								locateBtn.innerHTML = defaultBtn;
+								showToast.fire({
+									title: error.message,
+									icon: 'error',
+								});
+							}
+						},
+						{
+							enableHighAccuracy: true,
+							maximumAge: 0,
+							timeout: 15000,
+						},
+					);
 				}
 			});
 			return mainMap;
 		})
-		.then(map => {
+		.then((map) => {
 			// Cache for grid data
-			let gridData = null;
+			let gridData: google.maps.Data.Feature[];
 			map.addListener('bounds_changed', function () {
 				// Get current zoom level
 				const zoom = map.getZoom();
 				// Only show grid if zoom is at least 17
-				const loadFeatures = zoom > 17;
+				const loadFeatures = Boolean(zoom || 0 > 17);
 				if (loadFeatures) {
 					// Get bounds of map
-					const ne = map.getBounds().getNorthEast();
-					const sw = map.getBounds().getSouthWest();
+					const ne = map.getBounds()?.getNorthEast();
+					const sw = map.getBounds()?.getSouthWest();
 					// Call the what3words Grid API to obtain the grid squares within the current visble bounding box
-					ky.get(`https://api.what3words.com/v3/grid-section?key=${what3wordsApiKey}&bounding-box=${sw.lat()},${sw.lng()},${ne.lat()},${ne.lng()}&format=geojson`)
+					ky.get<object>(
+						`https://api.what3words.com/v3/grid-section?key=${what3wordsApiKey}&bounding-box=${sw?.lat()},${sw?.lng()},${ne?.lat()},${ne?.lng()}&format=geojson`,
+					)
 						.json()
 						.then(function (data) {
 							if (gridData !== null) {
@@ -597,34 +707,37 @@ function loadCachesMapPage() {
 				// Set the grid display style
 				map.data.setStyle({
 					visible: loadFeatures,
-					strokeColor: "#777",
-					strokeWeight: 0.5
+					strokeColor: '#777',
+					strokeWeight: 0.5,
 				});
 			});
 		})
-		.catch(error => {
+		.catch((error) => {
 			showError(error, true, 'home');
 		});
 }
 
 function loadCachesTablePage() {
-	const tableContainer = document.getElementById('tableContainer');
+	const tableContainer = document.getElementById(
+		'tableContainer',
+	) as HTMLElement;
 	tableContainer.innerHTML = loadingGif;
 	changePage('viewCachesTable', 'View caches', false);
-	let caches;
+	let caches: any[];
 	return getAccessToken()
-		.then(accessToken => {
-			return ky.get('./api/get-caches', {
-				...(accessToken && {
-					headers: {
-						Authorization: `Bearer ${accessToken}`
-					}
+		.then((accessToken) => {
+			return ky
+				.get('./api/get-caches', {
+					...(accessToken && {
+						headers: {
+							Authorization: `Bearer ${accessToken}`,
+						},
+					}),
 				})
-			})
 				.json();
 		})
 		.then(handleErrors)
-		.then(data => {
+		.then((data) => {
 			if (Object.prototype.hasOwnProperty.call(data, 'caches')) {
 				caches = data.caches;
 				return caches;
@@ -632,71 +745,85 @@ function loadCachesTablePage() {
 				throw 'No caches found';
 			}
 		})
-		.then(data => {
-			tableContainer.innerHTML = '<div id="tableFilter"></div><div id="table"></div><div class="my-3 text-center"><a href="viewCaches" class="text-decoration-none" data-navigo="true"><i class="bi bi-map" aria-hidden="true"></i>&nbsp;View table data in a map</a></div>';
+		.then((data) => {
+			tableContainer.innerHTML =
+				'<div id="tableFilter"></div><div id="table"></div><div class="my-3 text-center"><a href="viewCaches" class="text-decoration-none" data-navigo="true"><i class="bi bi-map" aria-hidden="true"></i>&nbsp;View table data in a map</a></div>';
 			const table = new Grid({
-				columns: [{
-					id: 'id',
-					name: 'Cache ID',
-					sort: {
-						enabled: true
+				columns: [
+					{
+						id: 'id',
+						name: 'Cache ID',
+						sort: {
+							enabled: true,
+						},
+						formatter: (cell: string) =>
+							html(
+								`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo="true">${DOMPurify.sanitize(cell)}</a>`,
+							),
 					},
-					formatter: (cell) => html(`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo="true">${DOMPurify.sanitize(cell)}</a>`)
-				},
-				{
-					id: 'location',
-					name: 'what3words location',
-					sort: {
-						enabled: true
+					{
+						id: 'location',
+						name: 'what3words location',
+						sort: {
+							enabled: true,
+						},
+						formatter: (location: string) => {
+							const locationString = String(
+								DOMPurify.sanitize(location),
+							).split('///')[1];
+							return html(
+								`<a href="https://what3words.com/${locationString}?maptype=satellite" target="_blank" translate="no" rel="noopener noreferrer">///${locationString}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a>`,
+							);
+						},
 					},
-					formatter: (location) => {
-						const locationString = String(DOMPurify.sanitize(location)).split('///')[1];
-						return html(`<a href="https://what3words.com/${locationString}?maptype=satellite" target="_blank" translate="no" rel="noopener noreferrer">///${locationString}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a>`);
-					}
-				},
-				{
-					id: 'found',
-					name: html('Found<span class="visually-hidden"> this cache</span>?'),
-					sort: {
-						enabled: true
+					{
+						id: 'found',
+						name: html(
+							'Found<span class="visually-hidden"> this cache</span>?',
+						),
+						sort: {
+							enabled: true,
+						},
+						formatter: (cell) => {
+							return Boolean(cell) ? 'Yes 😊' : 'No ☹️';
+						},
 					},
-					formatter: (cell) => {
-						return (Boolean(cell) ? 'Yes 😊' : 'No ☹️');
-					}
-				},
-				{
-					id: 'stats',
-					name: 'Stats',
-					sort: {
-						enabled: true
+					{
+						id: 'stats',
+						name: 'Stats',
+						sort: {
+							enabled: true,
+						},
+						formatter: (count) =>
+							`${Number(count) > 0 ? `Found by ${Number(count)} ${Number(count) > 1 ? 'people 😊' : 'person 😮'}` : 'No one has found this cache yet 😢'}`,
 					},
-					formatter: (count) => `${Number(count) > 0 ? `Found by ${Number(count)} ${Number(count) > 1 ? 'people 😊' : 'person 😮'}` : 'No one has found this cache yet 😢'}`
-				}
 				],
 				autoWidth: false,
 				sort: true,
 				pagination: {
-					enabled: true,
+					// enabled: true,
 					limit: 15,
-					summary: true
+					summary: true,
 				},
-				data: () => data.flatMap(cache => cache.suspended ? [] : [cache]),
+				data: () =>
+					data.flatMap((cache) => (cache.suspended ? [] : [cache])),
 				search: {
 					enabled: true,
-					selector: (cell, rowIndex, cellIndex) => (cellIndex === 0) ? cell : null
+					selector: (cell, rowIndex, cellIndex) =>
+						cellIndex === 0 ? cell : null,
 				},
 				language: {
 					search: {
-						placeholder: 'Search by Cache ID'
-					}
-				}
-			})
-				.render(document.getElementById('table'));
+						placeholder: 'Search by Cache ID',
+					},
+				},
+			}).render(document.getElementById('table') as HTMLElement);
 			return table;
 		})
-		.then(table => {
+		.then((table) => {
 			let currentFilter = 'all';
-			document.getElementById('tableFilter').innerHTML = `<fieldset><div class="btn-group mb-3 shadow">
+			(document.getElementById('tableFilter') as HTMLElement).innerHTML =
+				`<fieldset><div class="btn-group mb-3 shadow">
 				<legend class="visually-hidden">Filter control for the map to toggle which caches are visible</legend>
 				<input type="radio" class="btn-check" name="tableFilterBtn" id="tableFilterAll" autocomplete="off" value="all" checked>
 				<label class="btn btn-outline-primary rounded-start" for="tableFilterAll">All caches</label>
@@ -706,152 +833,218 @@ function loadCachesTablePage() {
 				<label class="btn btn-outline-primary" for="tableFilterFound">Caches you've found</label>
 			</div></fieldset>`;
 
-			function changeFilter(filter) {
+			function changeFilter(filter: string) {
 				if (currentFilter !== filter) {
 					currentFilter = filter;
-					const filterMode = (filter === 'all') ? {
-						found: true,
-						notFound: true
-					} : {
-						found: (filter === 'found'),
-						notFound: (filter === 'notFound')
-					};
-					const cacheList = [];
-					caches.forEach(cache => {
-						if ((cache.found && filterMode.found || !cache.found && filterMode.notFound) && !cache.suspended) {
+					const filterMode =
+						filter === 'all'
+							? {
+									found: true,
+									notFound: true,
+								}
+							: {
+									found: filter === 'found',
+									notFound: filter === 'notFound',
+								};
+					const cacheList: any[] = [];
+					caches.forEach((cache) => {
+						if (
+							((cache.found && filterMode.found) ||
+								(!cache.found && filterMode.notFound)) &&
+							!cache.suspended
+						) {
 							cacheList.push(cache);
 						}
 					});
-					table.updateConfig({
-						data: cacheList
-					}).forceRender();
+					table
+						.updateConfig({
+							data: cacheList,
+						})
+						.forceRender();
 				}
 			}
-			['tableFilterAll', 'tableFilterNotFound', 'tableFilterFound'].forEach(element => {
-				document.getElementById(element)
-					.addEventListener('click', function () {
-						changeFilter(document.querySelector('input[name="tableFilterBtn"]:checked').value);
+			[
+				'tableFilterAll',
+				'tableFilterNotFound',
+				'tableFilterFound',
+			].forEach((element) => {
+				document
+					.getElementById(element)
+					?.addEventListener('click', function () {
+						changeFilter(
+							(
+								document.querySelector(
+									'input[name="tableFilterBtn"]:checked',
+								) as HTMLInputElement
+							).value,
+						);
 					});
 			});
 		})
 		.finally(() => {
 			router.updatePageLinks();
 		})
-		.catch(error => {
+		.catch((error) => {
 			showError(error, true, 'home');
 		});
 }
 
-function loadCachePage(id) {
+function loadCachePage(id: string) {
 	resetCachePage();
 	changePage('viewCache', `Cache ${id}`, id);
 	return getAccessToken()
-		.then(accessToken => {
-			return ky.post('./api/get-cache', {
-				json: {
-					cache: id
-				},
-				...(accessToken && {
-					headers: {
-						Authorization: `Bearer ${accessToken}`
-					}
+		.then((accessToken) => {
+			return ky
+				.post('./api/get-cache', {
+					json: {
+						cache: id,
+					},
+					...(accessToken && {
+						headers: {
+							Authorization: `Bearer ${accessToken}`,
+						},
+					}),
 				})
-			})
 				.json();
 		})
 		.then(handleErrors)
-		.then(data => {
+		.then((data) => {
 			if (!data.suspended) {
-				document.getElementById('cacheCard').removeAttribute('aria-hidden');
-				const img = document.getElementById('cacheMapImg');
+				document
+					.getElementById('cacheCard')
+					?.removeAttribute('aria-hidden');
+				const img = document.getElementById(
+					'cacheMapImg',
+				) as HTMLElement;
 				img.setAttribute('src', `${DOMPurify.sanitize(data.image)}`);
 				img.setAttribute('alt', `Map for cache ${id}`);
 				img.removeAttribute('height');
 				img.removeAttribute('width');
-				const header = document.getElementById('cacheHeader');
+				const header = document.getElementById(
+					'cacheHeader',
+				) as HTMLElement;
 				header.setAttribute('class', 'card-title');
 				header.replaceChildren();
 				header.innerText = `Cache ${id}`;
-				const w3wLink = document.getElementById('cacheW3WLink');
+				const w3wLink = document.getElementById(
+					'cacheW3WLink',
+				) as HTMLElement;
 				w3wLink.setAttribute('class', 'card-text');
-				const w3wAddress = String(DOMPurify.sanitize(data.location)).split('///')[1];
-				const coordinates = String(DOMPurify.sanitize(data.coordinates));
+				const w3wAddress = String(
+					DOMPurify.sanitize(data.location),
+				).split('///')[1];
+				const coordinates = String(
+					DOMPurify.sanitize(data.coordinates),
+				);
 				w3wLink.innerHTML = `<p><strong>what3words address:</strong>&nbsp;<a href="https://what3words.com/${w3wAddress}?maptype=satellite" target="_blank" translate="no" rel="noopener noreferrer">///${w3wAddress}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a></p>
 				<p><strong>Grid reference:</strong>&nbsp;<a href="https://explore.osmaps.com/pin?lat=${coordinates.split(',')[0]}&lon=${coordinates.split(',')[1]}&zoom=18.0000&overlays=&style=Aerial&type=2d&placesCategory=" target="_blank" rel="noopener noreferrer">${DOMPurify.sanitize(data.gridRef)}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a><br><a class="text-decoration-none" href="https://getoutside.ordnancesurvey.co.uk/guides/beginners-guide-to-grid-references/" target="_blank" rel="noopener noreferrer">Learn more about grid references&nbsp;<i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a></p>
 				<p><br><strong id="cacheStats"></strong></p>`;
-				const w3wBtn = document.getElementById('cacheW3WBtn');
+				const w3wBtn = document.getElementById(
+					'cacheW3WBtn',
+				) as HTMLElement;
 				w3wBtn.removeAttribute('tabindex');
 				w3wBtn.setAttribute('class', 'btn btn-primary m-1 shadow');
-				w3wBtn.setAttribute('href', `https://what3words.com/${w3wAddress}?maptype=satellite`);
+				w3wBtn.setAttribute(
+					'href',
+					`https://what3words.com/${w3wAddress}?maptype=satellite`,
+				);
 				w3wBtn.setAttribute('target', '_blank');
 				w3wBtn.setAttribute('rel', 'noopener noreferrer');
-				w3wBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in what3words';
-				const mapBtn = document.getElementById('cacheMapsLink');
+				w3wBtn.innerHTML =
+					'<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in what3words';
+				const mapBtn = document.getElementById(
+					'cacheMapsLink',
+				) as HTMLElement;
 				mapBtn.removeAttribute('tabindex');
 				mapBtn.setAttribute('class', 'btn btn-primary m-1 shadow');
-				mapBtn.setAttribute('href', `https://www.google.com/maps/search/?api=1&query=${coordinates}`);
+				mapBtn.setAttribute(
+					'href',
+					`https://www.google.com/maps/search/?api=1&query=${coordinates}`,
+				);
 				mapBtn.setAttribute('target', '_blank');
 				mapBtn.setAttribute('rel', 'noopener noreferrer');
-				mapBtn.innerHTML = '<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in Google Maps';
-				const foundBtn = document.getElementById('cacheFoundLink');
-				const cacheStats = document.getElementById('cacheStats');
+				mapBtn.innerHTML =
+					'<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in Google Maps';
+				const foundBtn = document.getElementById(
+					'cacheFoundLink',
+				) as HTMLElement;
+				const cacheStats = document.getElementById(
+					'cacheStats',
+				) as HTMLElement;
 				if (data.found) {
-					foundBtn.setAttribute('class', 'btn btn-outline-primary m-1 disabled');
+					foundBtn.setAttribute(
+						'class',
+						'btn btn-outline-primary m-1 disabled',
+					);
 					foundBtn.removeAttribute('tabindex');
 					foundBtn.innerHTML = `<i class="bi bi-patch-check" aria-hidden="true"></i>&nbsp;You've already found this cache`;
-					cacheStats.innerText = `You ${Number(data.stats) === 1 ? 'are the only person that has found this cache! 😮' : `and ${Number(data.stats) - 1} other ${(Number(data.stats) - 1) === 1 ? 'person has' : 'people have'} found this cache 😊`}`;
+					cacheStats.innerText = `You ${Number(data.stats) === 1 ? 'are the only person that has found this cache! 😮' : `and ${Number(data.stats) - 1} other ${Number(data.stats) - 1 === 1 ? 'person has' : 'people have'} found this cache 😊`}`;
 				} else {
-					foundBtn.setAttribute('class', 'btn btn-outline-primary m-1 shadow');
+					foundBtn.setAttribute(
+						'class',
+						'btn btn-outline-primary m-1 shadow',
+					);
 					foundBtn.setAttribute('href', `foundCache-${id}`);
-					foundBtn.setAttribute('data-navigo', true);
+					foundBtn.setAttribute('data-navigo', 'true');
 					foundBtn.removeAttribute('tabindex');
-					foundBtn.innerHTML = '<i class="bi bi-123" aria-hidden="true"></i>&nbsp;Found this cache?';
+					foundBtn.innerHTML =
+						'<i class="bi bi-123" aria-hidden="true"></i>&nbsp;Found this cache?';
 					cacheStats.innerText = `${Number(data.stats) === 0 ? 'No one has found this cache yet 😢 can you find it?' : `${Number(data.stats)} ${Number(data.stats) === 1 ? 'person has' : 'people have'} found this cache - can you find it?`}`;
 					router.updatePageLinks();
 				}
 			} else {
-				throw "This cache is temporarily unavailable";
+				throw 'This cache is temporarily unavailable';
 			}
 		})
-		.catch(error => {
+		.catch((error) => {
 			showError(error, true, 'viewCaches');
 		});
 }
 
 function resetCachePage() {
-	document.getElementById('cacheCard').setAttribute('aria-hidden', 'true');
-	const img = document.getElementById('cacheMapImg');
+	document.getElementById('cacheCard')?.setAttribute('aria-hidden', 'true');
+	const img = document.getElementById('cacheMapImg') as HTMLElement;
 	img.setAttribute('src', './img/loading.gif');
 	img.setAttribute('alt', 'Loading animation placeholder');
 	img.setAttribute('height', '150');
 	img.setAttribute('width', '150');
-	const header = document.getElementById('cacheHeader');
+	const header = document.getElementById('cacheHeader') as HTMLElement;
 	header.setAttribute('class', 'card-title placeholder-glow');
 	header.innerHTML = '<span class="placeholder col-6"></span>';
-	const w3wLink = document.getElementById('cacheW3WLink');
+	const w3wLink = document.getElementById('cacheW3WLink') as HTMLElement;
 	w3wLink.setAttribute('class', 'card-text placeholder-glow');
-	w3wLink.innerHTML = '<span class="placeholder col-7"></span><span class="placeholder col-4"></span><span class="placeholder col-4"></span><span class="placeholder col-6"></span><span class="placeholder col-8"></span>';
-	const w3wBtn = document.getElementById('cacheW3WBtn');
+	w3wLink.innerHTML =
+		'<span class="placeholder col-7"></span><span class="placeholder col-4"></span><span class="placeholder col-4"></span><span class="placeholder col-6"></span><span class="placeholder col-8"></span>';
+	const w3wBtn = document.getElementById('cacheW3WBtn') as HTMLElement;
 	w3wBtn.removeAttribute('target');
 	w3wBtn.removeAttribute('href');
 	w3wBtn.setAttribute('tabindex', '-1');
-	w3wBtn.setAttribute('class', 'btn btn-primary m-1 disabled placeholder col-5');
+	w3wBtn.setAttribute(
+		'class',
+		'btn btn-primary m-1 disabled placeholder col-5',
+	);
 	w3wBtn.replaceChildren();
-	const mapBtn = document.getElementById('cacheMapsLink');
+	const mapBtn = document.getElementById('cacheMapsLink') as HTMLElement;
 	mapBtn.removeAttribute('target');
 	mapBtn.removeAttribute('href');
 	mapBtn.setAttribute('tabindex', '-1');
-	mapBtn.setAttribute('class', 'btn btn-primary m-1 disabled placeholder col-5');
+	mapBtn.setAttribute(
+		'class',
+		'btn btn-primary m-1 disabled placeholder col-5',
+	);
 	mapBtn.replaceChildren();
-	const foundBtn = document.getElementById('cacheFoundLink');
+	const foundBtn = document.getElementById('cacheFoundLink') as HTMLElement;
 	foundBtn.removeAttribute('target');
 	foundBtn.removeAttribute('href');
 	foundBtn.setAttribute('tabindex', '-1');
-	foundBtn.setAttribute('class', 'btn btn-outline-primary m-1 disabled placeholder col-4');
+	foundBtn.setAttribute(
+		'class',
+		'btn btn-outline-primary m-1 disabled placeholder col-4',
+	);
 	foundBtn.replaceChildren();
 }
 
-function loadFoundCachePage(id) {
+function loadFoundCachePage(id: string) {
 	changePage('viewCache', `Cache ${id}`, id);
 	return Swal.fire({
 		title: `Found cache ${id}?`,
@@ -869,7 +1062,7 @@ function loadFoundCachePage(id) {
 			'data-1p-ignore': true,
 			'data-form-type': 'other',
 			// Change hint for virtual keyboard enter key
-			enterkeyhint: 'go'
+			enterkeyhint: 'go',
 		},
 		showCancelButton: true,
 		buttonsStyling: false,
@@ -877,9 +1070,10 @@ function loadFoundCachePage(id) {
 			cancelButton: 'btn btn-link m-1',
 			confirmButton: 'btn btn-primary m-1 shadow',
 			input: 'form-control swal2-file',
-			loader: 'custom-loader'
+			loader: 'custom-loader',
 		},
-		loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Verifying code...</span></div>',
+		loaderHtml:
+			'<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Verifying code...</span></div>',
 		returnFocus: false,
 		confirmButtonText: 'Verify cache code',
 		backdrop: true,
@@ -888,29 +1082,30 @@ function loadFoundCachePage(id) {
 		inputValidator: (value) => {
 			if (!value) {
 				return 'You must enter the 5-digit code from the cache to confirm you have found it';
-			} else if (value.length !== 5 || (Number.isNaN(Number(value)))) {
+			} else if (value.length !== 5 || Number.isNaN(Number(value))) {
 				return 'This code is invalid';
 			}
 		},
 		preConfirm: (data) => {
 			Swal.getCancelButton().setAttribute('hidden', true);
 			return getAccessToken(true)
-				.then(accessToken => {
-					return ky.post('./api/found-cache', {
-						json: {
-							cache: id,
-							cacheCode: Number(data)
-						},
-						headers: {
-							Authorization: `Bearer ${accessToken}`
-						}
-					})
+				.then((accessToken) => {
+					return ky
+						.post('./api/found-cache', {
+							json: {
+								cache: id,
+								cacheCode: Number(data),
+							},
+							headers: {
+								Authorization: `Bearer ${accessToken}`,
+							},
+						})
 						.json();
 				})
 				.then(handleErrors);
-		}
+		},
 	})
-		.then(result => {
+		.then((result) => {
 			if (result.isConfirmed) {
 				Swal.fire({
 					title: 'You did it!',
@@ -920,33 +1115,33 @@ function loadFoundCachePage(id) {
 					returnFocus: false,
 					showConfirmButton: true,
 					customClass: {
-						confirmButton: 'btn btn-primary m-1 shadow'
+						confirmButton: 'btn btn-primary m-1 shadow',
 					},
 					didOpen: () => {
 						Swal.hideLoading();
 					},
 					didClose: () => {
 						router.navigate(`viewCache-${id}`);
-					}
+					},
 				});
 			} else {
 				router.navigate(`viewCache-${id}`);
 			}
 		})
-		.catch(error => {
+		.catch((error) => {
 			Swal.fire({
 				title: error,
 				icon: 'error',
 				buttonsStyling: false,
 				customClass: {
-					confirmButton: 'btn btn-primary m-1 shadow'
+					confirmButton: 'btn btn-primary m-1 shadow',
 				},
 				didOpen: () => {
 					Swal.hideLoading();
 				},
 				didClose: () => {
 					router.navigate(`viewCache-${id}`);
-				}
+				},
 			});
 		});
 }
@@ -963,22 +1158,25 @@ function loadFoundCachesPage() {
 			</div>
 		</div>
 	</div>`;
-	const foundContainer = document.getElementById('foundContainer');
+	const foundContainer = document.getElementById(
+		'foundContainer',
+	) as HTMLElement;
 	foundContainer.innerHTML = loadingGif;
 	changePage('foundCaches', 'Found caches', false);
 	return getAccessToken()
-		.then(accessToken => {
-			return ky.get('./api/found-caches', {
-				...(accessToken && {
-					headers: {
-						Authorization: `Bearer ${accessToken}`
-					}
+		.then((accessToken) => {
+			return ky
+				.get('./api/found-caches', {
+					...(accessToken && {
+						headers: {
+							Authorization: `Bearer ${accessToken}`,
+						},
+					}),
 				})
-			})
 				.json();
 		})
 		.then(handleErrors)
-		.then(data => {
+		.then((data) => {
 			if (data.found.length > 0) {
 				foundContainer.innerHTML = `<div class="row">
 					<div class="col-md-12 col-xl-4">
@@ -1035,46 +1233,73 @@ function loadFoundCachesPage() {
 				</div>
 				<div id="foundWrapper"></div>`;
 				new Grid({
-					columns: [{
-						id: 'id',
-						name: 'Cache number',
-						sort: {
-							enabled: true
+					columns: [
+						{
+							id: 'id',
+							name: 'Cache number',
+							sort: {
+								enabled: true,
+							},
+							formatter: (cell: string) =>
+								html(
+									`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo="true">${DOMPurify.sanitize(cell)}</a>`,
+								),
 						},
-						formatter: (cell) => html(`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo="true">${DOMPurify.sanitize(cell)}</a>`)
-					}, {
-						id: 'date',
-						name: 'Found',
-						sort: {
-							enabled: true
+						{
+							id: 'date',
+							name: 'Found',
+							sort: {
+								enabled: true,
+							},
+							formatter: (date: string) => {
+								return html(
+									`<time datetime="${DOMPurify.sanitize(date)}">${getTimeAgo(date)}</time>`,
+								);
+							},
 						},
-						formatter: (date) => {
-							return html(`<time datetime="${DOMPurify.sanitize(date)}">${getTimeAgo(date)}</time>`);
-						}
-					}],
+					],
 					sort: true,
 					style: {
 						table: {
-							'white-space': 'nowrap'
-						}
+							'white-space': 'nowrap',
+						},
 					},
 					pagination: {
-						enabled: true,
+						// enabled: true,
 						limit: 15,
-						summary: true
+						summary: true,
 					},
-					data: data.found
-				})
-					.render(document.getElementById('foundWrapper'));
+					data: data.found,
+				}).render(
+					document.getElementById('foundWrapper') as HTMLElement,
+				);
 				const userId = DOMPurify.sanitize(data.userId);
-				document.getElementById('foundCachesUserId').innerText = userId;
-				document.getElementById('foundCachesProfilePic').setAttribute('src', `./profilePic/${userId}/96`);
-				document.getElementById('foundCachesProfilePic').setAttribute('height', '48');
-				document.getElementById('foundCachesProfilePic').setAttribute('width', '48');
-				document.getElementById('foundCachesProfilePic').setAttribute('alt', `Profile picture for ${userId} (your User ID)`);
-				document.getElementById('foundCachesTotal').innerText = Number(data.found.length);
+				(
+					document.getElementById('foundCachesUserId') as HTMLElement
+				).innerText = userId;
+				document
+					.getElementById('foundCachesProfilePic')
+					?.setAttribute('src', `./profilePic/${userId}/96`);
+				document
+					.getElementById('foundCachesProfilePic')
+					?.setAttribute('height', '48');
+				document
+					.getElementById('foundCachesProfilePic')
+					?.setAttribute('width', '48');
+				document
+					.getElementById('foundCachesProfilePic')
+					?.setAttribute(
+						'alt',
+						`Profile picture for ${userId} (your User ID)`,
+					);
+				(
+					document.getElementById('foundCachesTotal') as HTMLElement
+				).innerText = Number(data.found.length).toString();
 				const positionString = appendSuffix(Number(data.position));
-				document.getElementById('foundCacheRanking').innerHTML = `${positionString}${positionString === '1st' ? '&nbsp;🥇' : positionString === '2nd' ? '&nbsp;🥈' : positionString === '3rd' ? '&nbsp;🥉' : ''}`;
+				(
+					document.getElementById('foundCacheRanking') as HTMLElement
+				).innerHTML =
+					`${positionString}${positionString === '1st' ? '&nbsp;🥇' : positionString === '2nd' ? '&nbsp;🥈' : positionString === '3rd' ? '&nbsp;🥉' : ''}`;
 			} else {
 				foundContainer.innerHTML = noneFound;
 			}
@@ -1082,7 +1307,7 @@ function loadFoundCachesPage() {
 		.finally(() => {
 			router.updatePageLinks();
 		})
-		.catch(error => {
+		.catch((error) => {
 			showError(error, true, 'home');
 		});
 }
@@ -1099,72 +1324,91 @@ function loadLeaderboardPage() {
 			</div>
 		</div>
 	</div>`;
-	const leaderboardContainer = document.getElementById('leaderboardContainer');
+	const leaderboardContainer = document.getElementById(
+		'leaderboardContainer',
+	) as HTMLElement;
 	leaderboardContainer.innerHTML = loadingGif;
 	changePage('leaderboard', 'Leaderboard', false);
 	return getAccessToken()
-		.then(accessToken => {
-			return ky.get('./api/get-leaderboard', {
-				...(accessToken && {
-					headers: {
-						Authorization: `Bearer ${accessToken}`
-					}
+		.then((accessToken) => {
+			return ky
+				.get('./api/get-leaderboard', {
+					...(accessToken && {
+						headers: {
+							Authorization: `Bearer ${accessToken}`,
+						},
+					}),
 				})
-			})
 				.json();
 		})
 		.then(handleErrors)
-		.then(data => {
+		.then((data) => {
 			if (data.leaderboard.length > 0) {
-				leaderboardContainer.innerHTML = '<div id="leaderboardWrapper"></div>';
+				leaderboardContainer.innerHTML =
+					'<div id="leaderboardWrapper"></div>';
 				new Grid({
-					columns: [{
-						id: 'position',
-						name: 'Position',
-						sort: {
-							enabled: true
+					columns: [
+						{
+							id: 'position',
+							name: 'Position',
+							sort: {
+								enabled: true,
+							},
+							formatter: (position) => {
+								const positionString = appendSuffix(
+									Number(position),
+								);
+								return html(
+									`${positionString}${positionString === '1st' ? '&nbsp;🥇' : positionString === '2nd' ? '&nbsp;🥈' : positionString === '3rd' ? '&nbsp;🥉' : ''}`,
+								);
+							},
+							attributes: (cell: TCell, row: Row) => {
+								if (cell) {
+									return {
+										'data-ranking': cell,
+										'data-match': String(
+											Boolean(
+												row.cells[1].data ===
+												data.userId,
+											),
+										),
+									};
+								}
+							},
 						},
-						formatter: (position) => {
-							const positionString = appendSuffix(Number(position));
-							return html(`${positionString}${positionString === '1st' ? '&nbsp;🥇' : positionString === '2nd' ? '&nbsp;🥈' : positionString === '3rd' ? '&nbsp;🥉' : ''}`);
+						{
+							id: 'userId',
+							name: 'User ID',
+							sort: {
+								enabled: true,
+							},
+							formatter: (userId: string) => {
+								const name = DOMPurify.sanitize(userId);
+								return html(
+									`${name}${name === data.userId ? '&nbsp;<strong>(You)</strong>' : ''}`,
+								);
+							},
 						},
-						attributes: (cell, row) => {
-							if (cell) {
-								return {
-									'data-ranking': cell,
-									'data-match': String(Boolean(row.cells[1].data === data.userId))
-								};
-							}
-						}
-					},
-					{
-						id: 'userId',
-						name: 'User ID',
-						sort: {
-							enabled: true
+						{
+							id: 'found',
+							name: 'Number of caches found',
+							sort: {
+								enabled: true,
+							},
 						},
-						formatter: (userId) => {
-							const name = DOMPurify.sanitize(userId);
-							return html(`${name}${(name === data.userId) ? '&nbsp;<strong>(You)</strong>' : ''}`);
-						}
-					},
-					{
-						id: 'found',
-						name: 'Number of caches found',
-						sort: {
-							enabled: true
-						}
-					}
 					],
 					sort: true,
 					style: {
 						table: {
-							'white-space': 'nowrap'
-						}
+							'white-space': 'nowrap',
+						},
 					},
-					data: data.leaderboard
-				})
-					.render(document.getElementById('leaderboardWrapper'));
+					data: data.leaderboard,
+				}).render(
+					document.getElementById(
+						'leaderboardWrapper',
+					) as HTMLElement,
+				);
 			} else {
 				leaderboardContainer.innerHTML = emptyLeaderboard;
 			}
@@ -1172,23 +1416,44 @@ function loadLeaderboardPage() {
 		.finally(() => {
 			setTimeout(function () {
 				try {
-					document.querySelectorAll('td[data-ranking="1"]').forEach(element => [...element.parentElement.children].forEach(child => {
-						child.classList.add('gs-gold');
-					}));
-					document.querySelectorAll('td[data-ranking="2"]').forEach(element => [...element.parentElement.children].forEach(child => {
-						child.classList.add('gs-silver');
-					}));
-					document.querySelectorAll('td[data-ranking="3"]').forEach(element => [...element.parentElement.children].forEach(child => {
-						child.classList.add('gs-bronze');
-					}));
-					[...document.querySelector('td[data-match="true"]').parentElement.children].forEach(child => {
+					document
+						.querySelectorAll('td[data-ranking="1"]')
+						.forEach((element) =>
+							[
+								...(element?.parentElement?.children || []),
+							].forEach((child) => {
+								child.classList.add('gs-gold');
+							}),
+						);
+					document
+						.querySelectorAll('td[data-ranking="2"]')
+						.forEach((element) =>
+							[
+								...(element?.parentElement?.children || []),
+							].forEach((child) => {
+								child.classList.add('gs-silver');
+							}),
+						);
+					document
+						.querySelectorAll('td[data-ranking="3"]')
+						.forEach((element) =>
+							[
+								...(element?.parentElement?.children || []),
+							].forEach((child) => {
+								child.classList.add('gs-bronze');
+							}),
+						);
+					[
+						...(document.querySelector('td[data-match="true"]')
+							?.parentElement?.children || []),
+					].forEach((child) => {
 						child.classList.add('gs-your-device');
 					});
-				} catch { }
+				} catch {}
 				router.updatePageLinks();
 			}, 1000);
 		})
-		.catch(error => {
+		.catch((error) => {
 			showError(error, true, 'home');
 		});
 }
@@ -1205,60 +1470,68 @@ function loadRestoreFile() {
 			loader: 'custom-loader',
 			confirmButton: 'btn btn-primary mx-1 shadow',
 			cancelButton: 'btn btn-link mx-1',
-			input: 'form-control swal2-file'
+			input: 'form-control swal2-file',
 		},
-		loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
+		loaderHtml:
+			'<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
 		allowOutsideClick: () => !Swal.isLoading(),
 		backdrop: true,
 		input: 'file',
 		inputAttributes: {
 			accept: '.geoscout',
-			'aria-label': 'Upload the GeoScout backup'
+			'aria-label': 'Upload the GeoScout backup',
 		},
 		inputAutoFocus: false,
-		inputValidator: file => {
-			return (file ? false : 'You need to select a backup file to restore');
+		inputValidator: (file) => {
+			return file ? false : 'You need to select a backup file to restore';
 		},
-		preConfirm: file => {
-			Swal.getCancelButton().setAttribute('hidden', true);
+		preConfirm: (file: File) => {
+			Swal.getCancelButton()?.setAttribute('hidden', 'true');
 			return file
 				.text()
-				.then(backupToken => {
-					return ky.post('./api/exchange-backup-token', {
-						headers: {
-							Authorization: `Bearer ${backupToken}`
-						}
-					})
+				.then((backupToken) => {
+					return ky
+						.post('./api/exchange-backup-token', {
+							headers: {
+								Authorization: `Bearer ${backupToken}`,
+							},
+						})
 						.json();
 				})
 				.then(handleErrors)
-				.then(data => {
+				.then((data) => {
 					localforage.setItem('accessToken', data.accessToken);
 					return true;
 				});
 		},
 		didClose: () => {
-			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
-		}
+			router.navigate('manageAccount', {
+				updateBrowserURL: false,
+				historyAPIMethod: 'replaceState',
+			});
+		},
 	})
-		.then(result => {
+		.then((result) => {
 			if (result.value) {
 				router.navigate('home');
 				showToast.fire({
 					title: 'Restore successful!',
-					icon: 'success'
+					icon: 'success',
 				});
 			}
 		})
-		.catch(error => {
-			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
+		.catch((error) => {
+			router.navigate('manageAccount', {
+				updateBrowserURL: false,
+				historyAPIMethod: 'replaceState',
+			});
 			showError(error, true);
 		});
 }
 
 function loadRestoreCode() {
 	let qrCodeToken = '';
-	let qrScanner = null;
+	let qrScanner: QrScanner;
 	return Swal.fire({
 		title: 'Restore from QR code',
 		html: 'Restore your GeoScout account using a QR code generated on another device.<br><br><video id="webcamFeed" class="w-100 rounded"></video>',
@@ -1270,69 +1543,86 @@ function loadRestoreCode() {
 			loader: 'custom-loader',
 			cancelButton: 'btn btn-link mx-1',
 		},
-		loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
+		loaderHtml:
+			'<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
 		allowOutsideClick: false,
 		backdrop: true,
 		preConfirm: () => {
-			Swal.getCancelButton().setAttribute('hidden', true);
+			Swal.getCancelButton()?.setAttribute('hidden', 'true');
 			try {
 				qrScanner.stop();
 				qrScanner.destroy();
-				qrScanner = null;
-				document.getElementById('webcamFeed').outerHTML = loadingGif;
-			} catch { }
-			return ky.post('./api/exchange-qr-token', {
-				headers: {
-					Authorization: `Bearer ${qrCodeToken}`
-				}
-			})
+				(
+					document.getElementById('webcamFeed') as HTMLElement
+				).outerHTML = loadingGif;
+			} catch {}
+			return ky
+				.post('./api/exchange-qr-token', {
+					headers: {
+						Authorization: `Bearer ${qrCodeToken}`,
+					},
+				})
 				.json()
 				.then(handleErrors)
-				.then(data => {
+				.then((data) => {
 					localforage.setItem('accessToken', data.accessToken);
 					return true;
 				});
 		},
 		didClose: () => {
-			if (QrScanner.hasCamera()) {
-				try {
-					qrScanner.stop();
-					qrScanner.destroy();
-					qrScanner = null;
-				} catch { }
-			}
-			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
+			QrScanner.hasCamera().then((hasCamera) => {
+				if (hasCamera) {
+					try {
+						qrScanner.stop();
+						qrScanner.destroy();
+					} catch {}
+				}
+				router.navigate('manageAccount', {
+					updateBrowserURL: false,
+					historyAPIMethod: 'replaceState',
+				});
+			});
 		},
 		didOpen: () => {
-			if (QrScanner.hasCamera()) {
-				const videoElem = document.getElementById('webcamFeed');
-				qrScanner = new QrScanner(videoElem, result => {
-					qrCodeToken = result.data;
-					Swal.clickConfirm();
-				}, {
-					returnDetailedScanResult: true,
-					preferredCamera: 'environment',
-					highlightScanRegion: true,
-					highlightCodeOutline: true,
-
-				});
-				qrScanner.start();
-			} else {
-				throw "Your device doesn't have a camera (or you haven't allowed permissions for GeoScout to access it), which is required for this feature";
-			}
-		}
+			QrScanner.hasCamera().then((hasCamera) => {
+				if (hasCamera) {
+					const videoElem = document.getElementById(
+						'webcamFeed',
+					) as HTMLVideoElement;
+					qrScanner = new QrScanner(
+						videoElem,
+						(result) => {
+							qrCodeToken = result.data;
+							Swal.clickConfirm();
+						},
+						{
+							returnDetailedScanResult: true,
+							preferredCamera: 'environment',
+							highlightScanRegion: true,
+							highlightCodeOutline: true,
+						},
+					);
+					qrScanner.start();
+				} else {
+					throw "Your device doesn't have a camera (or you haven't allowed permissions for GeoScout to access it), which is required for this feature";
+				}
+			});
+		},
 	})
-		.then(result => {
+		.then((result) => {
 			if (result.value) {
 				router.navigate('home');
 				showToast.fire({
 					title: 'Restore successful!',
-					icon: 'success'
+					icon: 'success',
 				});
 			}
 		})
-		.catch(error => {
-			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
+		.catch((error) => {
+			router.navigate('manageAccount', {
+				updateBrowserURL: false,
+				historyAPIMethod: 'replaceState',
+			});
 			showError(error, true);
 		});
 }
@@ -1348,32 +1638,38 @@ function createRestoreFile() {
 		customClass: {
 			loader: 'custom-loader',
 			confirmButton: 'btn btn-primary mx-1 shadow',
-			cancelButton: 'btn btn-link mx-1'
+			cancelButton: 'btn btn-link mx-1',
 		},
-		loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
+		loaderHtml:
+			'<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
 		allowOutsideClick: () => !Swal.isLoading(),
 		backdrop: true,
 		preConfirm: () => {
-			Swal.getCancelButton().setAttribute('hidden', true);
+			Swal.getCancelButton()?.setAttribute('hidden', 'true');
 			return getAccessToken()
-				.then(accessToken => {
+				.then((accessToken) => {
 					if (accessToken) {
-						return ky.post('./api/get-backup-token', {
-							headers: {
-								Authorization: `Bearer ${accessToken}`
-							},
-							json: {
-								uuid: crypto.randomUUID().toString()
-							}
-						})
+						return ky
+							.post('./api/get-backup-token', {
+								headers: {
+									Authorization: `Bearer ${accessToken}`,
+								},
+								json: {
+									uuid: crypto.randomUUID().toString(),
+								},
+							})
 							.json();
 					} else {
 						throw "You don't have an account!";
 					}
 				})
 				.then(handleErrors)
-				.then(backupToken => {
-					const backupFile = new File([DOMPurify.sanitize(String(backupToken.token))], `${backupToken.name}.GeoScout`, { type: 'text/plain' });
+				.then((backupToken) => {
+					const backupFile = new File(
+						[DOMPurify.sanitize(String(backupToken.token))],
+						`${backupToken.name}.GeoScout`,
+						{ type: 'text/plain' },
+					);
 					const url = URL.createObjectURL(backupFile);
 					const link = document.createElement('a');
 					link.href = DOMPurify.sanitize(url);
@@ -1387,20 +1683,26 @@ function createRestoreFile() {
 				});
 		},
 		didClose: () => {
-			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
-		}
+			router.navigate('manageAccount', {
+				updateBrowserURL: false,
+				historyAPIMethod: 'replaceState',
+			});
+		},
 	})
-		.then(result => {
+		.then((result) => {
 			if (result.value) {
 				router.navigate('home');
 				showToast.fire({
 					title: 'Backup file downloaded!',
-					icon: 'success'
+					icon: 'success',
 				});
 			}
 		})
-		.catch(error => {
-			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
+		.catch((error) => {
+			router.navigate('manageAccount', {
+				updateBrowserURL: false,
+				historyAPIMethod: 'replaceState',
+			});
 			showError(error, true);
 		});
 }
@@ -1408,7 +1710,7 @@ function createRestoreFile() {
 function createRestoreCode() {
 	return Swal.fire({
 		title: 'Add an additional device',
-		html: "This feature allows you add an additional device to your account.<br><br><strong>Please note that a new QR code needs to be generated for each device you wish to add.",
+		html: 'This feature allows you add an additional device to your account.<br><br><strong>Please note that a new QR code needs to be generated for each device you wish to add.',
 		showCancelButton: () => !Swal.isLoading(),
 		confirmButtonText: 'Add additional device',
 		showLoaderOnConfirm: true,
@@ -1416,39 +1718,44 @@ function createRestoreCode() {
 		customClass: {
 			loader: 'custom-loader',
 			confirmButton: 'btn btn-primary mx-1 shadow',
-			cancelButton: 'btn btn-link mx-1'
+			cancelButton: 'btn btn-link mx-1',
 		},
-		loaderHtml: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
+		loaderHtml:
+			'<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
 		allowOutsideClick: () => !Swal.isLoading(),
 		backdrop: true,
 		preConfirm: () => {
-			Swal.getCancelButton().setAttribute('hidden', true);
+			Swal.getCancelButton()?.setAttribute('hidden', 'true');
 			return getAccessToken()
-				.then(accessToken => {
+				.then((accessToken) => {
 					if (accessToken) {
-						return ky.post('./api/get-qr-token', {
-							headers: {
-								Authorization: `Bearer ${accessToken}`
-							},
-							json: {
-								uuid: crypto.randomUUID().toString()
-							}
-						})
+						return ky
+							.post('./api/get-qr-token', {
+								headers: {
+									Authorization: `Bearer ${accessToken}`,
+								},
+								json: {
+									uuid: crypto.randomUUID().toString(),
+								},
+							})
 							.json();
 					} else {
 						throw "You don't have an account!";
 					}
 				})
 				.then(handleErrors)
-				.then(qrCode => {
+				.then((qrCode) => {
 					return qrCode;
 				});
 		},
 		didClose: () => {
-			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
-		}
+			router.navigate('manageAccount', {
+				updateBrowserURL: false,
+				historyAPIMethod: 'replaceState',
+			});
+		},
 	})
-		.then(result => {
+		.then((result) => {
 			if (result.value) {
 				Swal.fire({
 					title: 'Add an additional device',
@@ -1458,16 +1765,22 @@ function createRestoreCode() {
 					confirmButtonText: 'Close',
 					buttonsStyling: false,
 					customClass: {
-						confirmButton: 'btn btn-link mx-1'
+						confirmButton: 'btn btn-link mx-1',
 					},
 					didClose: () => {
-						router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
-					}
+						router.navigate('manageAccount', {
+							updateBrowserURL: false,
+							historyAPIMethod: 'replaceState',
+						});
+					},
 				});
 			}
 		})
-		.catch(error => {
-			router.navigate('manageAccount', { updateBrowserURL: false, historyAPIMethod: 'replaceState' });
+		.catch((error) => {
+			router.navigate('manageAccount', {
+				updateBrowserURL: false,
+				historyAPIMethod: 'replaceState',
+			});
 			showError(error, true);
 		});
 }
@@ -1483,7 +1796,7 @@ window.addEventListener('load', () => {
 				navigator.geolocation.clearWatch(locationWatch);
 			}
 			done();
-		}
+		},
 	});
 	// Specify routes and resolve
 	router
@@ -1492,49 +1805,73 @@ window.addEventListener('load', () => {
 		})
 		.on('/home', function () {
 			if (holdingEnabled) {
-				router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+				router.navigate('/holding', {
+					historyAPIMethod: 'replaceState',
+				});
 			} else {
 				changePage('home', 'Home', false);
 			}
 		})
 		.on('/viewCaches', function () {
 			if (holdingEnabled) {
-				router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+				router.navigate('/holding', {
+					historyAPIMethod: 'replaceState',
+				});
 			} else {
 				loadCachesMapPage();
 			}
 		})
 		.on('/viewCachesTable', function () {
 			if (holdingEnabled) {
-				router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+				router.navigate('/holding', {
+					historyAPIMethod: 'replaceState',
+				});
 			} else {
 				loadCachesTablePage();
 			}
 		})
 		.on('/viewCache-:id', function (value) {
 			if (holdingEnabled) {
-				router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+				router.navigate('/holding', {
+					historyAPIMethod: 'replaceState',
+				});
 			} else {
-				loadCachePage(value.data.id);
+				const id = value?.data?.id;
+				if (id) {
+					loadCachePage(id);
+				} else {
+					showError('Invalid cache ID');
+				}
 			}
 		})
 		.on('/foundCaches', function () {
 			if (holdingEnabled) {
-				router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+				router.navigate('/holding', {
+					historyAPIMethod: 'replaceState',
+				});
 			} else {
 				loadFoundCachesPage();
 			}
 		})
 		.on('/foundCache-:id', function (value) {
 			if (holdingEnabled) {
-				router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+				router.navigate('/holding', {
+					historyAPIMethod: 'replaceState',
+				});
 			} else {
-				loadFoundCachePage(value.data.id);
+				const id = value?.data?.id;
+				if (id) {
+					loadFoundCachePage(id);
+				} else {
+					showError('Invalid cache ID');
+				}
 			}
 		})
 		.on('/leaderboard', function () {
 			if (holdingEnabled) {
-				router.navigate('/holding', { historyAPIMethod: 'replaceState' });
+				router.navigate('/holding', {
+					historyAPIMethod: 'replaceState',
+				});
 			} else {
 				loadLeaderboardPage();
 			}
@@ -1557,14 +1894,22 @@ window.addEventListener('load', () => {
 		})
 		.on('/manageAccount', function () {
 			getAccessToken()
-				.then(hasAccount => {
-					document.getElementById(hasAccount ? 'updateAccount' : 'restoreAccount').classList.remove('d-none');
-					document.getElementById(hasAccount ? 'restoreAccount' : 'updateAccount').classList.add('d-none');
+				.then((hasAccount) => {
+					(
+						document.getElementById(
+							hasAccount ? 'updateAccount' : 'restoreAccount',
+						) as HTMLElement
+					).classList.remove('d-none');
+					(
+						document.getElementById(
+							hasAccount ? 'restoreAccount' : 'updateAccount',
+						) as HTMLElement
+					).classList.add('d-none');
 				})
 				.finally(() => {
 					changePage('manageAccount', 'Manage your account', false);
 				})
-				.catch(error => {
+				.catch((error) => {
 					showError(error, true, 'home');
 				});
 		})
@@ -1595,10 +1940,9 @@ window.addEventListener('load', () => {
 	}
 	// Load service worker if supported
 	if ('serviceWorker' in navigator && window.origin === appUrl) {
-		const updateBtn = document.getElementById('updateBtn');
+		const updateBtn = document.getElementById('updateBtn') as HTMLElement;
 		// Register service worker
-		navigator
-			.serviceWorker
+		navigator.serviceWorker
 			.register('service-worker.js')
 			.then(function (registration) {
 				// Trigger update
@@ -1610,8 +1954,8 @@ window.addEventListener('load', () => {
 						newWorker = registration.waiting;
 					}
 					// Listen for when the new worker is ready
-					newWorker.addEventListener('statechange', () => {
-						if (newWorker.state === 'installed') {
+					newWorker?.addEventListener('statechange', () => {
+						if (newWorker?.state === 'installed') {
 							if (navigator.serviceWorker.controller) {
 								updateBtn.classList.remove('d-none');
 								updateBtn.removeAttribute('disabled');
@@ -1620,7 +1964,7 @@ window.addEventListener('load', () => {
 					});
 				});
 			})
-			.catch(error => {
+			.catch((error) => {
 				console.warn(error);
 			});
 		// Set event handler for refresh app button
@@ -1628,41 +1972,52 @@ window.addEventListener('load', () => {
 			// Prevent any default events
 			event.preventDefault();
 			// Tell the new service worker to skip waiting and replace the old service worker
-			newWorker.postMessage({
-				action: 'skipWaiting'
+			newWorker?.postMessage({
+				action: 'skipWaiting',
 			});
 			// Reload the page
 			window.location.reload();
 		});
 	}
 	return getAccessToken()
-		.then(hasAccount => {
+		.then((hasAccount) => {
 			if (hasAccount) {
 				const backupBanner = document.getElementById('backupBanner');
 				// Check if already dismissed
-				return localforage.getItem('backupBannerClosed')
-					.then(item => {
+				return localforage
+					.getItem('backupBannerClosed')
+					.then((item) => {
 						if (!item) {
 							// Unhide banner
-							backupBanner.classList.remove('d-none');
+							backupBanner?.classList.remove('d-none');
 							// Set listener to store dismissal event in local storage
-							backupBanner.addEventListener('closed.bs.alert', function () {
-								// Set key in local storage (if able)
-								localforage.setItem('backupBannerClosed', true);
-							});
+							backupBanner?.addEventListener(
+								'closed.bs.alert',
+								function () {
+									// Set key in local storage (if able)
+									localforage.setItem(
+										'backupBannerClosed',
+										true,
+									);
+								},
+							);
 						}
-						const greetings = document.querySelectorAll('.welcomeGreeting');
-						greetings.forEach(greeting => {
+						const greetings =
+							document.querySelectorAll<HTMLElement>(
+								'.welcomeGreeting',
+							);
+						greetings.forEach((greeting) => {
 							greeting.innerText = 'back';
-							parseAccessToken(hasAccount)
-								.then(accountDetails => {
+							parseAccessToken(hasAccount).then(
+								(accountDetails) => {
 									greeting.innerText = `back ${accountDetails.sub}`;
-								});
+								},
+							);
 						});
 					});
 			}
 		})
-		.catch(error => {
+		.catch((error) => {
 			console.warn(error);
 		});
 });

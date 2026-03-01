@@ -1,9 +1,9 @@
 <div class="text-center">
 <picture>
-<source srcset="./img/geoscout-logo.webp" type="image/webp" />
-<source srcset="./img/geoscout-logo.png" type="image/png" />
+<source srcset="/img/geoscout-logo.webp" type="image/webp" />
+<source srcset="/img/geoscout-logo.png" type="image/png" />
 <img
-src="./img/geoscout-logo.png"
+src="/img/geoscout-logo.png"
 class="img-fluid logo-img m-3"
 alt="@@appName logo"
 loading="lazy"
@@ -18,16 +18,16 @@ We have hidden over 100 codes around Witham, get out there and start searching f
 <div class="text-center">
 <figure class="figure">
 <picture>
-<source srcset="./img/cabletie-thumbnail.webp" type="image/webp" />
-<source srcset="./img/cabletie-thumbnail.png" type="image/png" />
+<source srcset="/img/cabletie-thumbnail.webp" type="image/webp" />
+<source srcset="/img/cabletie-thumbnail.png" type="image/png" />
 <img
-src="./img/cabletie-thumbnail.png"
+src="/img/cabletie-thumbnail.png"
 class="figure-img img-thumbnail logo-img"
 alt="Photo showing two cable ties which have been used for the @@appName project"
 loading="lazy"
 />
 </picture>
-<figcaption class="figure-caption"><a href="./img/cabletie-example.png" class="text-decoration-none"><i class="bi bi-zoom-in" aria-hidden="true"></i> Need a larger version of this image?</a></figcaption>
+<figcaption class="figure-caption"><a href="/img/cabletie-example.png" class="text-decoration-none"><i class="bi bi-zoom-in" aria-hidden="true"></i> Need a larger version of this image?</a></figcaption>
 </figure>
 </div>
 
