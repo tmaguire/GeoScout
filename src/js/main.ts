@@ -1,13 +1,13 @@
 /* jshint esversion:10 */
 type AccessTokenString = String;
 interface AccessTokenObject {
-	sub?: String;
-	oid?: String;
-	jwtId?: String;
-	iat?: Number;
-	exp?: Number;
-	aud?: String;
-	iss?: String;
+	sub: String;
+	oid: String;
+	jwtId: String;
+	iat: Number;
+	exp: Number;
+	aud: String;
+	iss: String;
 }
 
 // Imports
@@ -595,8 +595,8 @@ function loadCachesMapPage(): Promise<void> {
 				lat: 0,
 				lng: 0,
 			};
-			let marker: google.maps.marker.AdvancedMarkerElement;
-			let accuracy: google.maps.Circle;
+			let marker: google.maps.marker.AdvancedMarkerElement | null = null;
+			let accuracy: google.maps.Circle | null = null;
 			locateBtn.addEventListener('click', function () {
 				if (locationActive) {
 					mainMap.setCenter(currentUserLocation);
@@ -678,12 +678,12 @@ function loadCachesMapPage(): Promise<void> {
 		})
 		.then((map) => {
 			// Cache for grid data
-			let gridData: google.maps.Data.Feature[];
+			let gridData: google.maps.Data.Feature[] | null = null;
 			map.addListener('bounds_changed', function () {
 				// Get current zoom level
 				const zoom = map.getZoom();
 				// Only show grid if zoom is at least 17
-				const loadFeatures = Boolean(zoom || 0 > 17);
+				const loadFeatures = zoom ? Boolean(zoom > 17) : false;
 				if (loadFeatures) {
 					// Get bounds of map
 					const ne = map.getBounds()?.getNorthEast();
