@@ -55,7 +55,7 @@
 		"@types/geojson": "^7946.0.16",
 		"@types/google.maps": "^3.58.1",
 		"@types/serviceworker": "^0.0.193",
-		"dompurify": "^3.3.2",
+		"dompurify": "^3.3.3",
 		"gulp": "^5.0.1",
 		"gulp-concat": "^2.6.1",
 		"gulp-esbuild": "^0.14.1",
