@@ -54,7 +54,7 @@
 	"devDependencies": {
 		"@types/geojson": "^7946.0.16",
 		"@types/google.maps": "^3.58.1",
-		"@types/serviceworker": "^0.0.193",
+		"@types/serviceworker": "^0.0.194",
 		"dompurify": "^3.3.3",
 		"gulp": "^5.0.1",
 		"gulp-concat": "^2.6.1",
