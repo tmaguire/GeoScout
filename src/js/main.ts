@@ -14,7 +14,7 @@ interface AccessTokenObject {
 import 'bootstrap';
 import { Collapse } from 'bootstrap';
 import Navigo from 'navigo';
-import Swal from 'sweetalert2';
+import Swal, { SweetAlertOptions } from 'sweetalert2';
 import DOMPurify from 'dompurify';
 import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
@@ -370,7 +370,7 @@ function changePage(
 		behavior: 'smooth',
 	});
 	// Close the navbar menu (if it is open)
-	const menuToggle = document.getElementById('navbarToggler');
+	const menuToggle = document.getElementById('navbarToggler') as HTMLElement;
 	const bsCollapse = new Collapse(menuToggle, {
 		toggle: false,
 	});
@@ -808,9 +808,8 @@ function loadCachesTablePage() {
 				data: () =>
 					data.flatMap((cache) => (cache.suspended ? [] : [cache])),
 				search: {
-					enabled: true,
-					selector: (cell, rowIndex, cellIndex) =>
-						cellIndex === 0 ? cell : null,
+					selector: (cell, _rowIndex, cellIndex) =>
+						cellIndex === 0 ? String(cell) : '',
 				},
 				language: {
 					search: {
@@ -1047,7 +1046,7 @@ function resetCachePage() {
 function loadFoundCachePage(id: string) {
 	changePage('viewCache', `Cache ${id}`, id);
 	return Swal.fire({
-		title: `Found cache ${id}?`,
+		titleText: `Found cache ${id}?`,
 		text: "If you've found this cache, please enter the 5-digit code below to mark it as found:",
 		input: 'text',
 		inputAttributes: {
@@ -1055,11 +1054,11 @@ function loadFoundCachePage(id: string) {
 			inputmode: 'numeric',
 			// Regex for numbers only and length of 5 characters
 			pattern: '[0-9]*',
-			maxlength: 5,
+			maxlength: '5',
 			// Ignore autofill via browser/password manager(s)
 			autocomplete: 'off',
-			'data-lpignore': true,
-			'data-1p-ignore': true,
+			'data-lpignore': 'true',
+			'data-1p-ignore': 'true',
 			'data-form-type': 'other',
 			// Change hint for virtual keyboard enter key
 			enterkeyhint: 'go',
@@ -1087,7 +1086,7 @@ function loadFoundCachePage(id: string) {
 			}
 		},
 		preConfirm: (data) => {
-			Swal.getCancelButton().setAttribute('hidden', true);
+			Swal.getCancelButton()?.setAttribute('hidden', 'true');
 			return getAccessToken(true)
 				.then((accessToken) => {
 					return ky
@@ -1462,7 +1461,7 @@ function loadRestoreFile() {
 	return Swal.fire({
 		title: 'Restore account using a backup file',
 		text: 'Restore your GeoScout account using a backup file created by yourself earlier or provided by GeoScout Support.',
-		showCancelButton: () => !Swal.isLoading(),
+		showCancelButton: true,
 		confirmButtonText: 'Restore account',
 		showLoaderOnConfirm: true,
 		buttonsStyling: false,
@@ -1535,7 +1534,7 @@ function loadRestoreCode() {
 	return Swal.fire({
 		title: 'Restore from QR code',
 		html: 'Restore your GeoScout account using a QR code generated on another device.<br><br><video id="webcamFeed" class="w-100 rounded"></video>',
-		showCancelButton: () => !Swal.isLoading(),
+		showCancelButton: true,
 		showConfirmButton: false,
 		showLoaderOnConfirm: false,
 		buttonsStyling: false,
@@ -1631,7 +1630,7 @@ function createRestoreFile() {
 	return Swal.fire({
 		title: 'Create a backup file for your account',
 		html: "Generating this file allows you to restore your account (and all the progress you've made) on any device.<br><br><strong>Please keep this file safe - anyone that has it will be able to load your GeoScout account on their device!</strong>",
-		showCancelButton: () => !Swal.isLoading(),
+		showCancelButton: true,
 		confirmButtonText: 'Create backup',
 		showLoaderOnConfirm: true,
 		buttonsStyling: false,
@@ -1711,7 +1710,7 @@ function createRestoreCode() {
 	return Swal.fire({
 		title: 'Add an additional device',
 		html: 'This feature allows you add an additional device to your account.<br><br><strong>Please note that a new QR code needs to be generated for each device you wish to add.',
-		showCancelButton: () => !Swal.isLoading(),
+		showCancelButton: true,
 		confirmButtonText: 'Add additional device',
 		showLoaderOnConfirm: true,
 		buttonsStyling: false,

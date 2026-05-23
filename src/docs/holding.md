@@ -10,9 +10,8 @@ loading="lazy"
 />
 </picture>
 </div>
-<h2 class="text-center">@@appName will return in 2026!</h2>
-<p class="text-center"><strong>Thank you to everyone who took part this year!</strong><br>
-Want to help us with @@appName or provide feedback for this project? Contact us at <a href="mailto:inbox@geoscout.uk?Subject=Feedback for @@appName">inbox@geoscout.uk</a>.</p>
+<h2 class="text-center">@@appName 2026 is returning!</h2>
+<p class="text-center"><strong>The @@appName web-app will go live from Saturday 18th of July 2026</strong></p>
 <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-3">
 <a class="btn btn-primary btn-lg px-4 gap-3" href="about" data-navigo="true">
 Learn more about @@appName

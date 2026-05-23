@@ -35,7 +35,7 @@ Find the cache, enter the five-digit code from the cable tie into the web-app an
 
 Anyone is welcome to take part, it's not just for Scouts or young people. Adult supervision may be needed dependant on the age of the young person and parental/guardian discretion should be used.
 
-The background behind Geocaching is to find (using GPS) small hidden items in the urban or rural environment hidden by a Geocacher. We have simplified this for this summer activity to ensure it's available to all. The only equipment required to take part is the use of a smartphone or tablet with a 4G data connection.
+The background behind Geocaching is to find (using GPS) small hidden items in the urban or rural environment hidden by a Geocacher. We have simplified this for this summer activity to ensure it's available to all. The only equipment required to take part is the use of a smartphone or tablet with a mobile data connection.
 
 There is no need to sign up or log in with personal information. We use the information provided by your device to generate a secure token to validate access to an account. This account is used to keep track of your <a href="foundCaches" data-navigo="true">found caches</a> and see your position on the <a href="leaderboard" data-navigo="true">leaderboard</a>.
 
@@ -45,7 +45,7 @@ Please refer to our <a href="privacy" data-navigo="true">Privacy Policy</a> for 
 
 ## Who are we and why have we made this challenge
 
-We are Beaver and Explorer Scout leaders based in Witham and wanted something extra for the young people of Witham to do over the summer holidays, the @@appName project has been solely created by us for use in Witham over this summer holiday. Caches will be collected from October 2025 at the latest for reuse next year.
+We are Beaver and Explorer Scout leaders based in Witham and wanted something extra for the young people of Witham to do over the summer holidays, the @@appName project has been solely created by us for use in Witham over this summer holiday. Caches will be collected from September 2026 at the latest for reuse next year.
 
 If you find a problem with a cache, a cache is missing, or you need any other information about our Geocache project, please email <inbox@geoscout.uk>.
 
