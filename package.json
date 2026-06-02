@@ -52,7 +52,7 @@
 		"validator": "^13.15.35"
 	},
 	"devDependencies": {
-		"@types/bootstrap": "^5.2.10",
+		"@types/bootstrap": "^5.2.11",
 		"@types/geojson": "^7946.0.16",
 		"@types/google.maps": "^3.64.1",
 		"@types/serviceworker": "^0.0.197",
