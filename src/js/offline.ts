@@ -1,4 +1,4 @@
 import 'bootstrap';
-document.getElementById('reloadPage')?.addEventListener('click', function () {
+document.getElementById('reloadPage')?.addEventListener('click', () => {
 	window.location.reload();
 });

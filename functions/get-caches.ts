@@ -1,78 +1,82 @@
-/* jshint esversion: 10 */
 // Import JWT module
-import {
-	verify
-} from 'jwt-promisify';
+import { VerifyOptions, verify } from 'jsonwebtoken';
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
 // Microsoft Graph API details
-const clientId = process.env.graphClientId;
-const tenantId = process.env.tenantId;
+const clientId = process.env.graphClientId as string;
+const tenantId = process.env.tenantId as string;
+
+import { ClientCertificateCredential } from '@azure/identity';
 // Graph SDK Preparation
-import {
-	Client
-} from '@microsoft/microsoft-graph-client';
-import {
-	TokenCredentialAuthenticationProvider
-} from '@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials';
-import {
-	ClientCertificateCredential
-} from '@azure/identity';
+import { Client } from '@microsoft/microsoft-graph-client';
+import { TokenCredentialAuthenticationProvider } from '@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials';
+import { HandlerEvent, HandlerResponse } from '@netlify/functions';
 import path from 'path';
+import {
+	GeoScoutCache,
+	GeoScoutCaches,
+	GeoScoutToken,
+	SharePointBatchResponse,
+	SharePointCacheRecord,
+	SharePointUserRecord,
+} from '../src/js/types';
+
 const credential = new ClientCertificateCredential(tenantId, clientId, {
 	certificatePath: path.join(__dirname, 'cert.pem'),
-	certificatePassword: process.env.graphCertKey
+	certificatePassword: process.env.graphCertKey,
 });
 const authProvider = new TokenCredentialAuthenticationProvider(credential, {
-	scopes: ['.default']
+	scopes: ['.default'],
 });
 const client = Client.initWithMiddleware({
 	debugLogging: true,
-	authProvider: authProvider
+	authProvider: authProvider,
 });
 // SharePoint Site Details
-const listId = process.env.graphSiteListId;
-const userListId = process.env.graphUserListId;
-const siteId = process.env.graphSiteId;
+const listId = process.env.graphSiteListId as string;
+const userListId = process.env.graphUserListId as string;
+const siteId = process.env.graphSiteId as string;
 // JWT authentication
-const jwtSecret = process.env.jwtTokenSecret;
-const jwtOptions = {
+const jwtSecret = process.env.jwtTokenSecret as string;
+const jwtVerifyOptions: VerifyOptions = {
 	audience: 'www.geoscout.uk',
 	maxAge: '3y',
 	issuer: 'api.geoscout.uk',
-	algorithms: 'HS384'
+	algorithms: ['HS384'],
 };
 // Return for all responses
 const headers = {
-	'Content-Type': 'application/json'
+	'Content-Type': 'application/json',
 };
 
 // Start Lambda Function
-export async function handler(event, context) {
+export async function handler(event: HandlerEvent): Promise<HandlerResponse> {
 	// Only allow GET
 	if (event.httpMethod !== 'GET' && event.httpMethod !== 'OPTIONS') {
 		return {
 			statusCode: 405,
 			body: JSON.stringify({
-				error: 'Method Not Allowed'
+				error: 'Method Not Allowed',
 			}),
-			headers
+			headers,
 		};
 	}
 
-	const returnObj = {
-		caches: []
+	const returnObj: GeoScoutCaches = {
+		caches: [],
 	};
-	let userId = false;
-	let userObj = [];
-	let caches = [];
+	let userId: false | string = false;
+	let userObj: SharePointUserRecord[];
+	let caches: SharePointCacheRecord[];
 
-	return new Promise((resolve, reject) => {
+	return new Promise<false | GeoScoutToken>((resolve, reject) => {
 		// Get token (if provided)
 		try {
 			const authToken = String(event.headers.authorization).split(' ')[1];
 			if (authToken) {
-				resolve(verify(authToken, jwtSecret, jwtOptions));
+				resolve(
+					verify(authToken, jwtSecret, jwtVerifyOptions) as GeoScoutToken,
+				);
 			} else {
 				resolve(false);
 			}
@@ -80,54 +84,54 @@ export async function handler(event, context) {
 			reject(error);
 		}
 	})
-		.then(decodedToken => {
+		.then((decodedToken) => {
 			if (decodedToken) {
 				userId = decodedToken.sub;
 			}
 			// Use batch request
-			return client
-				.api('/$batch')
-				.post({
-					requests: [{
+			return client.api('/$batch').post({
+				requests: [
+					{
 						id: 'caches',
 						method: 'GET',
 						url: `/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,Coordinates,W3WLocation,Polygon,Found,Suspended)&$select=id,fields&$filter=fields/Suspended eq 0`,
 						headers: {
-							'Prefer': 'allowthrottleablequeries'
-						}
+							Prefer: 'allowthrottleablequeries',
+						},
 					},
 					{
 						id: 'user',
 						method: 'GET',
 						url: `/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$filter=fields/Title eq '${userId}'`,
 						headers: {
-							'Prefer': 'allowthrottleablequeries'
-						}
-					}]
-				});
+							Prefer: 'allowthrottleablequeries',
+						},
+					},
+				],
+			});
 		})
-		.then(data => {
+		.then((data: SharePointBatchResponse) => {
 			if (data.hasOwnProperty('error')) {
 				throw {
-					error: data.error
+					error: data.error,
 				};
 			}
-			data.responses.forEach(response => {
+			data.responses.forEach((response) => {
 				if (response.status !== 200) {
 					throw {
-						error: response.body.error
+						error: response.body.error,
 					};
 				}
 				if (response.id === 'user') {
-					userObj = response.body.value;
+					userObj = response.body.value as SharePointUserRecord[];
 				} else if (response.id === 'caches') {
-					caches = response.body.value;
+					caches = response.body.value as SharePointCacheRecord[];
 				}
 			});
 			return caches;
 		})
-		.then(data => {
-			data.forEach(cache => {
+		.then((data) => {
+			data.forEach((cache) => {
 				const fields = cache.fields;
 				returnObj.caches.push({
 					location: fields.W3WLocation,
@@ -136,21 +140,25 @@ export async function handler(event, context) {
 					id: fields.Title,
 					found: false,
 					stats: fields.Found,
-					suspended: fields.Suspended
-				});
+					suspended: fields.Suspended,
+				} as GeoScoutCache);
 			});
 			return userObj;
 		})
-		.then(user => {
+		.then((user) => {
 			if (user.length === 0) {
 				return returnObj;
 			} else {
-				const userRecord = user.find(record => (record.fields.Title === userId));
+				const userRecord = user.find(
+					(record) => record.fields.Title === userId,
+				);
 				if (userRecord) {
 					const found = [...JSON.parse(userRecord.fields.FoundCaches)];
-					found.forEach(item => {
+					found.forEach((item) => {
 						try {
-							const cache = returnObj.caches.find(cache => (cache.id === item.id));
+							const cache = returnObj.caches.find(
+								(cache) => cache.id === item.id,
+							) as GeoScoutCache;
 							cache.found = true;
 						} catch {
 							console.log('Found cache is suspended - skipping over it');
@@ -160,22 +168,22 @@ export async function handler(event, context) {
 				return returnObj;
 			}
 		})
-		.then(obj => {
+		.then((obj) => {
 			return {
 				statusCode: 200,
 				body: JSON.stringify(obj),
-				headers
+				headers,
 			};
 		})
-		.catch(error => {
+		.catch((error) => {
 			console.log(error);
 			return {
 				statusCode: 500,
 				body: JSON.stringify({
 					error: 'Unable to get caches',
-					errorDebug: error
+					errorDebug: error,
 				}),
-				headers
+				headers,
 			};
 		});
 }

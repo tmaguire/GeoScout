@@ -27,7 +27,7 @@ const {
 	marked
 } = require('marked');
 const preprocess = require('gulp-preprocess');
-const gulpEsbuild = require('gulp-esbuild');
+const { gulpEsbuild } = require('gulp-esbuild');
 
 function licensePrep() {
 	const licenses = require('./thirdparty-licenses.json');
@@ -65,7 +65,8 @@ function bundleMainJs() {
 			bundle: true,
 			format: 'iife',
 			minify: true,
-			platform: 'browser'
+			platform: 'browser',
+			entryPoints: ['./src/js/main.ts']
 		}))
 		.pipe(preprocess({
 			context: {
@@ -90,7 +91,8 @@ function bundleOfflineJs() {
 			bundle: true,
 			format: 'iife',
 			minify: true,
-			platform: 'browser'
+			platform: 'browser',
+			entryPoints: ['./src/js/offline.ts']
 		}))
 		.pipe(dest('dist/js/'));
 }
@@ -156,7 +158,8 @@ function serviceWorker() {
 			bundle: true,
 			format: 'iife',
 			minify: true,
-			platform: 'browser'
+			platform: 'browser',
+			entryPoints: ['./src/js/service-worker.ts']
 		}))
 		.pipe(preprocess({
 			context: {

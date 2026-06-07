@@ -1,15 +1,19 @@
 {
-  "spellright.language": [
-    "en"
-  ],
-  "spellright.documentTypes": [
-    "latex",
-    "plaintext"
-  ],
-  "deno.enable": true,
-  "deno.enablePaths": [
-    "netlify/edge-functions",
-    "edge"
-  ],
-  "deno.importMap": ".netlify/edge-functions-import-map.json",
+	"spellright.language": [
+		"en"
+	],
+	"spellright.documentTypes": [
+		"latex",
+		"plaintext"
+	],
+	"deno.enable": true,
+	"deno.enablePaths": [
+		"netlify/edge-functions",
+		"edge"
+	],
+	"deno.importMap": ".netlify/edge-functions-import-map.json",
+	"editor.codeActionsOnSave": {
+		"source.organizeImports.biome": "explicit",
+		"source.fixAll.biome": "explicit"
+	}
 }

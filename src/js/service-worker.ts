@@ -4,7 +4,7 @@ declare let self: ServiceWorkerGlobalScope;
 const cacheName = '/* @echo appName */-/* @echo version */'; // Set cache name to align with version
 
 // Static resources to cache immediately
-let resourcesToCache = [
+const resourcesToCache = [
 	// Core JavaScript
 	'/js/main-/* @echo version */.min.js',
 	// Core CSS
@@ -87,9 +87,9 @@ self.addEventListener('fetch', (event) => {
 			case 'script':
 			case 'image': {
 				event.respondWith(
-					caches.match(event.request).then(function (response) {
-						return response || fetch(event.request);
-					}),
+					caches
+						.match(event.request)
+						.then((response) => response || fetch(event.request)),
 				);
 				return;
 			}
@@ -99,9 +99,7 @@ self.addEventListener('fetch', (event) => {
 						.match(event.request, {
 							ignoreSearch: true,
 						})
-						.then(function (response) {
-							return response || fetch(event.request);
-						}),
+						.then((response) => response || fetch(event.request)),
 				);
 				return;
 			}
@@ -123,6 +121,7 @@ self.addEventListener('activate', (event) => {
 					if (cacheAllowList.indexOf(cacheName) === -1) {
 						return caches.delete(cacheName);
 					}
+					return null;
 				}),
 			);
 		}),
@@ -130,7 +129,7 @@ self.addEventListener('activate', (event) => {
 });
 
 // Listen to messages
-self.addEventListener('message', function (event) {
+self.addEventListener('message', (event) => {
 	if (event.origin !== '/* @echo appUrl */') {
 		return;
 	} else {

@@ -1,29 +1,27 @@
-/* jshint esversion:10 */
-type AccessTokenString = String;
-interface AccessTokenObject {
-	sub: String;
-	oid: String;
-	jwtId: String;
-	iat: Number;
-	exp: Number;
-	aud: String;
-	iss: String;
-}
-
 // Imports
 import 'bootstrap';
-import { Collapse } from 'bootstrap';
-import Navigo from 'navigo';
-import Swal, { SweetAlertOptions } from 'sweetalert2';
-import DOMPurify from 'dompurify';
-import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
+import { importLibrary, setOptions } from '@googlemaps/js-api-loader';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
-import QrScanner from 'qr-scanner';
-import { Grid, html, Row } from 'gridjs';
-import localforage from 'localforage';
+import { Collapse } from 'bootstrap';
+import DOMPurify from 'dompurify';
+import { Grid, html, type Row } from 'gridjs';
+import type { TCell } from 'gridjs/dist/src/types.js';
 import ky from 'ky';
-import { TCell } from 'gridjs/dist/src/types.js';
-import { Feature } from 'geojson';
+import localforage from 'localforage';
+import Navigo from 'navigo';
+import QrScanner from 'qr-scanner';
+import Swal from 'sweetalert2';
+import type {
+	AccessTokenChallengeResponse,
+	AccessTokenResponse,
+	BackupToken,
+	FoundCaches,
+	GeoScoutCache,
+	GeoScoutCaches,
+	GeoScoutToken,
+	LeaderboardRecord,
+} from './types';
+
 // Constants from build process
 const appUrl = '/* @echo appUrl */';
 const appName = '/* @echo appName */';
@@ -56,89 +54,60 @@ const showToast = Swal.mixin({
 	},
 });
 
-/**
- * @function getAccessToken - Retrieves an access token (if present)
- * @param {Boolean} [required=false] - Forces an access token to be generated if not already acquired
- * @returns {Promise<AccessTokenString|false>} - Access token
- */
-function getAccessToken(
-	required: boolean = false,
-): Promise<AccessTokenString | false> {
+function getAccessToken(required: boolean = false): Promise<string | false> {
 	return new Promise((resolve, reject) => {
-		localforage
-			.getItem<AccessTokenString>('accessToken')
-			.then((accessToken) => {
-				if (accessToken) {
-					resolve(accessToken);
-				} else {
-					if (
-						localStorage.getItem('accessToken') === null ||
-						localStorage.getItem('accessToken') === ''
-					) {
-						if (required) {
-							try {
-								resolve(newAccessToken());
-							} catch (error) {
-								reject(error);
-							}
-						} else {
-							resolve(false);
+		localforage.getItem<string>('accessToken').then((accessToken) => {
+			if (accessToken) {
+				resolve(accessToken);
+			} else {
+				if (
+					localStorage.getItem('accessToken') === null ||
+					localStorage.getItem('accessToken') === ''
+				) {
+					if (required) {
+						try {
+							resolve(newAccessToken());
+						} catch (error) {
+							reject(error);
 						}
 					} else {
-						// Migrate token to localforage
-						resolve(
-							localforage.setItem<AccessTokenString>(
-								'accessToken',
-								localStorage.getItem('accessToken') || '',
-							),
-						);
+						resolve(false);
 					}
+				} else {
+					// Migrate token to localforage
+					resolve(
+						localforage.setItem<string>(
+							'accessToken',
+							localStorage.getItem('accessToken') || '',
+						),
+					);
 				}
-			});
+			}
+		});
 	});
 }
 
-/**
- * @function newAccessToken - Registers a new account and stores access token
- * @returns {Promise<AccessTokenString>} - Access token
- */
-function newAccessToken(): Promise<AccessTokenString> {
+async function newAccessToken(): Promise<string> {
 	const uuid = crypto.randomUUID().toString();
-	return ky
-		.post('./api/get-token', {
+	const data = await ky
+		.post<AccessTokenChallengeResponse>('./api/get-token', {
 			json: {
 				uuid,
 			},
 		})
-		.json()
-		.then(handleErrors)
-		.then((data) => {
-			return ky
-				.post('./api/get-token', {
-					json: {
-						uuid,
-						token: data.token,
-					},
-				})
-				.json();
+		.json();
+	const data_1 = await ky
+		.post<AccessTokenResponse>('./api/get-token', {
+			json: {
+				uuid,
+				token: data.token,
+			},
 		})
-		.then(handleErrors)
-		.then((data) => {
-			return localforage.setItem<AccessTokenString>(
-				'accessToken',
-				data.accessToken,
-			);
-		});
+		.json();
+	return await localforage.setItem<string>('accessToken', data_1.accessToken);
 }
 
-/**
- * @function parseAccessToken - Parse access token to populate UI
- * @param {AccessTokenString} [token] - Access token string to parse
- * @returns {Promise<AccessTokenObject|false>}
- */
-function parseAccessToken(
-	token: AccessTokenString,
-): Promise<AccessTokenObject> {
+function parseAccessToken(token: string): Promise<GeoScoutToken> {
 	return new Promise((resolve, reject) => {
 		try {
 			if (!token) {
@@ -155,13 +124,6 @@ function parseAccessToken(
 	});
 }
 
-/**
- * @function showError - Error message function
- * @param {String} [error='An issue occurred']
- * @param {Boolean} [button=false]
- * @param {false|String} [goBackToPage=false]
- * @return {void}
- */
 function showError(
 	error: string = 'An issue occurred',
 	button: boolean = false,
@@ -189,13 +151,6 @@ function showError(
 	});
 }
 
-/**
- * @function getPrettyDate - Format dates in simple/human readable way
- * @param {Date} [date] - Date object to format
- * @param {false|String} [prefomattedDate=false] - Optional string to replace date in output
- * @param {Boolean} [hideYear=false] - Hide year from output
- * @returns {String}
- */
 function getPrettyDate(
 	date: Date = new Date(),
 	prefomattedDate: false | string = false,
@@ -250,17 +205,11 @@ function getPrettyDate(
 	return `${prettyDay} ${month} ${year} at ${formattedTime}`;
 }
 
-/**
- * @function getTimeAgo - Function to return formatted date based on time ago
- * @param {Date|String} [dateParam]
- * @returns {String|null}
- */
 function getTimeAgo(dateParam: Date | string): string | null {
 	if (!dateParam) {
 		return null;
 	}
-	const date =
-		typeof dateParam === 'object' ? dateParam : new Date(dateParam);
+	const date = typeof dateParam === 'object' ? dateParam : new Date(dateParam);
 	const today = new Date();
 	const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
 	const seconds = Math.round((today.getTime() - date.getTime()) / 1000);
@@ -286,11 +235,6 @@ function getTimeAgo(dateParam: Date | string): string | null {
 	return getPrettyDate(date);
 }
 
-/**
- * @function appendSuffix - Adds correct suffix to position number for leaderboard
- * @param {Number} [number]
- * @returns {String}
- */
 function appendSuffix(number: number): string {
 	const firstPass = number % 10;
 	const secondPass = number % 100;
@@ -304,22 +248,6 @@ function appendSuffix(number: number): string {
 		return `${number}rd`;
 	}
 	return `${number}th`;
-}
-
-// Function to handle errors from serverless functions
-function handleErrors(response: any) {
-	// If the response has an error property
-	if (Object.prototype.hasOwnProperty.call(response, 'error')) {
-		// Throw error message
-		throw Error(response.error);
-	}
-	// If the response has a lambda error
-	if (Object.prototype.hasOwnProperty.call(response, 'errorMessage')) {
-		// Throw error message
-		throw Error(`${response.errorType}: ${response.errorMessage}`);
-	}
-	// Return the data response object
-	return response;
 }
 
 function changePage(
@@ -341,8 +269,7 @@ function changePage(
 	// Update menu
 	document.querySelectorAll('a.nav-link').forEach((menuItem) => {
 		if (
-			menuItem.getAttribute('href') ===
-			(page === 'holding' ? 'home' : page)
+			menuItem.getAttribute('href') === (page === 'holding' ? 'home' : page)
 		) {
 			menuItem.classList.add('active');
 			menuItem.setAttribute('aria-current', 'page');
@@ -377,11 +304,7 @@ function changePage(
 	bsCollapse.hide();
 }
 
-/**
- * @function loadCachesMapPage
- * @returns {Promise<void>}
- */
-function loadCachesMapPage(): Promise<void> {
+async function loadCachesMapPage(): Promise<void> {
 	const mapContainer = document.getElementById('mapContainer') as HTMLElement;
 	const mapToolbar = document.getElementById('mapToolbar') as HTMLElement;
 	mapToolbar?.replaceChildren();
@@ -392,13 +315,12 @@ function loadCachesMapPage(): Promise<void> {
 		v: 'quarterly',
 		libraries: ['drawing', 'marker'],
 	});
-	let caches: any[];
+	let caches: GeoScoutCache[];
 	let cluster: MarkerClusterer;
-	let Circle: any;
 	return getAccessToken()
 		.then((accessToken) => {
 			return ky
-				.get('./api/get-caches', {
+				.get<GeoScoutCaches>('./api/get-caches', {
 					...(accessToken && {
 						headers: {
 							Authorization: `Bearer ${accessToken}`,
@@ -407,9 +329,8 @@ function loadCachesMapPage(): Promise<void> {
 				})
 				.json();
 		})
-		.then(handleErrors)
 		.then((data) => {
-			if (Object.prototype.hasOwnProperty.call(data, 'caches')) {
+			if (Object.hasOwn(data, 'caches')) {
 				caches = data.caches;
 			} else {
 				throw 'No caches found';
@@ -437,7 +358,6 @@ function loadCachesMapPage(): Promise<void> {
 					renderingType: google.maps.RenderingType.VECTOR,
 				},
 			);
-			Circle = google.maps.Circle;
 			return importLibrary('marker');
 		})
 		.then(() => {
@@ -445,31 +365,24 @@ function loadCachesMapPage(): Promise<void> {
 				const markers = caches.flatMap((cache) => {
 					if (!cache.suspended) {
 						const markerContent = document.createElement('div');
-						markerContent.textContent = DOMPurify.sanitize(
-							cache.id,
-						);
+						markerContent.textContent = DOMPurify.sanitize(cache.id);
 						markerContent.classList.add(
 							cache.found ? 'marker-found' : 'marker-notfound',
 						);
-						const marker =
-							new google.maps.marker.AdvancedMarkerElement({
-								position: {
-									lat: Number(
-										DOMPurify.sanitize(
-											cache.coordinates,
-										).split(',')[0],
-									),
-									lng: Number(
-										DOMPurify.sanitize(
-											cache.coordinates,
-										).split(',')[1],
-									),
-								},
-								map: mainMap,
-								title: `Cache ${DOMPurify.sanitize(cache.id)}`,
-								gmpClickable: true,
-								content: markerContent,
-							});
+						const marker = new google.maps.marker.AdvancedMarkerElement({
+							position: {
+								lat: Number(
+									DOMPurify.sanitize(cache.coordinates).split(',')[0],
+								),
+								lng: Number(
+									DOMPurify.sanitize(cache.coordinates).split(',')[1],
+								),
+							},
+							map: mainMap,
+							title: `Cache ${DOMPurify.sanitize(cache.id)}`,
+							gmpClickable: true,
+							content: markerContent,
+						});
 						marker.addListener('click', () => {
 							router.navigate(`/viewCache-${cache.id}`);
 						});
@@ -515,7 +428,7 @@ function loadCachesMapPage(): Promise<void> {
 									found: filter === 'found',
 									notFound: filter === 'notFound',
 								};
-					const markers: any[] = [];
+					const markers: google.maps.marker.AdvancedMarkerElement[] = [];
 					caches.forEach((cache) => {
 						if (
 							((cache.found && filterMode.found) ||
@@ -523,33 +436,24 @@ function loadCachesMapPage(): Promise<void> {
 							!cache.suspended
 						) {
 							const markerContent = document.createElement('div');
-							markerContent.textContent = DOMPurify.sanitize(
-								cache.id,
-							);
+							markerContent.textContent = DOMPurify.sanitize(cache.id);
 							markerContent.classList.add(
-								cache.found
-									? 'marker-found'
-									: 'marker-notfound',
+								cache.found ? 'marker-found' : 'marker-notfound',
 							);
-							const marker =
-								new google.maps.marker.AdvancedMarkerElement({
-									position: {
-										lat: Number(
-											DOMPurify.sanitize(
-												cache.coordinates,
-											).split(',')[0],
-										),
-										lng: Number(
-											DOMPurify.sanitize(
-												cache.coordinates,
-											).split(',')[1],
-										),
-									},
-									map: mainMap,
-									title: `Cache ${DOMPurify.sanitize(cache.id)}`,
-									gmpClickable: true,
-									content: markerContent,
-								});
+							const marker = new google.maps.marker.AdvancedMarkerElement({
+								position: {
+									lat: Number(
+										DOMPurify.sanitize(cache.coordinates).split(',')[0],
+									),
+									lng: Number(
+										DOMPurify.sanitize(cache.coordinates).split(',')[1],
+									),
+								},
+								map: mainMap,
+								title: `Cache ${DOMPurify.sanitize(cache.id)}`,
+								gmpClickable: true,
+								content: markerContent,
+							});
 							marker.addListener('click', () => {
 								router.navigate(`/viewCache-${cache.id}`);
 							});
@@ -561,17 +465,15 @@ function loadCachesMapPage(): Promise<void> {
 			}
 			['mapFilterAll', 'mapFilterNotFound', 'mapFilterFound'].forEach(
 				(element) => {
-					document
-						.getElementById(element)
-						?.addEventListener('click', function () {
-							changeFilter(
-								(
-									document.querySelector(
-										'input[name="mapFilterBtn"]:checked',
-									) as HTMLInputElement
-								).value,
-							);
-						});
+					document.getElementById(element)?.addEventListener('click', () => {
+						changeFilter(
+							(
+								document.querySelector(
+									'input[name="mapFilterBtn"]:checked',
+								) as HTMLInputElement
+							).value,
+						);
+					});
 				},
 			);
 			return true;
@@ -587,9 +489,7 @@ function loadCachesMapPage(): Promise<void> {
 			button.setAttribute('class', 'btn btn-primary shadow');
 			button.innerHTML = defaultBtn;
 			mapToolbar.appendChild(button);
-			const locateBtn = document.getElementById(
-				'mapLocation',
-			) as HTMLElement;
+			const locateBtn = document.getElementById('mapLocation') as HTMLElement;
 			let locationActive = false;
 			let currentUserLocation = {
 				lat: 0,
@@ -597,7 +497,7 @@ function loadCachesMapPage(): Promise<void> {
 			};
 			let marker: google.maps.marker.AdvancedMarkerElement | null = null;
 			let accuracy: google.maps.Circle | null = null;
-			locateBtn.addEventListener('click', function () {
+			locateBtn.addEventListener('click', () => {
 				if (locationActive) {
 					mainMap.setCenter(currentUserLocation);
 					mainMap.setZoom(19);
@@ -626,15 +526,12 @@ function loadCachesMapPage(): Promise<void> {
 									pinSvgString,
 									'image/svg+xml',
 								).documentElement;
-								marker =
-									new google.maps.marker.AdvancedMarkerElement(
-										{
-											map: mainMap,
-											position: currentUserLocation,
-											content: pinSvg,
-											title: 'Your location',
-										},
-									);
+								marker = new google.maps.marker.AdvancedMarkerElement({
+									map: mainMap,
+									position: currentUserLocation,
+									content: pinSvg,
+									title: 'Your location',
+								});
 							} else {
 								marker.position = currentUserLocation;
 							}
@@ -679,7 +576,7 @@ function loadCachesMapPage(): Promise<void> {
 		.then((map) => {
 			// Cache for grid data
 			let gridData: google.maps.Data.Feature[] | null = null;
-			map.addListener('bounds_changed', function () {
+			map.addListener('bounds_changed', () => {
 				// Get current zoom level
 				const zoom = map.getZoom();
 				// Only show grid if zoom is at least 17
@@ -693,7 +590,7 @@ function loadCachesMapPage(): Promise<void> {
 						`https://api.what3words.com/v3/grid-section?key=${what3wordsApiKey}&bounding-box=${sw?.lat()},${sw?.lng()},${ne?.lat()},${ne?.lng()}&format=geojson`,
 					)
 						.json()
-						.then(function (data) {
+						.then((data) => {
 							if (gridData !== null) {
 								for (let i = 0; i < gridData.length; i++) {
 									map.data.remove(gridData[i]);
@@ -717,17 +614,17 @@ function loadCachesMapPage(): Promise<void> {
 		});
 }
 
-function loadCachesTablePage() {
+async function loadCachesTablePage(): Promise<void> {
 	const tableContainer = document.getElementById(
 		'tableContainer',
 	) as HTMLElement;
 	tableContainer.innerHTML = loadingGif;
 	changePage('viewCachesTable', 'View caches', false);
-	let caches: any[];
+	let caches: GeoScoutCache[];
 	return getAccessToken()
 		.then((accessToken) => {
 			return ky
-				.get('./api/get-caches', {
+				.get<GeoScoutCaches>('./api/get-caches', {
 					...(accessToken && {
 						headers: {
 							Authorization: `Bearer ${accessToken}`,
@@ -736,9 +633,8 @@ function loadCachesTablePage() {
 				})
 				.json();
 		})
-		.then(handleErrors)
 		.then((data) => {
-			if (Object.prototype.hasOwnProperty.call(data, 'caches')) {
+			if (Object.hasOwn(data, 'caches')) {
 				caches = data.caches;
 				return caches;
 			} else {
@@ -768,9 +664,9 @@ function loadCachesTablePage() {
 							enabled: true,
 						},
 						formatter: (location: string) => {
-							const locationString = String(
-								DOMPurify.sanitize(location),
-							).split('///')[1];
+							const locationString = String(DOMPurify.sanitize(location)).split(
+								'///',
+							)[1];
 							return html(
 								`<a href="https://what3words.com/${locationString}?maptype=satellite" target="_blank" translate="no" rel="noopener noreferrer">///${locationString}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a>`,
 							);
@@ -785,7 +681,7 @@ function loadCachesTablePage() {
 							enabled: true,
 						},
 						formatter: (cell) => {
-							return Boolean(cell) ? 'Yes 😊' : 'No ☹️';
+							return cell ? 'Yes 😊' : 'No ☹️';
 						},
 					},
 					{
@@ -805,8 +701,7 @@ function loadCachesTablePage() {
 					limit: 15,
 					summary: true,
 				},
-				data: () =>
-					data.flatMap((cache) => (cache.suspended ? [] : [cache])),
+				data: () => data.flatMap((cache) => (cache.suspended ? [] : [cache])),
 				search: {
 					selector: (cell, _rowIndex, cellIndex) =>
 						cellIndex === 0 ? String(cell) : '',
@@ -845,7 +740,7 @@ function loadCachesTablePage() {
 									found: filter === 'found',
 									notFound: filter === 'notFound',
 								};
-					const cacheList: any[] = [];
+					const cacheList: GeoScoutCache[] = [];
 					caches.forEach((cache) => {
 						if (
 							((cache.found && filterMode.found) ||
@@ -862,14 +757,9 @@ function loadCachesTablePage() {
 						.forceRender();
 				}
 			}
-			[
-				'tableFilterAll',
-				'tableFilterNotFound',
-				'tableFilterFound',
-			].forEach((element) => {
-				document
-					.getElementById(element)
-					?.addEventListener('click', function () {
+			['tableFilterAll', 'tableFilterNotFound', 'tableFilterFound'].forEach(
+				(element) => {
+					document.getElementById(element)?.addEventListener('click', () => {
 						changeFilter(
 							(
 								document.querySelector(
@@ -878,7 +768,8 @@ function loadCachesTablePage() {
 							).value,
 						);
 					});
-			});
+				},
+			);
 		})
 		.finally(() => {
 			router.updatePageLinks();
@@ -888,13 +779,13 @@ function loadCachesTablePage() {
 		});
 }
 
-function loadCachePage(id: string) {
+async function loadCachePage(id: string) {
 	resetCachePage();
 	changePage('viewCache', `Cache ${id}`, id);
 	return getAccessToken()
 		.then((accessToken) => {
 			return ky
-				.post('./api/get-cache', {
+				.post<GeoScoutCache>('./api/get-cache', {
 					json: {
 						cache: id,
 					},
@@ -906,41 +797,28 @@ function loadCachePage(id: string) {
 				})
 				.json();
 		})
-		.then(handleErrors)
 		.then((data) => {
 			if (!data.suspended) {
-				document
-					.getElementById('cacheCard')
-					?.removeAttribute('aria-hidden');
-				const img = document.getElementById(
-					'cacheMapImg',
-				) as HTMLElement;
+				document.getElementById('cacheCard')?.removeAttribute('aria-hidden');
+				const img = document.getElementById('cacheMapImg') as HTMLElement;
 				img.setAttribute('src', `${DOMPurify.sanitize(data.image)}`);
 				img.setAttribute('alt', `Map for cache ${id}`);
 				img.removeAttribute('height');
 				img.removeAttribute('width');
-				const header = document.getElementById(
-					'cacheHeader',
-				) as HTMLElement;
+				const header = document.getElementById('cacheHeader') as HTMLElement;
 				header.setAttribute('class', 'card-title');
 				header.replaceChildren();
 				header.innerText = `Cache ${id}`;
-				const w3wLink = document.getElementById(
-					'cacheW3WLink',
-				) as HTMLElement;
+				const w3wLink = document.getElementById('cacheW3WLink') as HTMLElement;
 				w3wLink.setAttribute('class', 'card-text');
-				const w3wAddress = String(
-					DOMPurify.sanitize(data.location),
-				).split('///')[1];
-				const coordinates = String(
-					DOMPurify.sanitize(data.coordinates),
-				);
+				const w3wAddress = String(DOMPurify.sanitize(data.location)).split(
+					'///',
+				)[1];
+				const coordinates = String(DOMPurify.sanitize(data.coordinates));
 				w3wLink.innerHTML = `<p><strong>what3words address:</strong>&nbsp;<a href="https://what3words.com/${w3wAddress}?maptype=satellite" target="_blank" translate="no" rel="noopener noreferrer">///${w3wAddress}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a></p>
 				<p><strong>Grid reference:</strong>&nbsp;<a href="https://explore.osmaps.com/pin?lat=${coordinates.split(',')[0]}&lon=${coordinates.split(',')[1]}&zoom=18.0000&overlays=&style=Aerial&type=2d&placesCategory=" target="_blank" rel="noopener noreferrer">${DOMPurify.sanitize(data.gridRef)}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a><br><a class="text-decoration-none" href="https://getoutside.ordnancesurvey.co.uk/guides/beginners-guide-to-grid-references/" target="_blank" rel="noopener noreferrer">Learn more about grid references&nbsp;<i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a></p>
 				<p><br><strong id="cacheStats"></strong></p>`;
-				const w3wBtn = document.getElementById(
-					'cacheW3WBtn',
-				) as HTMLElement;
+				const w3wBtn = document.getElementById('cacheW3WBtn') as HTMLElement;
 				w3wBtn.removeAttribute('tabindex');
 				w3wBtn.setAttribute('class', 'btn btn-primary m-1 shadow');
 				w3wBtn.setAttribute(
@@ -951,9 +829,7 @@ function loadCachePage(id: string) {
 				w3wBtn.setAttribute('rel', 'noopener noreferrer');
 				w3wBtn.innerHTML =
 					'<i class="bi bi-geo-alt" aria-hidden="true"></i>&nbsp;Open in what3words';
-				const mapBtn = document.getElementById(
-					'cacheMapsLink',
-				) as HTMLElement;
+				const mapBtn = document.getElementById('cacheMapsLink') as HTMLElement;
 				mapBtn.removeAttribute('tabindex');
 				mapBtn.setAttribute('class', 'btn btn-primary m-1 shadow');
 				mapBtn.setAttribute(
@@ -967,9 +843,7 @@ function loadCachePage(id: string) {
 				const foundBtn = document.getElementById(
 					'cacheFoundLink',
 				) as HTMLElement;
-				const cacheStats = document.getElementById(
-					'cacheStats',
-				) as HTMLElement;
+				const cacheStats = document.getElementById('cacheStats') as HTMLElement;
 				if (data.found) {
 					foundBtn.setAttribute(
 						'class',
@@ -979,10 +853,7 @@ function loadCachePage(id: string) {
 					foundBtn.innerHTML = `<i class="bi bi-patch-check" aria-hidden="true"></i>&nbsp;You've already found this cache`;
 					cacheStats.innerText = `You ${Number(data.stats) === 1 ? 'are the only person that has found this cache! 😮' : `and ${Number(data.stats) - 1} other ${Number(data.stats) - 1 === 1 ? 'person has' : 'people have'} found this cache 😊`}`;
 				} else {
-					foundBtn.setAttribute(
-						'class',
-						'btn btn-outline-primary m-1 shadow',
-					);
+					foundBtn.setAttribute('class', 'btn btn-outline-primary m-1 shadow');
 					foundBtn.setAttribute('href', `foundCache-${id}`);
 					foundBtn.setAttribute('data-navigo', 'true');
 					foundBtn.removeAttribute('tabindex');
@@ -1043,7 +914,7 @@ function resetCachePage() {
 	foundBtn.replaceChildren();
 }
 
-function loadFoundCachePage(id: string) {
+async function loadFoundCachePage(id: string) {
 	changePage('viewCache', `Cache ${id}`, id);
 	return Swal.fire({
 		titleText: `Found cache ${id}?`,
@@ -1085,23 +956,21 @@ function loadFoundCachePage(id: string) {
 				return 'This code is invalid';
 			}
 		},
-		preConfirm: (data) => {
+		preConfirm: async (data) => {
 			Swal.getCancelButton()?.setAttribute('hidden', 'true');
-			return getAccessToken(true)
-				.then((accessToken) => {
-					return ky
-						.post('./api/found-cache', {
-							json: {
-								cache: id,
-								cacheCode: Number(data),
-							},
-							headers: {
-								Authorization: `Bearer ${accessToken}`,
-							},
-						})
-						.json();
-				})
-				.then(handleErrors);
+			return getAccessToken(true).then((accessToken) => {
+				return ky
+					.post('./api/found-cache', {
+						json: {
+							cache: id,
+							cacheCode: Number(data),
+						},
+						headers: {
+							Authorization: `Bearer ${accessToken}`,
+						},
+					})
+					.json();
+			});
 		},
 	})
 		.then((result) => {
@@ -1145,7 +1014,7 @@ function loadFoundCachePage(id: string) {
 		});
 }
 
-function loadFoundCachesPage() {
+async function loadFoundCachesPage() {
 	const noneFound = `<div class="p-3 text-center">
 		<i class="bi bi-emoji-frown home-icon d-block mx-auto mb-4" aria-hidden="true"
 			role="img"></i>
@@ -1162,10 +1031,11 @@ function loadFoundCachesPage() {
 	) as HTMLElement;
 	foundContainer.innerHTML = loadingGif;
 	changePage('foundCaches', 'Found caches', false);
-	return getAccessToken()
-		.then((accessToken) => {
-			return ky
-				.get('./api/found-caches', {
+	try {
+		try {
+			const accessToken = await getAccessToken();
+			const data = await ky
+				.get<FoundCaches>('./api/found-caches', {
 					...(accessToken && {
 						headers: {
 							Authorization: `Bearer ${accessToken}`,
@@ -1173,9 +1043,6 @@ function loadFoundCachesPage() {
 					}),
 				})
 				.json();
-		})
-		.then(handleErrors)
-		.then((data) => {
 			if (data.found.length > 0) {
 				foundContainer.innerHTML = `<div class="row">
 					<div class="col-md-12 col-xl-4">
@@ -1239,9 +1106,9 @@ function loadFoundCachesPage() {
 							sort: {
 								enabled: true,
 							},
-							formatter: (cell: string) =>
+							formatter: (cell_1: string) =>
 								html(
-									`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo="true">${DOMPurify.sanitize(cell)}</a>`,
+									`<a href="viewCache-${DOMPurify.sanitize(cell_1)}" data-navigo="true">${DOMPurify.sanitize(cell_1)}</a>`,
 								),
 						},
 						{
@@ -1250,9 +1117,9 @@ function loadFoundCachesPage() {
 							sort: {
 								enabled: true,
 							},
-							formatter: (date: string) => {
+							formatter: (date_1: string) => {
 								return html(
-									`<time datetime="${DOMPurify.sanitize(date)}">${getTimeAgo(date)}</time>`,
+									`<time datetime="${DOMPurify.sanitize(date_1)}">${getTimeAgo(date_1)}</time>`,
 								);
 							},
 						},
@@ -1269,9 +1136,7 @@ function loadFoundCachesPage() {
 						summary: true,
 					},
 					data: data.found,
-				}).render(
-					document.getElementById('foundWrapper') as HTMLElement,
-				);
+				}).render(document.getElementById('foundWrapper') as HTMLElement);
 				const userId = DOMPurify.sanitize(data.userId);
 				(
 					document.getElementById('foundCachesUserId') as HTMLElement
@@ -1287,13 +1152,9 @@ function loadFoundCachesPage() {
 					?.setAttribute('width', '48');
 				document
 					.getElementById('foundCachesProfilePic')
-					?.setAttribute(
-						'alt',
-						`Profile picture for ${userId} (your User ID)`,
-					);
-				(
-					document.getElementById('foundCachesTotal') as HTMLElement
-				).innerText = Number(data.found.length).toString();
+					?.setAttribute('alt', `Profile picture for ${userId} (your User ID)`);
+				(document.getElementById('foundCachesTotal') as HTMLElement).innerText =
+					Number(data.found.length).toString();
 				const positionString = appendSuffix(Number(data.position));
 				(
 					document.getElementById('foundCacheRanking') as HTMLElement
@@ -1302,16 +1163,15 @@ function loadFoundCachesPage() {
 			} else {
 				foundContainer.innerHTML = noneFound;
 			}
-		})
-		.finally(() => {
+		} finally {
 			router.updatePageLinks();
-		})
-		.catch((error) => {
-			showError(error, true, 'home');
-		});
+		}
+	} catch (error) {
+		showError(error as string, true, 'home');
+	}
 }
 
-function loadLeaderboardPage() {
+async function loadLeaderboardPage() {
 	const emptyLeaderboard = `<div class="p-3 text-center">
 		<i class="bi bi-emoji-frown home-icon d-block mx-auto mb-4" aria-hidden="true"
 			role="img"></i>
@@ -1328,23 +1188,23 @@ function loadLeaderboardPage() {
 	) as HTMLElement;
 	leaderboardContainer.innerHTML = loadingGif;
 	changePage('leaderboard', 'Leaderboard', false);
-	return getAccessToken()
-		.then((accessToken) => {
-			return ky
-				.get('./api/get-leaderboard', {
-					...(accessToken && {
-						headers: {
-							Authorization: `Bearer ${accessToken}`,
-						},
-					}),
-				})
+	try {
+		try {
+			const accessToken = await getAccessToken();
+			const data = await ky
+				.get<{ leaderboard: LeaderboardRecord[]; userId: string }>(
+					'./api/get-leaderboard',
+					{
+						...(accessToken && {
+							headers: {
+								Authorization: `Bearer ${accessToken}`,
+							},
+						}),
+					},
+				)
 				.json();
-		})
-		.then(handleErrors)
-		.then((data) => {
 			if (data.leaderboard.length > 0) {
-				leaderboardContainer.innerHTML =
-					'<div id="leaderboardWrapper"></div>';
+				leaderboardContainer.innerHTML = '<div id="leaderboardWrapper"></div>';
 				new Grid({
 					columns: [
 						{
@@ -1353,23 +1213,18 @@ function loadLeaderboardPage() {
 							sort: {
 								enabled: true,
 							},
-							formatter: (position) => {
-								const positionString = appendSuffix(
-									Number(position),
-								);
+							formatter: (position_1) => {
+								const positionString = appendSuffix(Number(position_1));
 								return html(
 									`${positionString}${positionString === '1st' ? '&nbsp;🥇' : positionString === '2nd' ? '&nbsp;🥈' : positionString === '3rd' ? '&nbsp;🥉' : ''}`,
 								);
 							},
-							attributes: (cell: TCell, row: Row) => {
-								if (cell) {
+							attributes: (cell_1: TCell, row: Row) => {
+								if (cell_1) {
 									return {
-										'data-ranking': cell,
+										'data-ranking': cell_1,
 										'data-match': String(
-											Boolean(
-												row.cells[1].data ===
-												data.userId,
-											),
+											Boolean(row.cells[1].data === data.userId),
 										),
 									};
 								}
@@ -1381,8 +1236,8 @@ function loadLeaderboardPage() {
 							sort: {
 								enabled: true,
 							},
-							formatter: (userId: string) => {
-								const name = DOMPurify.sanitize(userId);
+							formatter: (userId_1: string) => {
+								const name = DOMPurify.sanitize(userId_1);
 								return html(
 									`${name}${name === data.userId ? '&nbsp;<strong>(You)</strong>' : ''}`,
 								);
@@ -1403,61 +1258,54 @@ function loadLeaderboardPage() {
 						},
 					},
 					data: data.leaderboard,
-				}).render(
-					document.getElementById(
-						'leaderboardWrapper',
-					) as HTMLElement,
-				);
+				}).render(document.getElementById('leaderboardWrapper') as HTMLElement);
 			} else {
 				leaderboardContainer.innerHTML = emptyLeaderboard;
 			}
-		})
-		.finally(() => {
-			setTimeout(function () {
+		} finally {
+			setTimeout(() => {
 				try {
 					document
 						.querySelectorAll('td[data-ranking="1"]')
-						.forEach((element) =>
-							[
-								...(element?.parentElement?.children || []),
-							].forEach((child) => {
+						.forEach((element) => {
+							[...(element?.parentElement?.children || [])].forEach((child) => {
 								child.classList.add('gs-gold');
-							}),
-						);
+							});
+						});
 					document
 						.querySelectorAll('td[data-ranking="2"]')
-						.forEach((element) =>
-							[
-								...(element?.parentElement?.children || []),
-							].forEach((child) => {
-								child.classList.add('gs-silver');
-							}),
-						);
+						.forEach((element_1) => {
+							[...(element_1?.parentElement?.children || [])].forEach(
+								(child_1) => {
+									child_1.classList.add('gs-silver');
+								},
+							);
+						});
 					document
 						.querySelectorAll('td[data-ranking="3"]')
-						.forEach((element) =>
-							[
-								...(element?.parentElement?.children || []),
-							].forEach((child) => {
-								child.classList.add('gs-bronze');
-							}),
-						);
+						.forEach((element_2) => {
+							[...(element_2?.parentElement?.children || [])].forEach(
+								(child_2) => {
+									child_2.classList.add('gs-bronze');
+								},
+							);
+						});
 					[
-						...(document.querySelector('td[data-match="true"]')
-							?.parentElement?.children || []),
-					].forEach((child) => {
-						child.classList.add('gs-your-device');
+						...(document.querySelector('td[data-match="true"]')?.parentElement
+							?.children || []),
+					].forEach((child_3) => {
+						child_3.classList.add('gs-your-device');
 					});
 				} catch {}
 				router.updatePageLinks();
 			}, 1000);
-		})
-		.catch((error) => {
-			showError(error, true, 'home');
-		});
+		}
+	} catch (error) {
+		showError(error as string, true, 'home');
+	}
 }
 
-function loadRestoreFile() {
+async function loadRestoreFile() {
 	return Swal.fire({
 		title: 'Restore account using a backup file',
 		text: 'Restore your GeoScout account using a backup file created by yourself earlier or provided by GeoScout Support.',
@@ -1484,24 +1332,18 @@ function loadRestoreFile() {
 		inputValidator: (file) => {
 			return file ? false : 'You need to select a backup file to restore';
 		},
-		preConfirm: (file: File) => {
+		preConfirm: async (file: File) => {
 			Swal.getCancelButton()?.setAttribute('hidden', 'true');
-			return file
-				.text()
-				.then((backupToken) => {
-					return ky
-						.post('./api/exchange-backup-token', {
-							headers: {
-								Authorization: `Bearer ${backupToken}`,
-							},
-						})
-						.json();
+			const backupToken = await file.text();
+			const data = await ky
+				.post<AccessTokenResponse>('./api/exchange-backup-token', {
+					headers: {
+						Authorization: `Bearer ${backupToken}`,
+					},
 				})
-				.then(handleErrors)
-				.then((data) => {
-					localforage.setItem('accessToken', data.accessToken);
-					return true;
-				});
+				.json();
+			localforage.setItem('accessToken', data.accessToken);
+			return true;
 		},
 		didClose: () => {
 			router.navigate('manageAccount', {
@@ -1528,7 +1370,7 @@ function loadRestoreFile() {
 		});
 }
 
-function loadRestoreCode() {
+async function loadRestoreCode() {
 	let qrCodeToken = '';
 	let qrScanner: QrScanner;
 	return Swal.fire({
@@ -1546,27 +1388,23 @@ function loadRestoreCode() {
 			'<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
 		allowOutsideClick: false,
 		backdrop: true,
-		preConfirm: () => {
+		preConfirm: async () => {
 			Swal.getCancelButton()?.setAttribute('hidden', 'true');
 			try {
 				qrScanner.stop();
 				qrScanner.destroy();
-				(
-					document.getElementById('webcamFeed') as HTMLElement
-				).outerHTML = loadingGif;
+				(document.getElementById('webcamFeed') as HTMLElement).outerHTML =
+					loadingGif;
 			} catch {}
-			return ky
-				.post('./api/exchange-qr-token', {
+			const data = await ky
+				.post<AccessTokenResponse>('./api/exchange-qr-token', {
 					headers: {
 						Authorization: `Bearer ${qrCodeToken}`,
 					},
 				})
-				.json()
-				.then(handleErrors)
-				.then((data) => {
-					localforage.setItem('accessToken', data.accessToken);
-					return true;
-				});
+				.json();
+			localforage.setItem('accessToken', data.accessToken);
+			return true;
 		},
 		didClose: () => {
 			QrScanner.hasCamera().then((hasCamera) => {
@@ -1626,7 +1464,7 @@ function loadRestoreCode() {
 		});
 }
 
-function createRestoreFile() {
+async function createRestoreFile() {
 	return Swal.fire({
 		title: 'Create a backup file for your account',
 		html: "Generating this file allows you to restore your account (and all the progress you've made) on any device.<br><br><strong>Please keep this file safe - anyone that has it will be able to load your GeoScout account on their device!</strong>",
@@ -1643,13 +1481,13 @@ function createRestoreFile() {
 			'<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
 		allowOutsideClick: () => !Swal.isLoading(),
 		backdrop: true,
-		preConfirm: () => {
+		preConfirm: async () => {
 			Swal.getCancelButton()?.setAttribute('hidden', 'true');
 			return getAccessToken()
 				.then((accessToken) => {
 					if (accessToken) {
 						return ky
-							.post('./api/get-backup-token', {
+							.post<BackupToken>('./api/get-backup-token', {
 								headers: {
 									Authorization: `Bearer ${accessToken}`,
 								},
@@ -1662,7 +1500,6 @@ function createRestoreFile() {
 						throw "You don't have an account!";
 					}
 				})
-				.then(handleErrors)
 				.then((backupToken) => {
 					const backupFile = new File(
 						[DOMPurify.sanitize(String(backupToken.token))],
@@ -1706,7 +1543,7 @@ function createRestoreFile() {
 		});
 }
 
-function createRestoreCode() {
+async function createRestoreCode() {
 	return Swal.fire({
 		title: 'Add an additional device',
 		html: 'This feature allows you add an additional device to your account.<br><br><strong>Please note that a new QR code needs to be generated for each device you wish to add.',
@@ -1723,7 +1560,7 @@ function createRestoreCode() {
 			'<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
 		allowOutsideClick: () => !Swal.isLoading(),
 		backdrop: true,
-		preConfirm: () => {
+		preConfirm: async () => {
 			Swal.getCancelButton()?.setAttribute('hidden', 'true');
 			return getAccessToken()
 				.then((accessToken) => {
@@ -1742,7 +1579,6 @@ function createRestoreCode() {
 						throw "You don't have an account!";
 					}
 				})
-				.then(handleErrors)
 				.then((qrCode) => {
 					return qrCode;
 				});
@@ -1785,7 +1621,7 @@ function createRestoreCode() {
 }
 
 // Function to start on page load
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
 	// Create router
 	router = new Navigo('/');
 	// Define hooks for all routes
@@ -1799,10 +1635,10 @@ window.addEventListener('load', () => {
 	});
 	// Specify routes and resolve
 	router
-		.on('/', function () {
+		.on('/', () => {
 			router.navigate('/home', { historyAPIMethod: 'replaceState' });
 		})
-		.on('/home', function () {
+		.on('/home', () => {
 			if (holdingEnabled) {
 				router.navigate('/holding', {
 					historyAPIMethod: 'replaceState',
@@ -1811,7 +1647,7 @@ window.addEventListener('load', () => {
 				changePage('home', 'Home', false);
 			}
 		})
-		.on('/viewCaches', function () {
+		.on('/viewCaches', () => {
 			if (holdingEnabled) {
 				router.navigate('/holding', {
 					historyAPIMethod: 'replaceState',
@@ -1820,7 +1656,7 @@ window.addEventListener('load', () => {
 				loadCachesMapPage();
 			}
 		})
-		.on('/viewCachesTable', function () {
+		.on('/viewCachesTable', () => {
 			if (holdingEnabled) {
 				router.navigate('/holding', {
 					historyAPIMethod: 'replaceState',
@@ -1829,7 +1665,7 @@ window.addEventListener('load', () => {
 				loadCachesTablePage();
 			}
 		})
-		.on('/viewCache-:id', function (value) {
+		.on('/viewCache-:id', (value) => {
 			if (holdingEnabled) {
 				router.navigate('/holding', {
 					historyAPIMethod: 'replaceState',
@@ -1843,7 +1679,7 @@ window.addEventListener('load', () => {
 				}
 			}
 		})
-		.on('/foundCaches', function () {
+		.on('/foundCaches', () => {
 			if (holdingEnabled) {
 				router.navigate('/holding', {
 					historyAPIMethod: 'replaceState',
@@ -1852,7 +1688,7 @@ window.addEventListener('load', () => {
 				loadFoundCachesPage();
 			}
 		})
-		.on('/foundCache-:id', function (value) {
+		.on('/foundCache-:id', (value) => {
 			if (holdingEnabled) {
 				router.navigate('/holding', {
 					historyAPIMethod: 'replaceState',
@@ -1866,7 +1702,7 @@ window.addEventListener('load', () => {
 				}
 			}
 		})
-		.on('/leaderboard', function () {
+		.on('/leaderboard', () => {
 			if (holdingEnabled) {
 				router.navigate('/holding', {
 					historyAPIMethod: 'replaceState',
@@ -1875,23 +1711,23 @@ window.addEventListener('load', () => {
 				loadLeaderboardPage();
 			}
 		})
-		.on('/about', function () {
+		.on('/about', () => {
 			changePage('about', 'About', false);
 		})
-		.on('/disclaimer', function () {
+		.on('/disclaimer', () => {
 			changePage('disclaimer', 'Disclaimer', false);
 		})
-		.on('/terms', function () {
+		.on('/terms', () => {
 			changePage('terms', 'Terms and Conditions', false);
 		})
-		.on('/privacy', function () {
+		.on('/privacy', () => {
 			changePage('privacy', 'Privacy Policy', false);
 		})
 		// Legacy redirect
-		.on('/restoreAccount', function () {
+		.on('/restoreAccount', () => {
 			router.navigate('manageAccount');
 		})
-		.on('/manageAccount', function () {
+		.on('/manageAccount', () => {
 			getAccessToken()
 				.then((hasAccount) => {
 					(
@@ -1912,19 +1748,19 @@ window.addEventListener('load', () => {
 					showError(error, true, 'home');
 				});
 		})
-		.on('/createFile', function () {
+		.on('/createFile', () => {
 			createRestoreFile();
 		})
-		.on('/createCode', function () {
+		.on('/createCode', () => {
 			createRestoreCode();
 		})
-		.on('/restoreFile', function () {
+		.on('/restoreFile', () => {
 			loadRestoreFile();
 		})
-		.on('/restoreCode', function () {
+		.on('/restoreCode', () => {
 			loadRestoreCode();
 		})
-		.notFound(function () {
+		.notFound(() => {
 			changePage('404', 'Page not found', false);
 		})
 		.resolve();
@@ -1932,7 +1768,7 @@ window.addEventListener('load', () => {
 	router.updatePageLinks();
 	// Add holding page if active
 	if (holdingEnabled) {
-		router.on('/holding', function () {
+		router.on('/holding', () => {
 			changePage('holding', 'Home', false);
 		});
 		router.resolve();
@@ -1943,7 +1779,7 @@ window.addEventListener('load', () => {
 		// Register service worker
 		navigator.serviceWorker
 			.register('service-worker.js')
-			.then(function (registration) {
+			.then((registration) => {
 				// Trigger update
 				registration.update();
 				// Listen for updates
@@ -1983,37 +1819,25 @@ window.addEventListener('load', () => {
 			if (hasAccount) {
 				const backupBanner = document.getElementById('backupBanner');
 				// Check if already dismissed
-				return localforage
-					.getItem('backupBannerClosed')
-					.then((item) => {
-						if (!item) {
-							// Unhide banner
-							backupBanner?.classList.remove('d-none');
-							// Set listener to store dismissal event in local storage
-							backupBanner?.addEventListener(
-								'closed.bs.alert',
-								function () {
-									// Set key in local storage (if able)
-									localforage.setItem(
-										'backupBannerClosed',
-										true,
-									);
-								},
-							);
-						}
-						const greetings =
-							document.querySelectorAll<HTMLElement>(
-								'.welcomeGreeting',
-							);
-						greetings.forEach((greeting) => {
-							greeting.innerText = 'back';
-							parseAccessToken(hasAccount).then(
-								(accountDetails) => {
-									greeting.innerText = `back ${accountDetails.sub}`;
-								},
-							);
+				return localforage.getItem('backupBannerClosed').then((item) => {
+					if (!item) {
+						// Unhide banner
+						backupBanner?.classList.remove('d-none');
+						// Set listener to store dismissal event in local storage
+						backupBanner?.addEventListener('closed.bs.alert', () => {
+							// Set key in local storage (if able)
+							localforage.setItem('backupBannerClosed', true);
+						});
+					}
+					const greetings =
+						document.querySelectorAll<HTMLElement>('.welcomeGreeting');
+					greetings.forEach((greeting) => {
+						greeting.innerText = 'back';
+						parseAccessToken(hasAccount).then((accountDetails) => {
+							greeting.innerText = `back ${accountDetails.sub}`;
 						});
 					});
+				});
 			}
 		})
 		.catch((error) => {

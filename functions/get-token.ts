@@ -1,91 +1,101 @@
 /* jshint esversion: 10 */
 // Import JWT module
-import {
-	sign
-} from 'jwt-promisify';
+import { SignOptions, sign } from 'jsonwebtoken';
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
 // Validation module
 import isUUID from 'validator/es/lib/isUUID';
+
 // Microsoft Graph API details
-const clientId = process.env.graphClientId;
-const tenantId = process.env.tenantId;
+const clientId = process.env.graphClientId as string;
+const tenantId = process.env.tenantId as string;
+
+import { ClientCertificateCredential } from '@azure/identity';
 // Graph SDK Preparation
-import {
-	Client
-} from '@microsoft/microsoft-graph-client';
-import {
-	TokenCredentialAuthenticationProvider
-} from '@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials';
-import {
-	ClientCertificateCredential
-} from '@azure/identity';
+import { Client } from '@microsoft/microsoft-graph-client';
+import { TokenCredentialAuthenticationProvider } from '@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials';
 import path from 'path';
+
 const credential = new ClientCertificateCredential(tenantId, clientId, {
 	certificatePath: path.join(__dirname, 'cert.pem'),
-	certificatePassword: process.env.graphCertKey
+	certificatePassword: process.env.graphCertKey,
 });
 const authProvider = new TokenCredentialAuthenticationProvider(credential, {
-	scopes: ['.default']
+	scopes: ['.default'],
 });
 const client = Client.initWithMiddleware({
 	debugLogging: true,
-	authProvider: authProvider
+	authProvider: authProvider,
 });
 // SharePoint Site Details
-const userListId = process.env.graphUserListId;
-const siteId = process.env.graphSiteId;
+const userListId = process.env.graphUserListId as string;
+const siteId = process.env.graphSiteId as string;
+
+import { HandlerEvent, HandlerResponse } from '@netlify/functions';
 // Imports for rate limiting
 import crypto from 'crypto';
 import awsLimit from 'lambda-rate-limiter';
+import {
+	AccessTokenChallengeResponse,
+	AccessTokenResponse,
+} from '../src/js/types';
+
 // Rate limiting configuration to prevent abuse
 const rateLimit = awsLimit({
 	// Set 1 minute interval
-	interval: 60 * 1000
+	interval: 60 * 1000,
 }).check;
 // JWT authentication
-const jwtSecret = process.env.jwtTokenSecret;
-const jwtOptions = {
+const jwtSecret = process.env.jwtTokenSecret as string;
+const jwtOptions: SignOptions = {
 	audience: 'www.geoscout.uk',
 	expiresIn: '3y',
 	issuer: 'api.geoscout.uk',
-	algorithm: 'HS384'
+	algorithm: 'HS384',
 };
 // Cache for validation
-const uuidCache = {};
+const uuidCache: { [id: string]: string } = {};
 // Return for all responses
 const headers = {
-	'Content-Type': 'application/json'
+	'Content-Type': 'application/json',
 };
 // Dictionary list for usernames
 const usernameList = [
-	'Red', 'Yellow', 'Green', 'Teal', 'Blue', 'Purple', 'Amber', 'Orange', 'Pink'
+	'Red',
+	'Yellow',
+	'Green',
+	'Teal',
+	'Blue',
+	'Purple',
+	'Amber',
+	'Orange',
+	'Pink',
 ];
 
 // Start Lambda Function
-export async function handler(event, context) {
+export async function handler(event: HandlerEvent): Promise<HandlerResponse> {
 	// Only allow POST
 	if (event.httpMethod !== 'POST') {
 		return {
 			statusCode: 405,
 			body: JSON.stringify({
-				error: 'Method Not Allowed'
+				error: 'Method Not Allowed',
 			}),
-			headers
+			headers,
 		};
 	}
 
-	let uuid;
+	let uuid: string;
 
 	try {
-		uuid = JSON.parse(event.body).uuid;
+		uuid = JSON.parse(event.body as string).uuid;
 		if (!isUUID(uuid)) {
 			return {
 				statusCode: 400,
 				body: JSON.stringify({
-					error: 'Invalid UUID'
+					error: 'Invalid UUID',
 				}),
-				headers
+				headers,
 			};
 		}
 	} catch (error) {
@@ -93,16 +103,18 @@ export async function handler(event, context) {
 		return {
 			statusCode: 400,
 			body: JSON.stringify({
-				error: 'Invalid request'
+				error: 'Invalid request',
 			}),
-			headers
+			headers,
 		};
 	}
 
 	// Generate hash for current IP + UUID (stored in limiter)
 	const uniqueToken = crypto
 		.createHash('SHA256')
-		.update(`${(event.headers['x-nf-client-connection-ip'] || event.headers['client-ip'])}-${uuid}`)
+		.update(
+			`${event.headers['x-nf-client-connection-ip'] || event.headers['client-ip']}-${uuid}`,
+		)
 		.digest('hex');
 	try {
 		// Limit to 5 attempts per IP/per UUID
@@ -114,23 +126,24 @@ export async function handler(event, context) {
 			statusCode: 429,
 			body: JSON.stringify({
 				error: 'Too many attempts',
-				errorDebug: 'Please contact support@geoscout.uk if you believe this is a mistake.'
+				errorDebug:
+					'Please contact support@geoscout.uk if you believe this is a mistake.',
 			}),
-			headers
+			headers,
 		};
 	}
 
-	if (JSON.parse(event.body).hasOwnProperty('token')) {
-		const tempToken = JSON.parse(event.body).token;
-		let itemId;
-		let accessToken;
+	if (JSON.parse(event.body as string).hasOwnProperty('token')) {
+		const tempToken = JSON.parse(event.body as string).token;
+		let itemId: string;
+		let accessToken: string;
 		if (tempToken === '' || tempToken === undefined) {
 			return {
 				statusCode: 400,
 				body: JSON.stringify({
-					error: 'Invalid request'
+					error: 'Invalid request',
 				}),
-				headers
+				headers,
 			};
 		}
 		if (tempToken === uuidCache[uuid]) {
@@ -139,69 +152,77 @@ export async function handler(event, context) {
 				.api(`/sites/${siteId}/lists/${userListId}/items`)
 				.post({
 					fields: {
-						Title: `${usernameList[crypto.randomInt(usernameList.length)]}-${crypto.randomInt(100, 999)}`
-					}
+						Title: `${usernameList[crypto.randomInt(usernameList.length)]}-${crypto.randomInt(100, 999)}`,
+					},
 				})
-				.then(data => {
+				.then((data) => {
 					itemId = data.id;
-					return sign({
-						sub: data.fields.Title,
-						oid: data.id,
-						jwtId: tempToken,
-					}, jwtSecret, jwtOptions);
+					return sign(
+						{
+							sub: data.fields.Title,
+							oid: data.id,
+							jwtId: tempToken,
+						},
+						jwtSecret,
+						jwtOptions,
+					);
 				})
-				.then(jwt => {
+				.then((jwt) => {
 					accessToken = jwt;
 					return client
 						.api(`/sites/${siteId}/lists/${userListId}/items/${itemId}/fields`)
 						.patch({
-							Username: JSON.stringify([tempToken])
+							Username: JSON.stringify([tempToken]),
 						});
 				})
 				.then(() => {
 					return {
 						statusCode: 201,
 						body: JSON.stringify({
-							accessToken
-						}),
-						headers
+							accessToken,
+						} as AccessTokenResponse),
+						headers,
 					};
 				})
-				.catch(error => {
+				.catch((error) => {
 					console.warn(error);
 					return {
 						statusCode: 500,
 						body: JSON.stringify({
 							error: 'Unable to generate an account for this device',
-							errorDebug: error
+							errorDebug: error,
 						}),
-						headers
+						headers,
 					};
 				});
 		} else {
 			try {
 				delete uuidCache[uuid];
-			} catch { }
+			} catch {}
 			return {
 				statusCode: 400,
 				body: JSON.stringify({
-					error: 'Invalid request'
+					error: 'Invalid request',
 				}),
-				headers
+				headers,
 			};
 		}
 	} else {
 		const tempToken = crypto
 			.createHash('SHA256')
-			.update(Buffer.from(`${crypto.randomUUID()}-${uuid}`, 'ascii').toString('base64'))
+			.update(
+				Buffer.from(`${crypto.randomUUID()}-${uuid}`, 'ascii').toString(
+					'base64',
+				),
+			)
 			.digest('hex');
 		uuidCache[uuid] = tempToken;
 		return {
 			statusCode: 200,
 			body: JSON.stringify({
-				token: tempToken
-			}),
-			headers
+				token: tempToken,
+			} as AccessTokenChallengeResponse),
+			headers,
 		};
 	}
 }

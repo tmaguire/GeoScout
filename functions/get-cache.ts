@@ -1,0 +1,188 @@
+// Import modules for Google Maps image creation
+import { signUrl } from '@googlemaps/url-signature';
+// Import JWT module
+import { JwtPayload, VerifyOptions, verify } from 'jsonwebtoken';
+
+// Import Fetch (Isomorphic Fetch)
+import 'isomorphic-fetch';
+// Microsoft Graph API details
+const clientId = process.env.graphClientId as string;
+const tenantId = process.env.tenantId as string;
+
+import { ClientCertificateCredential } from '@azure/identity';
+// Graph SDK Preparation
+import { Client } from '@microsoft/microsoft-graph-client';
+import { TokenCredentialAuthenticationProvider } from '@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials';
+import path from 'path';
+
+const credential = new ClientCertificateCredential(tenantId, clientId, {
+	certificatePath: path.join(__dirname, 'cert.pem'),
+	certificatePassword: process.env.graphCertKey,
+});
+const authProvider = new TokenCredentialAuthenticationProvider(credential, {
+	scopes: ['.default'],
+});
+const client = Client.initWithMiddleware({
+	debugLogging: true,
+	authProvider: authProvider,
+});
+// SharePoint Site Details
+const listId = process.env.graphSiteListId as string;
+const userListId = process.env.graphUserListId as string;
+const siteId = process.env.graphSiteId as string;
+// Google Maps Secret
+const mapsSecret = process.env.mapsSecret as string;
+
+import { HandlerEvent, HandlerResponse } from '@netlify/functions';
+// Grid reference library
+import { LatLon } from 'geodesy/osgridref.js';
+import {
+	FoundCache,
+	GeoScoutCache,
+	GeoScoutToken,
+	SharePointCacheRecord,
+	SharePointUserRecord,
+} from '../src/js/types';
+
+// JWT authentication
+const jwtSecret = process.env.jwtTokenSecret as string;
+const jwtOptions: VerifyOptions = {
+	audience: 'www.geoscout.uk',
+	maxAge: '3y',
+	issuer: 'api.geoscout.uk',
+	algorithms: ['HS384'],
+};
+// Return for all responses
+const headers = {
+	'Content-Type': 'application/json',
+};
+
+// Start Lambda Function
+export async function handler(event: HandlerEvent): Promise<HandlerResponse> {
+	// Only allow POST
+	if (event.httpMethod !== 'POST') {
+		return {
+			statusCode: 405,
+			body: JSON.stringify({
+				error: 'Method Not Allowed',
+			}),
+			headers,
+		};
+	}
+
+	let cacheId: string;
+	let userId: string | false = false;
+	let returnObj: GeoScoutCache;
+
+	try {
+		cacheId = JSON.parse(event.body as string).cache;
+		if (!cacheId || cacheId.length !== 3) {
+			return {
+				statusCode: 400,
+				body: JSON.stringify({
+					error: 'Invalid cache ID',
+				}),
+				headers,
+			};
+		}
+	} catch (error) {
+		console.log(error);
+		return {
+			statusCode: 400,
+			body: JSON.stringify({
+				error: 'Invalid request',
+			}),
+			headers,
+		};
+	}
+
+	return new Promise<false | GeoScoutToken>((resolve, reject) => {
+		// Get token (if provided)
+		try {
+			const authToken = String(event.headers.authorization).split(' ')[1];
+			if (authToken) {
+				resolve(verify(authToken, jwtSecret, jwtOptions) as GeoScoutToken);
+			} else {
+				resolve(false);
+			}
+		} catch (error) {
+			reject(error);
+		}
+	})
+		.then((decodedToken) => {
+			if (typeof decodedToken === 'object') {
+				userId = decodedToken.sub;
+			}
+			// Get items from list
+			return client
+				.api(
+					`/sites/${siteId}/lists/${listId}/items?$expand=fields($select=Title,W3WLocation,Coordinates,Found,Suspended,Polygon)&$select=id,fields&$filter=fields/Title eq '${cacheId}'`,
+				)
+				.header('Prefer', 'allowthrottleablequeries')
+				.get();
+		})
+		.then((data: { value: SharePointCacheRecord[] }) => {
+			const cacheRecord = data.value.find(
+				(record) => record.fields.Title === cacheId,
+			) as SharePointCacheRecord;
+			const fields = cacheRecord.fields;
+			returnObj = {
+				location: fields.W3WLocation,
+				coordinates: fields.Coordinates,
+				polygon: fields.Polygon,
+				id: fields.Title,
+				image: '',
+				gridRef: new LatLon(
+					Number(String(fields.Coordinates).split(',')[0]),
+					Number(String(fields.Coordinates).split(',')[1]),
+				)
+					.toOsGrid()
+					.toString(),
+				stats: fields.Found,
+				found: false,
+				suspended: fields.Suspended,
+			};
+			return client
+				.api(
+					`/sites/${siteId}/lists/${userListId}/items?$expand=fields($select=Title,FoundCaches)&$select=id,fields&$filter=fields/Title eq '${userId ? userId : ''}'`,
+				)
+				.header('Prefer', 'allowthrottleablequeries')
+				.get();
+		})
+		.then((data: { value: SharePointUserRecord[] }) => {
+			const userRecord = data.value.find(
+				(record) => record.fields.Title === userId,
+			);
+			if (userRecord) {
+				const found = [
+					...JSON.parse(userRecord.fields.FoundCaches),
+				] as FoundCache[];
+				if (found.find((cache) => cache.id === cacheId)) {
+					returnObj.found = true;
+				}
+			}
+			returnObj.image = signUrl(
+				`https://maps.googleapis.com/maps/api/staticmap?center=${returnObj.coordinates}&zoom=20&markers=color:${returnObj.found ? '0x23A950' : '0x7413DC'}|${returnObj.coordinates}&size=400x400&scale=2&maptype=satellite&key=AIzaSyDoWhwCiUGlBzrTOFxS17QUjBT9-eh46C4&path=color:0xff0000ff|weight:1|fillcolor:0xFFFF0033|${returnObj.polygon}`,
+				mapsSecret,
+			).href;
+			return returnObj;
+		})
+		.then((obj) => {
+			return {
+				statusCode: 200,
+				body: JSON.stringify(obj),
+				headers,
+			};
+		})
+		.catch((error) => {
+			console.log(error);
+			return {
+				statusCode: 500,
+				body: JSON.stringify({
+					error: 'Cache not found',
+					errorDebug: error,
+				}),
+				headers,
+			};
+		});
+}

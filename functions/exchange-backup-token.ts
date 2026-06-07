@@ -1,88 +1,83 @@
-/* jshint esversion: 10 */
 // Import JWT module
-import {
-	sign,
-	verify
-} from 'jwt-promisify';
+import { SignOptions, sign, VerifyOptions, verify } from 'jsonwebtoken';
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
 // Microsoft Graph API details
-const clientId = process.env.graphClientId;
-const tenantId = process.env.tenantId;
+const clientId = process.env.graphClientId as string;
+const tenantId = process.env.tenantId as string;
+
+import { ClientCertificateCredential } from '@azure/identity';
 // Graph SDK Preparation
-import {
-	Client
-} from '@microsoft/microsoft-graph-client';
-import {
-	TokenCredentialAuthenticationProvider
-} from '@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials';
-import {
-	ClientCertificateCredential
-} from '@azure/identity';
+import { Client } from '@microsoft/microsoft-graph-client';
+import { TokenCredentialAuthenticationProvider } from '@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials';
 import path from 'path';
+
 const credential = new ClientCertificateCredential(tenantId, clientId, {
 	certificatePath: path.join(__dirname, 'cert.pem'),
-	certificatePassword: process.env.graphCertKey
+	certificatePassword: process.env.graphCertKey,
 });
 const authProvider = new TokenCredentialAuthenticationProvider(credential, {
-	scopes: ['.default']
+	scopes: ['.default'],
 });
 const client = Client.initWithMiddleware({
 	debugLogging: true,
-	authProvider: authProvider
+	authProvider: authProvider,
 });
 // SharePoint Site Details
-const userListId = process.env.graphUserListId;
-const siteId = process.env.graphSiteId;
+const userListId = process.env.graphUserListId as string;
+const siteId = process.env.graphSiteId as string;
+
+import { HandlerEvent, HandlerResponse } from '@netlify/functions';
 // Imports for rate limiting
 import crypto from 'crypto';
 import awsLimit from 'lambda-rate-limiter';
+import { GeoScoutToken } from '../src/js/types';
+
 // Rate limiting configuration to prevent abuse
 const rateLimit = awsLimit({
 	// Set 1 minute interval
-	interval: 60 * 1000
+	interval: 60 * 1000,
 }).check;
 // JWT authentication
-const jwtSecret = process.env.jwtTokenSecret;
-const jwtVerifyOptions = {
-	audience: 'qr.geoscout.uk',
-	maxAge: '1h',
+const jwtSecret = process.env.jwtTokenSecret as string;
+const jwtVerifyOptions: VerifyOptions = {
+	audience: 'backup.geoscout.uk',
+	maxAge: '5y',
 	issuer: 'api.geoscout.uk',
-	algorithm: 'HS256'
+	algorithms: ['HS512'],
 };
-const jwtSignOptions = {
+const jwtSignOptions: SignOptions = {
 	audience: 'www.geoscout.uk',
 	expiresIn: '3y',
 	issuer: 'api.geoscout.uk',
-	algorithm: 'HS384'
+	algorithm: 'HS384',
 };
 // Return for all responses
 const headers = {
-	'Content-Type': 'application/json'
+	'Content-Type': 'application/json',
 };
 
 // Start Lambda Function
-export async function handler(event, context) {
+export async function handler(event: HandlerEvent): Promise<HandlerResponse> {
 	// Only allow POST
 	if (event.httpMethod !== 'POST') {
 		return {
 			statusCode: 405,
 			body: JSON.stringify({
-				error: 'Method Not Allowed'
+				error: 'Method Not Allowed',
 			}),
-			headers
+			headers,
 		};
 	}
 
 	let backupToken;
 	let uuid;
-	let userId;
-	let backupTokenId;
-	let backupTokenIds;
-	let recordId;
+	let userId:string;
+	let backupTokenId:string;
+	let recordId:string;
 	let accessTokenId;
-	let accessTokenIds;
-	let returnToken;
+	let accessTokenIds:string[];
+	let returnToken:string;
 
 	try {
 		backupToken = String(event.headers.authorization).split(' ')[1];
@@ -90,9 +85,9 @@ export async function handler(event, context) {
 			return {
 				statusCode: 401,
 				body: JSON.stringify({
-					error: 'Access denied'
+					error: 'Access denied',
 				}),
-				headers
+				headers,
 			};
 		}
 	} catch (error) {
@@ -100,16 +95,18 @@ export async function handler(event, context) {
 		return {
 			statusCode: 400,
 			body: JSON.stringify({
-				error: 'Invalid request'
+				error: 'Invalid request',
 			}),
-			headers
+			headers,
 		};
 	}
 
 	// Generate hash for current IP + UUID (stored in limiter)
 	const uniqueToken = crypto
 		.createHash('SHA256')
-		.update(`${(event.headers['x-nf-client-connection-ip'] || event.headers['client-ip'])}`)
+		.update(
+			`${event.headers['x-nf-client-connection-ip'] || event.headers['client-ip']}`,
+		)
 		.digest('hex');
 	try {
 		// Limit to 5 attempts per IP (prevent abuse)
@@ -121,39 +118,51 @@ export async function handler(event, context) {
 			statusCode: 429,
 			body: JSON.stringify({
 				error: 'Too many attempts',
-				errorDebug: 'Please contact support@geoscout.uk if you believe this is a mistake.'
+				errorDebug:
+					'Please contact support@geoscout.uk if you believe this is a mistake.',
 			}),
-			headers
+			headers,
 		};
 	}
 
 	// Validate exchange token
-	return verify(backupToken, jwtSecret, jwtVerifyOptions)
-		.then(decodedToken => {
+	return new Promise<GeoScoutToken>((resolve) => {
+		resolve(verify(backupToken, jwtSecret, jwtVerifyOptions) as GeoScoutToken);
+	})
+		.then((decodedToken) => {
 			userId = decodedToken.sub;
 			backupTokenId = decodedToken.jwtId;
 			recordId = decodedToken.oid;
 			return client
-				.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}?$expand=fields($select=Title,FoundCaches,Total,Username,BackupTokenIDs)&$select=id,fields&$filter=fields/Title eq '${userId}'`)
+				.api(
+					`/sites/${siteId}/lists/${userListId}/items/${recordId}?expand=fields(select=Title,FoundCaches,Total,Username,BackupTokenIDs)&$select=id,fields&filter=fields/Title eq '${userId}'`,
+				)
 				.header('Prefer', 'allowthrottleablequeries')
 				.get();
 		})
-		.then(data => {
+		.then((data) => {
 			if (data.hasOwnProperty('fields')) {
 				const tempArray = [...JSON.parse(data.fields.BackupTokenIDs)];
-				if (tempArray.find(id => id === backupTokenId)) {
-					backupTokenIds = tempArray.filter(item => item !== backupTokenId);
+				if (tempArray.find((id) => id === backupTokenId)) {
 					accessTokenId = crypto
 						.createHash('SHA256')
-						.update(Buffer.from(`${crypto.randomUUID()}-${uuid}`, 'ascii').toString('base64'))
+						.update(
+							Buffer.from(`${crypto.randomUUID()}-${uuid}`, 'ascii').toString(
+								'base64',
+							),
+						)
 						.digest('hex');
 					accessTokenIds = [...JSON.parse(data.fields.Username)];
 					accessTokenIds.push(accessTokenId);
-					return sign({
-						sub: userId,
-						oid: recordId,
-						jwtId: accessTokenId
-					}, jwtSecret, jwtSignOptions);
+					return sign(
+						{
+							sub: userId,
+							oid: recordId,
+							jwtId: accessTokenId,
+						},
+						jwtSecret,
+						jwtSignOptions,
+					);
 				} else {
 					throw 'Invalid User ID';
 				}
@@ -161,32 +170,32 @@ export async function handler(event, context) {
 				throw 'Invalid User ID';
 			}
 		})
-		.then(jwt => {
+		.then((jwt) => {
 			returnToken = jwt;
-			return client.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}/fields`)
+			return client
+				.api(`/sites/${siteId}/lists/${userListId}/items/${recordId}/fields`)
 				.patch({
 					Username: JSON.stringify(accessTokenIds),
-					BackupTokenIDs: JSON.stringify(backupTokenIds)
 				});
 		})
 		.then(() => {
 			return {
 				statusCode: 201,
 				body: JSON.stringify({
-					accessToken: returnToken
+					accessToken: returnToken,
 				}),
-				headers
+				headers,
 			};
 		})
-		.catch(error => {
+		.catch((error) => {
 			console.warn(error);
 			return {
 				statusCode: 500,
 				body: JSON.stringify({
-					error: 'Unable to use this QR code, please generate a new one to scan',
-					errorDebug: error
+					error: 'Unable to generate access token',
+					errorDebug: error,
 				}),
-				headers
+				headers,
 			};
 		});
 }
