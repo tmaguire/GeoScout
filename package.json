@@ -56,7 +56,7 @@
 		"@types/bootstrap": "^5.2.11",
 		"@types/geodesy": "^2.2.8",
 		"@types/geojson": "^7946.0.16",
-		"@types/google.maps": "^3.65.0",
+		"@types/google.maps": "^3.65.1",
 		"@types/jsonwebtoken": "^9.0.10",
 		"@types/lambda-rate-limiter": "^3.0.2",
 		"@types/qrcode": "^1.5.6",
