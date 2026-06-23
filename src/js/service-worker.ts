@@ -1,3 +1,4 @@
+/// <reference types="serviceworker" />
 export type Version = number;
 declare let self: ServiceWorkerGlobalScope;
 // Install service worker
@@ -42,7 +43,7 @@ const resourcesToCache = [
 	'/pages.json',
 ];
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', (event: ExtendableEvent) => {
 	event.waitUntil(
 		caches.open(cacheName).then((cache) => {
 			return cache.addAll(resourcesToCache);
@@ -51,7 +52,7 @@ self.addEventListener('install', (event) => {
 });
 
 // Cache and return requests
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', (event: FetchEvent) => {
 	// Parse the URL
 	const requestURL = new URL(event.request.url);
 	// Handle service worker URL
@@ -113,7 +114,7 @@ self.addEventListener('fetch', (event) => {
 
 // Update a service worker
 const cacheAllowList = [cacheName];
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', (event: ExtendableEvent) => {
 	event.waitUntil(
 		caches.keys().then((cacheNames) => {
 			return Promise.all(
@@ -129,7 +130,7 @@ self.addEventListener('activate', (event) => {
 });
 
 // Listen to messages
-self.addEventListener('message', (event) => {
+self.addEventListener('message', (event: ExtendableMessageEvent) => {
 	if (event.origin !== '/* @echo appUrl */') {
 		return;
 	} else {

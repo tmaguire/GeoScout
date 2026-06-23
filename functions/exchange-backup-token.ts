@@ -2,6 +2,7 @@
 import { SignOptions, sign, VerifyOptions, verify } from 'jsonwebtoken';
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
+
 // Microsoft Graph API details
 const clientId = process.env.graphClientId as string;
 const tenantId = process.env.tenantId as string;
@@ -72,12 +73,12 @@ export async function handler(event: HandlerEvent): Promise<HandlerResponse> {
 
 	let backupToken;
 	let uuid;
-	let userId:string;
-	let backupTokenId:string;
-	let recordId:string;
+	let userId: string;
+	let backupTokenId: string;
+	let recordId: string;
 	let accessTokenId;
-	let accessTokenIds:string[];
-	let returnToken:string;
+	let accessTokenIds: string[];
+	let returnToken: string;
 
 	try {
 		backupToken = String(event.headers.authorization).split(' ')[1];

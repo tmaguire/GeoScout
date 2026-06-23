@@ -1,6 +1,5 @@
 // Import JWT module
 import {
-	JwtPayload,
 	SignOptions,
 	sign,
 	VerifyOptions,

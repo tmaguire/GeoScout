@@ -1,4 +1,3 @@
-/* jshint esversion: 10 */
 // Import JWT module
 import { SignOptions, sign } from 'jsonwebtoken';
 // Import Fetch (Isomorphic Fetch)

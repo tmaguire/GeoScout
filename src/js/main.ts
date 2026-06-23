@@ -1,3 +1,4 @@
+/// <reference types="google.maps" />
 // Imports
 import 'bootstrap';
 import { importLibrary, setOptions } from '@googlemaps/js-api-loader';

@@ -2,6 +2,7 @@
 import { VerifyOptions, verify } from 'jsonwebtoken';
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
+
 // Microsoft Graph API details
 const clientId = process.env.graphClientId as string;
 const tenantId = process.env.tenantId as string;

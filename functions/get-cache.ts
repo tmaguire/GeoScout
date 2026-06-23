@@ -1,10 +1,11 @@
 // Import modules for Google Maps image creation
 import { signUrl } from '@googlemaps/url-signature';
 // Import JWT module
-import { JwtPayload, VerifyOptions, verify } from 'jsonwebtoken';
+import { VerifyOptions, verify } from 'jsonwebtoken';
 
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
+
 // Microsoft Graph API details
 const clientId = process.env.graphClientId as string;
 const tenantId = process.env.tenantId as string;
