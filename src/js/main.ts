@@ -22,6 +22,7 @@ import type {
 	GeoScoutToken,
 	LeaderboardRecord,
 } from './types';
+import '@khmyznikov/pwa-install';
 
 // Constants from build process
 const appUrl = '/* @echo appUrl */';
