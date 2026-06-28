@@ -3,7 +3,6 @@
 import 'bootstrap';
 import { importLibrary, setOptions } from '@googlemaps/js-api-loader';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
-import { Collapse } from 'bootstrap';
 import DOMPurify from 'dompurify';
 import { Grid, html, type Row } from 'gridjs';
 import type { TCell } from 'gridjs/dist/src/types.js';
@@ -13,20 +12,21 @@ import Navigo from 'navigo';
 import QrScanner from 'qr-scanner';
 import Swal from 'sweetalert2';
 import type {
-	AccessTokenChallengeResponse,
 	AccessTokenResponse,
 	BackupToken,
 	FoundCaches,
 	GeoScoutCache,
 	GeoScoutCaches,
-	GeoScoutToken,
 	LeaderboardRecord,
 } from './types';
 import '@khmyznikov/pwa-install';
+import { getAccessToken, parseAccessToken } from './accessTokens';
+import { changePage } from './changePage';
+import { resetCachePage } from './resetCachePage';
 
 // Constants from build process
-const appUrl = '/* @echo appUrl */';
-const appName = '/* @echo appName */';
+export const appUrl = '/* @echo appUrl */';
+export const appName = '/* @echo appName */';
 const lng = Number('/* @echo lng */');
 const lat = Number('/* @echo lat */');
 const googleMapsApiKey = '/* @echo googleMapsApiKey */';
@@ -55,76 +55,6 @@ const showToast = Swal.mixin({
 		toast.addEventListener('mouseleave', Swal.resumeTimer);
 	},
 });
-
-function getAccessToken(required: boolean = false): Promise<string | false> {
-	return new Promise((resolve, reject) => {
-		localforage.getItem<string>('accessToken').then((accessToken) => {
-			if (accessToken) {
-				resolve(accessToken);
-			} else {
-				if (
-					localStorage.getItem('accessToken') === null ||
-					localStorage.getItem('accessToken') === ''
-				) {
-					if (required) {
-						try {
-							resolve(newAccessToken());
-						} catch (error) {
-							reject(error);
-						}
-					} else {
-						resolve(false);
-					}
-				} else {
-					// Migrate token to localforage
-					resolve(
-						localforage.setItem<string>(
-							'accessToken',
-							localStorage.getItem('accessToken') || '',
-						),
-					);
-				}
-			}
-		});
-	});
-}
-
-async function newAccessToken(): Promise<string> {
-	const uuid = crypto.randomUUID().toString();
-	const data = await ky
-		.post<AccessTokenChallengeResponse>('./api/get-token', {
-			json: {
-				uuid,
-			},
-		})
-		.json();
-	const data_1 = await ky
-		.post<AccessTokenResponse>('./api/get-token', {
-			json: {
-				uuid,
-				token: data.token,
-			},
-		})
-		.json();
-	return await localforage.setItem<string>('accessToken', data_1.accessToken);
-}
-
-function parseAccessToken(token: string): Promise<GeoScoutToken> {
-	return new Promise((resolve, reject) => {
-		try {
-			if (!token) {
-				throw 'Invalid token';
-			}
-			const base64Url = token.split('.')[1];
-			const base64 = String(base64Url)
-				.replaceAll('-', '+')
-				.replaceAll('_', '/');
-			resolve(JSON.parse(window.atob(base64)));
-		} catch (error) {
-			reject(error);
-		}
-	});
-}
 
 function showError(
 	error: string = 'An issue occurred',
@@ -250,60 +180,6 @@ function appendSuffix(number: number): string {
 		return `${number}rd`;
 	}
 	return `${number}th`;
-}
-
-function changePage(
-	page: string = '',
-	title: false | string = false,
-	id: false | string = false,
-): void {
-	// Update Canonical tag
-	document
-		.querySelector("link[rel='canonical']")
-		?.setAttribute(
-			'href',
-			page === '404'
-				? appUrl
-				: id
-					? `${appUrl}/${page}-${id}`
-					: `${appUrl}/${page}`,
-		);
-	// Update menu
-	document.querySelectorAll('a.nav-link').forEach((menuItem) => {
-		if (
-			menuItem.getAttribute('href') === (page === 'holding' ? 'home' : page)
-		) {
-			menuItem.classList.add('active');
-			menuItem.setAttribute('aria-current', 'page');
-		} else {
-			menuItem.classList.remove('active');
-			menuItem.removeAttribute('aria-current');
-		}
-	});
-	// Hide all pages (except selected)
-	document.querySelectorAll('section').forEach((section) => {
-		if (section.id !== page) {
-			section.classList.add('d-none');
-			section.setAttribute('aria-hidden', 'true');
-		}
-	});
-	// Set page as active
-	document.getElementById(page)?.classList.remove('d-none');
-	document.getElementById(page)?.removeAttribute('aria-hidden');
-	// Change document title
-	document.title = `${title} | ${appName}`;
-	// Scroll to top
-	window.scrollTo({
-		top: 0,
-		left: 0,
-		behavior: 'smooth',
-	});
-	// Close the navbar menu (if it is open)
-	const menuToggle = document.getElementById('navbarToggler') as HTMLElement;
-	const bsCollapse = new Collapse(menuToggle, {
-		toggle: false,
-	});
-	bsCollapse.hide();
 }
 
 async function loadCachesMapPage(): Promise<void> {
@@ -781,7 +657,7 @@ async function loadCachesTablePage(): Promise<void> {
 		});
 }
 
-async function loadCachePage(id: string) {
+async function loadCachePage(id: string): Promise<void> {
 	resetCachePage();
 	changePage('viewCache', `Cache ${id}`, id);
 	return getAccessToken()
@@ -873,50 +749,7 @@ async function loadCachePage(id: string) {
 		});
 }
 
-function resetCachePage() {
-	document.getElementById('cacheCard')?.setAttribute('aria-hidden', 'true');
-	const img = document.getElementById('cacheMapImg') as HTMLElement;
-	img.setAttribute('src', './img/loading.gif');
-	img.setAttribute('alt', 'Loading animation placeholder');
-	img.setAttribute('height', '150');
-	img.setAttribute('width', '150');
-	const header = document.getElementById('cacheHeader') as HTMLElement;
-	header.setAttribute('class', 'card-title placeholder-glow');
-	header.innerHTML = '<span class="placeholder col-6"></span>';
-	const w3wLink = document.getElementById('cacheW3WLink') as HTMLElement;
-	w3wLink.setAttribute('class', 'card-text placeholder-glow');
-	w3wLink.innerHTML =
-		'<span class="placeholder col-7"></span><span class="placeholder col-4"></span><span class="placeholder col-4"></span><span class="placeholder col-6"></span><span class="placeholder col-8"></span>';
-	const w3wBtn = document.getElementById('cacheW3WBtn') as HTMLElement;
-	w3wBtn.removeAttribute('target');
-	w3wBtn.removeAttribute('href');
-	w3wBtn.setAttribute('tabindex', '-1');
-	w3wBtn.setAttribute(
-		'class',
-		'btn btn-primary m-1 disabled placeholder col-5',
-	);
-	w3wBtn.replaceChildren();
-	const mapBtn = document.getElementById('cacheMapsLink') as HTMLElement;
-	mapBtn.removeAttribute('target');
-	mapBtn.removeAttribute('href');
-	mapBtn.setAttribute('tabindex', '-1');
-	mapBtn.setAttribute(
-		'class',
-		'btn btn-primary m-1 disabled placeholder col-5',
-	);
-	mapBtn.replaceChildren();
-	const foundBtn = document.getElementById('cacheFoundLink') as HTMLElement;
-	foundBtn.removeAttribute('target');
-	foundBtn.removeAttribute('href');
-	foundBtn.setAttribute('tabindex', '-1');
-	foundBtn.setAttribute(
-		'class',
-		'btn btn-outline-primary m-1 disabled placeholder col-4',
-	);
-	foundBtn.replaceChildren();
-}
-
-async function loadFoundCachePage(id: string) {
+async function loadFoundCachePage(id: string): Promise<void> {
 	changePage('viewCache', `Cache ${id}`, id);
 	return Swal.fire({
 		titleText: `Found cache ${id}?`,
@@ -950,15 +783,20 @@ async function loadFoundCachePage(id: string) {
 		confirmButtonText: 'Verify cache code',
 		backdrop: true,
 		showLoaderOnConfirm: true,
-		allowOutsideClick: () => !Swal.isLoading(),
-		inputValidator: (value) => {
+		allowOutsideClick: (): boolean => !Swal.isLoading(),
+		inputValidator: (
+			value,
+		):
+			| 'You must enter the 5-digit code from the cache to confirm you have found it'
+			| 'This code is invalid'
+			| undefined => {
 			if (!value) {
 				return 'You must enter the 5-digit code from the cache to confirm you have found it';
 			} else if (value.length !== 5 || Number.isNaN(Number(value))) {
 				return 'This code is invalid';
 			}
 		},
-		preConfirm: async (data) => {
+		preConfirm: async (data): Promise<{ success: string }> => {
 			Swal.getCancelButton()?.setAttribute('hidden', 'true');
 			return getAccessToken(true).then((accessToken) => {
 				return ky
@@ -975,7 +813,7 @@ async function loadFoundCachePage(id: string) {
 			});
 		},
 	})
-		.then((result) => {
+		.then((result): void => {
 			if (result.isConfirmed) {
 				Swal.fire({
 					title: 'You did it!',
@@ -987,10 +825,10 @@ async function loadFoundCachePage(id: string) {
 					customClass: {
 						confirmButton: 'btn btn-primary m-1 shadow',
 					},
-					didOpen: () => {
+					didOpen: (): void => {
 						Swal.hideLoading();
 					},
-					didClose: () => {
+					didClose: (): void => {
 						router.navigate(`viewCache-${id}`);
 					},
 				});
@@ -998,7 +836,7 @@ async function loadFoundCachePage(id: string) {
 				router.navigate(`viewCache-${id}`);
 			}
 		})
-		.catch((error) => {
+		.catch((error): void => {
 			Swal.fire({
 				title: error,
 				icon: 'error',
@@ -1006,17 +844,17 @@ async function loadFoundCachePage(id: string) {
 				customClass: {
 					confirmButton: 'btn btn-primary m-1 shadow',
 				},
-				didOpen: () => {
+				didOpen: (): void => {
 					Swal.hideLoading();
 				},
-				didClose: () => {
+				didClose: (): void => {
 					router.navigate(`viewCache-${id}`);
 				},
 			});
 		});
 }
 
-async function loadFoundCachesPage() {
+async function loadFoundCachesPage(): Promise<void> {
 	const noneFound = `<div class="p-3 text-center">
 		<i class="bi bi-emoji-frown home-icon d-block mx-auto mb-4" aria-hidden="true"
 			role="img"></i>
@@ -1173,7 +1011,7 @@ async function loadFoundCachesPage() {
 	}
 }
 
-async function loadLeaderboardPage() {
+async function loadLeaderboardPage(): Promise<void> {
 	const emptyLeaderboard = `<div class="p-3 text-center">
 		<i class="bi bi-emoji-frown home-icon d-block mx-auto mb-4" aria-hidden="true"
 			role="img"></i>
@@ -1265,18 +1103,18 @@ async function loadLeaderboardPage() {
 				leaderboardContainer.innerHTML = emptyLeaderboard;
 			}
 		} finally {
-			setTimeout(() => {
+			setTimeout((): void => {
 				try {
 					document
 						.querySelectorAll('td[data-ranking="1"]')
-						.forEach((element) => {
+						.forEach((element): void => {
 							[...(element?.parentElement?.children || [])].forEach((child) => {
 								child.classList.add('gs-gold');
 							});
 						});
 					document
 						.querySelectorAll('td[data-ranking="2"]')
-						.forEach((element_1) => {
+						.forEach((element_1): void => {
 							[...(element_1?.parentElement?.children || [])].forEach(
 								(child_1) => {
 									child_1.classList.add('gs-silver');
@@ -1285,7 +1123,7 @@ async function loadLeaderboardPage() {
 						});
 					document
 						.querySelectorAll('td[data-ranking="3"]')
-						.forEach((element_2) => {
+						.forEach((element_2): void => {
 							[...(element_2?.parentElement?.children || [])].forEach(
 								(child_2) => {
 									child_2.classList.add('gs-bronze');
@@ -1295,7 +1133,7 @@ async function loadLeaderboardPage() {
 					[
 						...(document.querySelector('td[data-match="true"]')?.parentElement
 							?.children || []),
-					].forEach((child_3) => {
+					].forEach((child_3): void => {
 						child_3.classList.add('gs-your-device');
 					});
 				} catch {}
@@ -1307,7 +1145,7 @@ async function loadLeaderboardPage() {
 	}
 }
 
-async function loadRestoreFile() {
+async function loadRestoreFile(): Promise<void> {
 	return Swal.fire({
 		title: 'Restore account using a backup file',
 		text: 'Restore your GeoScout account using a backup file created by yourself earlier or provided by GeoScout Support.',
@@ -1323,7 +1161,7 @@ async function loadRestoreFile() {
 		},
 		loaderHtml:
 			'<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
-		allowOutsideClick: () => !Swal.isLoading(),
+		allowOutsideClick: (): boolean => !Swal.isLoading(),
 		backdrop: true,
 		input: 'file',
 		inputAttributes: {
@@ -1331,10 +1169,12 @@ async function loadRestoreFile() {
 			'aria-label': 'Upload the GeoScout backup',
 		},
 		inputAutoFocus: false,
-		inputValidator: (file) => {
+		inputValidator: (
+			file,
+		): false | 'You need to select a backup file to restore' => {
 			return file ? false : 'You need to select a backup file to restore';
 		},
-		preConfirm: async (file: File) => {
+		preConfirm: async (file: File): Promise<boolean> => {
 			Swal.getCancelButton()?.setAttribute('hidden', 'true');
 			const backupToken = await file.text();
 			const data = await ky
@@ -1347,14 +1187,14 @@ async function loadRestoreFile() {
 			localforage.setItem('accessToken', data.accessToken);
 			return true;
 		},
-		didClose: () => {
+		didClose: (): void => {
 			router.navigate('manageAccount', {
 				updateBrowserURL: false,
 				historyAPIMethod: 'replaceState',
 			});
 		},
 	})
-		.then((result) => {
+		.then((result): void => {
 			if (result.value) {
 				router.navigate('home');
 				showToast.fire({
@@ -1363,7 +1203,7 @@ async function loadRestoreFile() {
 				});
 			}
 		})
-		.catch((error) => {
+		.catch((error): void => {
 			router.navigate('manageAccount', {
 				updateBrowserURL: false,
 				historyAPIMethod: 'replaceState',
@@ -1372,7 +1212,7 @@ async function loadRestoreFile() {
 		});
 }
 
-async function loadRestoreCode() {
+async function loadRestoreCode(): Promise<void> {
 	let qrCodeToken = '';
 	let qrScanner: QrScanner;
 	return Swal.fire({
@@ -1390,7 +1230,7 @@ async function loadRestoreCode() {
 			'<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
 		allowOutsideClick: false,
 		backdrop: true,
-		preConfirm: async () => {
+		preConfirm: async (): Promise<boolean> => {
 			Swal.getCancelButton()?.setAttribute('hidden', 'true');
 			try {
 				qrScanner.stop();
@@ -1408,8 +1248,8 @@ async function loadRestoreCode() {
 			localforage.setItem('accessToken', data.accessToken);
 			return true;
 		},
-		didClose: () => {
-			QrScanner.hasCamera().then((hasCamera) => {
+		didClose: (): void => {
+			QrScanner.hasCamera().then((hasCamera): void => {
 				if (hasCamera) {
 					try {
 						qrScanner.stop();
@@ -1422,8 +1262,8 @@ async function loadRestoreCode() {
 				});
 			});
 		},
-		didOpen: () => {
-			QrScanner.hasCamera().then((hasCamera) => {
+		didOpen: (): void => {
+			QrScanner.hasCamera().then((hasCamera): void => {
 				if (hasCamera) {
 					const videoElem = document.getElementById(
 						'webcamFeed',
@@ -1448,7 +1288,7 @@ async function loadRestoreCode() {
 			});
 		},
 	})
-		.then((result) => {
+		.then((result): void => {
 			if (result.value) {
 				router.navigate('home');
 				showToast.fire({
@@ -1457,7 +1297,7 @@ async function loadRestoreCode() {
 				});
 			}
 		})
-		.catch((error) => {
+		.catch((error): void => {
 			router.navigate('manageAccount', {
 				updateBrowserURL: false,
 				historyAPIMethod: 'replaceState',
@@ -1466,7 +1306,7 @@ async function loadRestoreCode() {
 		});
 }
 
-async function createRestoreFile() {
+async function createRestoreFile(): Promise<void> {
 	return Swal.fire({
 		title: 'Create a backup file for your account',
 		html: "Generating this file allows you to restore your account (and all the progress you've made) on any device.<br><br><strong>Please keep this file safe - anyone that has it will be able to load your GeoScout account on their device!</strong>",
@@ -1481,12 +1321,12 @@ async function createRestoreFile() {
 		},
 		loaderHtml:
 			'<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
-		allowOutsideClick: () => !Swal.isLoading(),
+		allowOutsideClick: (): boolean => !Swal.isLoading(),
 		backdrop: true,
-		preConfirm: async () => {
+		preConfirm: async (): Promise<boolean> => {
 			Swal.getCancelButton()?.setAttribute('hidden', 'true');
 			return getAccessToken()
-				.then((accessToken) => {
+				.then((accessToken): Promise<BackupToken> => {
 					if (accessToken) {
 						return ky
 							.post<BackupToken>('./api/get-backup-token', {
@@ -1502,7 +1342,7 @@ async function createRestoreFile() {
 						throw "You don't have an account!";
 					}
 				})
-				.then((backupToken) => {
+				.then((backupToken): boolean => {
 					const backupFile = new File(
 						[DOMPurify.sanitize(String(backupToken.token))],
 						`${backupToken.name}.GeoScout`,
@@ -1520,14 +1360,14 @@ async function createRestoreFile() {
 					return true;
 				});
 		},
-		didClose: () => {
+		didClose: (): void => {
 			router.navigate('manageAccount', {
 				updateBrowserURL: false,
 				historyAPIMethod: 'replaceState',
 			});
 		},
 	})
-		.then((result) => {
+		.then((result): void => {
 			if (result.value) {
 				router.navigate('home');
 				showToast.fire({
@@ -1536,7 +1376,7 @@ async function createRestoreFile() {
 				});
 			}
 		})
-		.catch((error) => {
+		.catch((error): void => {
 			router.navigate('manageAccount', {
 				updateBrowserURL: false,
 				historyAPIMethod: 'replaceState',
@@ -1545,7 +1385,7 @@ async function createRestoreFile() {
 		});
 }
 
-async function createRestoreCode() {
+async function createRestoreCode(): Promise<void> {
 	return Swal.fire({
 		title: 'Add an additional device',
 		html: 'This feature allows you add an additional device to your account.<br><br><strong>Please note that a new QR code needs to be generated for each device you wish to add.',
@@ -1560,15 +1400,15 @@ async function createRestoreCode() {
 		},
 		loaderHtml:
 			'<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
-		allowOutsideClick: () => !Swal.isLoading(),
+		allowOutsideClick: (): boolean => !Swal.isLoading(),
 		backdrop: true,
-		preConfirm: async () => {
+		preConfirm: async (): Promise<{ token: string }> => {
 			Swal.getCancelButton()?.setAttribute('hidden', 'true');
 			return getAccessToken()
-				.then((accessToken) => {
+				.then((accessToken): Promise<{ token: string }> => {
 					if (accessToken) {
 						return ky
-							.post('./api/get-qr-token', {
+							.post<{ token: string }>('./api/get-qr-token', {
 								headers: {
 									Authorization: `Bearer ${accessToken}`,
 								},
@@ -1581,18 +1421,18 @@ async function createRestoreCode() {
 						throw "You don't have an account!";
 					}
 				})
-				.then((qrCode) => {
+				.then((qrCode): { token: string } => {
 					return qrCode;
 				});
 		},
-		didClose: () => {
+		didClose: (): void => {
 			router.navigate('manageAccount', {
 				updateBrowserURL: false,
 				historyAPIMethod: 'replaceState',
 			});
 		},
 	})
-		.then((result) => {
+		.then((result): void => {
 			if (result.value) {
 				Swal.fire({
 					title: 'Add an additional device',
@@ -1604,7 +1444,7 @@ async function createRestoreCode() {
 					customClass: {
 						confirmButton: 'btn btn-link mx-1',
 					},
-					didClose: () => {
+					didClose: (): void => {
 						router.navigate('manageAccount', {
 							updateBrowserURL: false,
 							historyAPIMethod: 'replaceState',
@@ -1613,7 +1453,7 @@ async function createRestoreCode() {
 				});
 			}
 		})
-		.catch((error) => {
+		.catch((error): void => {
 			router.navigate('manageAccount', {
 				updateBrowserURL: false,
 				historyAPIMethod: 'replaceState',
@@ -1623,12 +1463,12 @@ async function createRestoreCode() {
 }
 
 // Function to start on page load
-window.addEventListener('load', async () => {
+window.addEventListener('load', async (): Promise<void> => {
 	// Create router
 	router = new Navigo('/');
 	// Define hooks for all routes
 	router.hooks({
-		before: (done) => {
+		before: (done): void => {
 			if (locationWatch !== null) {
 				navigator.geolocation.clearWatch(locationWatch);
 			}
@@ -1637,10 +1477,10 @@ window.addEventListener('load', async () => {
 	});
 	// Specify routes and resolve
 	router
-		.on('/', () => {
+		.on('/', (): void => {
 			router.navigate('/home', { historyAPIMethod: 'replaceState' });
 		})
-		.on('/home', () => {
+		.on('/home', (): void => {
 			if (holdingEnabled) {
 				router.navigate('/holding', {
 					historyAPIMethod: 'replaceState',
@@ -1649,7 +1489,7 @@ window.addEventListener('load', async () => {
 				changePage('home', 'Home', false);
 			}
 		})
-		.on('/viewCaches', () => {
+		.on('/viewCaches', (): void => {
 			if (holdingEnabled) {
 				router.navigate('/holding', {
 					historyAPIMethod: 'replaceState',
@@ -1658,7 +1498,7 @@ window.addEventListener('load', async () => {
 				loadCachesMapPage();
 			}
 		})
-		.on('/viewCachesTable', () => {
+		.on('/viewCachesTable', (): void => {
 			if (holdingEnabled) {
 				router.navigate('/holding', {
 					historyAPIMethod: 'replaceState',
@@ -1667,7 +1507,7 @@ window.addEventListener('load', async () => {
 				loadCachesTablePage();
 			}
 		})
-		.on('/viewCache-:id', (value) => {
+		.on('/viewCache-:id', (value): void => {
 			if (holdingEnabled) {
 				router.navigate('/holding', {
 					historyAPIMethod: 'replaceState',
@@ -1681,7 +1521,7 @@ window.addEventListener('load', async () => {
 				}
 			}
 		})
-		.on('/foundCaches', () => {
+		.on('/foundCaches', (): void => {
 			if (holdingEnabled) {
 				router.navigate('/holding', {
 					historyAPIMethod: 'replaceState',
@@ -1690,7 +1530,7 @@ window.addEventListener('load', async () => {
 				loadFoundCachesPage();
 			}
 		})
-		.on('/foundCache-:id', (value) => {
+		.on('/foundCache-:id', (value): void => {
 			if (holdingEnabled) {
 				router.navigate('/holding', {
 					historyAPIMethod: 'replaceState',
@@ -1704,7 +1544,7 @@ window.addEventListener('load', async () => {
 				}
 			}
 		})
-		.on('/leaderboard', () => {
+		.on('/leaderboard', (): void => {
 			if (holdingEnabled) {
 				router.navigate('/holding', {
 					historyAPIMethod: 'replaceState',
@@ -1713,25 +1553,25 @@ window.addEventListener('load', async () => {
 				loadLeaderboardPage();
 			}
 		})
-		.on('/about', () => {
+		.on('/about', (): void => {
 			changePage('about', 'About', false);
 		})
-		.on('/disclaimer', () => {
+		.on('/disclaimer', (): void => {
 			changePage('disclaimer', 'Disclaimer', false);
 		})
-		.on('/terms', () => {
+		.on('/terms', (): void => {
 			changePage('terms', 'Terms and Conditions', false);
 		})
-		.on('/privacy', () => {
+		.on('/privacy', (): void => {
 			changePage('privacy', 'Privacy Policy', false);
 		})
 		// Legacy redirect
-		.on('/restoreAccount', () => {
+		.on('/restoreAccount', (): void => {
 			router.navigate('manageAccount');
 		})
-		.on('/manageAccount', () => {
+		.on('/manageAccount', (): void => {
 			getAccessToken()
-				.then((hasAccount) => {
+				.then((hasAccount): void => {
 					(
 						document.getElementById(
 							hasAccount ? 'updateAccount' : 'restoreAccount',
@@ -1743,26 +1583,26 @@ window.addEventListener('load', async () => {
 						) as HTMLElement
 					).classList.add('d-none');
 				})
-				.finally(() => {
+				.finally((): void => {
 					changePage('manageAccount', 'Manage your account', false);
 				})
-				.catch((error) => {
+				.catch((error): void => {
 					showError(error, true, 'home');
 				});
 		})
-		.on('/createFile', () => {
+		.on('/createFile', (): void => {
 			createRestoreFile();
 		})
-		.on('/createCode', () => {
+		.on('/createCode', (): void => {
 			createRestoreCode();
 		})
-		.on('/restoreFile', () => {
+		.on('/restoreFile', (): void => {
 			loadRestoreFile();
 		})
-		.on('/restoreCode', () => {
+		.on('/restoreCode', (): void => {
 			loadRestoreCode();
 		})
-		.notFound(() => {
+		.notFound((): void => {
 			changePage('404', 'Page not found', false);
 		})
 		.resolve();
@@ -1770,7 +1610,7 @@ window.addEventListener('load', async () => {
 	router.updatePageLinks();
 	// Add holding page if active
 	if (holdingEnabled) {
-		router.on('/holding', () => {
+		router.on('/holding', (): void => {
 			changePage('holding', 'Home', false);
 		});
 		router.resolve();
@@ -1781,17 +1621,17 @@ window.addEventListener('load', async () => {
 		// Register service worker
 		navigator.serviceWorker
 			.register('service-worker.js')
-			.then((registration) => {
+			.then((registration): void => {
 				// Trigger update
 				registration.update();
 				// Listen for updates
-				registration.addEventListener('updatefound', () => {
+				registration.addEventListener('updatefound', (): void => {
 					newWorker = registration.installing;
 					if (newWorker === null) {
 						newWorker = registration.waiting;
 					}
 					// Listen for when the new worker is ready
-					newWorker?.addEventListener('statechange', () => {
+					newWorker?.addEventListener('statechange', (): void => {
 						if (newWorker?.state === 'installed') {
 							if (navigator.serviceWorker.controller) {
 								updateBtn.classList.remove('d-none');
@@ -1801,7 +1641,7 @@ window.addEventListener('load', async () => {
 					});
 				});
 			})
-			.catch((error) => {
+			.catch((error): void => {
 				console.warn(error);
 			});
 		// Set event handler for refresh app button
@@ -1817,7 +1657,7 @@ window.addEventListener('load', async () => {
 		});
 	}
 	return getAccessToken()
-		.then((hasAccount) => {
+		.then((hasAccount): Promise<void> | undefined => {
 			if (hasAccount) {
 				const backupBanner = document.getElementById('backupBanner');
 				// Check if already dismissed
@@ -1826,7 +1666,7 @@ window.addEventListener('load', async () => {
 						// Unhide banner
 						backupBanner?.classList.remove('d-none');
 						// Set listener to store dismissal event in local storage
-						backupBanner?.addEventListener('closed.bs.alert', () => {
+						backupBanner?.addEventListener('closed.bs.alert', (): void => {
 							// Set key in local storage (if able)
 							localforage.setItem('backupBannerClosed', true);
 						});
@@ -1842,7 +1682,7 @@ window.addEventListener('load', async () => {
 				});
 			}
 		})
-		.catch((error) => {
+		.catch((error): void => {
 			console.warn(error);
 		});
 });
