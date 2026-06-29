@@ -1,4 +1,4 @@
-import { Collapse } from 'bootstrap/js/dist/collapse';
+import Collapse from 'bootstrap/js/dist/collapse';
 import { appName, appUrl } from './main';
 
 export function changePage(
