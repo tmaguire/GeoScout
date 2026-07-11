@@ -13,7 +13,7 @@ loading="lazy"
 
 **Grab your smartphone and get Geocaching over the summer holidays with our geocache challenge. Geocaching is a fantastic way to enjoy the outdoors exploring new areas and keeping fit.**
 
-We have hidden over 100 codes around Witham, get out there and start searching for the hidden caches. These are blue, red, and yellow coloured cable ties that could be fixed to street furniture, trees, fences, signposts - just about anywhere! Using your smartphone, our web-app, and what3words or Google Maps. Navigate, find and validate any number of geocaches.
+We have hidden over 100 codes around Witham, get out there and start searching for the hidden caches. These are yellow coloured cable ties that could be fixed to street furniture, trees, fences, signposts - just about anywhere! Using your smartphone, our web-app, and what3words or Google Maps. Navigate, find and validate any number of geocaches.
 
 <div class="text-center">
 <figure class="figure">
@@ -23,7 +23,7 @@ We have hidden over 100 codes around Witham, get out there and start searching f
 <img
 src="/img/cabletie-thumbnail.png"
 class="figure-img img-thumbnail logo-img"
-alt="Photo showing two cable ties which have been used for the @@appName project"
+alt="Photo showing what a cable tie for @@appName might look like in the wild"
 loading="lazy"
 />
 </picture>

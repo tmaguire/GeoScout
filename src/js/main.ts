@@ -6,7 +6,7 @@ import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import DOMPurify from 'dompurify';
 import { Grid, html, type Row } from 'gridjs';
 import type { TCell } from 'gridjs/dist/src/types.js';
-import ky from 'ky';
+import ky, { isHTTPError } from 'ky';
 import localforage from 'localforage';
 import Navigo from 'navigo';
 import QrScanner from 'qr-scanner';
@@ -14,6 +14,7 @@ import Swal from 'sweetalert2';
 import type {
 	AccessTokenResponse,
 	BackupToken,
+	ErrorResponse,
 	FoundCaches,
 	GeoScoutCache,
 	GeoScoutCaches,
@@ -34,6 +35,23 @@ const what3wordsApiKey = '/* @echo what3wordsApiKey */';
 const holdingEnabled = Boolean(
 	'/* @echo appHolding */'.toLowerCase() !== 'false',
 );
+const backendApi = ky.create({
+	prefix: `/api/`,
+	timeout: false,
+	totalTimeout: false,
+	hooks: {
+		beforeError: [
+			({ error }) => {
+				if (isHTTPError(error)) {
+					const test = error.data as ErrorResponse;
+					error.message = test.errorDebug || test.error;
+					return error;
+				}
+				return error;
+			},
+		],
+	},
+});
 // Variables
 let mainMap: google.maps.Map;
 let router: Navigo;
@@ -197,8 +215,8 @@ async function loadCachesMapPage(): Promise<void> {
 	let cluster: MarkerClusterer;
 	return getAccessToken()
 		.then((accessToken) => {
-			return ky
-				.get<GeoScoutCaches>('./api/get-caches', {
+			return backendApi
+				.get<GeoScoutCaches>('get-caches', {
 					...(accessToken && {
 						headers: {
 							Authorization: `Bearer ${accessToken}`,
@@ -501,8 +519,8 @@ async function loadCachesTablePage(): Promise<void> {
 	let caches: GeoScoutCache[];
 	return getAccessToken()
 		.then((accessToken) => {
-			return ky
-				.get<GeoScoutCaches>('./api/get-caches', {
+			return backendApi
+				.get<GeoScoutCaches>('get-caches', {
 					...(accessToken && {
 						headers: {
 							Authorization: `Bearer ${accessToken}`,
@@ -662,8 +680,8 @@ async function loadCachePage(id: string): Promise<void> {
 	changePage('viewCache', `Cache ${id}`, id);
 	return getAccessToken()
 		.then((accessToken) => {
-			return ky
-				.post<GeoScoutCache>('./api/get-cache', {
+			return backendApi
+				.post<GeoScoutCache>('get-cache', {
 					json: {
 						cache: id,
 					},
@@ -799,8 +817,8 @@ async function loadFoundCachePage(id: string): Promise<void> {
 		preConfirm: async (data): Promise<{ success: string }> => {
 			Swal.getCancelButton()?.setAttribute('hidden', 'true');
 			return getAccessToken(true).then((accessToken) => {
-				return ky
-					.post('./api/found-cache', {
+				return backendApi
+					.post('found-cache', {
 						json: {
 							cache: id,
 							cacheCode: Number(data),
@@ -874,8 +892,8 @@ async function loadFoundCachesPage(): Promise<void> {
 	try {
 		try {
 			const accessToken = await getAccessToken();
-			const data = await ky
-				.get<FoundCaches>('./api/found-caches', {
+			const data = await backendApi
+				.get<FoundCaches>('found-caches', {
 					...(accessToken && {
 						headers: {
 							Authorization: `Bearer ${accessToken}`,
@@ -1031,9 +1049,9 @@ async function loadLeaderboardPage(): Promise<void> {
 	try {
 		try {
 			const accessToken = await getAccessToken();
-			const data = await ky
+			const data = await backendApi
 				.get<{ leaderboard: LeaderboardRecord[]; userId: string }>(
-					'./api/get-leaderboard',
+					'get-leaderboard',
 					{
 						...(accessToken && {
 							headers: {
@@ -1177,8 +1195,8 @@ async function loadRestoreFile(): Promise<void> {
 		preConfirm: async (file: File): Promise<boolean> => {
 			Swal.getCancelButton()?.setAttribute('hidden', 'true');
 			const backupToken = await file.text();
-			const data = await ky
-				.post<AccessTokenResponse>('./api/exchange-backup-token', {
+			const data = await backendApi
+				.post<AccessTokenResponse>('exchange-backup-token', {
 					headers: {
 						Authorization: `Bearer ${backupToken}`,
 					},
@@ -1238,8 +1256,8 @@ async function loadRestoreCode(): Promise<void> {
 				(document.getElementById('webcamFeed') as HTMLElement).outerHTML =
 					loadingGif;
 			} catch {}
-			const data = await ky
-				.post<AccessTokenResponse>('./api/exchange-qr-token', {
+			const data = await backendApi
+				.post<AccessTokenResponse>('exchange-qr-token', {
 					headers: {
 						Authorization: `Bearer ${qrCodeToken}`,
 					},
@@ -1328,8 +1346,8 @@ async function createRestoreFile(): Promise<void> {
 			return getAccessToken()
 				.then((accessToken): Promise<BackupToken> => {
 					if (accessToken) {
-						return ky
-							.post<BackupToken>('./api/get-backup-token', {
+						return backendApi
+							.post<BackupToken>('get-backup-token', {
 								headers: {
 									Authorization: `Bearer ${accessToken}`,
 								},
@@ -1407,8 +1425,8 @@ async function createRestoreCode(): Promise<void> {
 			return getAccessToken()
 				.then((accessToken): Promise<{ token: string }> => {
 					if (accessToken) {
-						return ky
-							.post<{ token: string }>('./api/get-qr-token', {
+						return backendApi
+							.post<{ token: string }>('get-qr-token', {
 								headers: {
 									Authorization: `Bearer ${accessToken}`,
 								},

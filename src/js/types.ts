@@ -102,3 +102,8 @@ export interface AccessTokenResponse {
 export interface AccessTokenChallengeResponse {
 	token: string;
 }
+
+export interface ErrorResponse {
+	error: string;
+	errorDebug?: string;
+}
