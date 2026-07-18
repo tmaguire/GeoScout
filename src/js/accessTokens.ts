@@ -1,6 +1,10 @@
-import ky from 'ky';
 import localforage from 'localforage';
-import type { AccessTokenChallengeResponse, AccessTokenResponse, GeoScoutToken } from './types';
+import { backendApi } from './main';
+import type {
+	AccessTokenChallengeResponse,
+	AccessTokenResponse,
+	GeoScoutToken,
+} from './types';
 
 export async function parseAccessToken(token: string): Promise<GeoScoutToken> {
 	return new Promise((resolve, reject) => {
@@ -21,15 +25,15 @@ export async function parseAccessToken(token: string): Promise<GeoScoutToken> {
 
 async function newAccessToken(): Promise<string> {
 	const uuid = crypto.randomUUID().toString();
-	const data = await ky
-		.post<AccessTokenChallengeResponse>('./api/get-token', {
+	const data = await backendApi
+		.post<AccessTokenChallengeResponse>('get-token', {
 			json: {
 				uuid,
 			},
 		})
 		.json();
-	const data_1 = await ky
-		.post<AccessTokenResponse>('./api/get-token', {
+	const data_1 = await backendApi
+		.post<AccessTokenResponse>('get-token', {
 			json: {
 				uuid,
 				token: data.token,
@@ -39,7 +43,9 @@ async function newAccessToken(): Promise<string> {
 	return await localforage.setItem<string>('accessToken', data_1.accessToken);
 }
 
-export async function getAccessToken(required: boolean = false): Promise<string | false> {
+export async function getAccessToken(
+	required: boolean = false,
+): Promise<string | false> {
 	return new Promise((resolve, reject) => {
 		localforage.getItem<string>('accessToken').then((accessToken) => {
 			if (accessToken) {
@@ -67,6 +73,48 @@ export async function getAccessToken(required: boolean = false): Promise<string 
 						),
 					);
 				}
+			}
+		});
+	});
+}
+
+export async function checkAccessTokenValid(
+	accessToken: GeoScoutToken,
+): Promise<void> {
+	return new Promise((resolve) => {
+		const currentTime = Date.now() / 1000;
+		if (currentTime > accessToken.exp) {
+			resolve(newAccessToken());
+		} else {
+			// Refresh window of 2 months
+			const refreshWindow = new Date(
+				new Date().setMonth(new Date().getMonth() - 2),
+			).getTime();
+			if (refreshWindow > accessToken.exp) {
+				resolve(refreshAccessToken());
+			}
+			resolve(false);
+		}
+	}).then(() => {});
+}
+
+function refreshAccessToken(): Promise<string> {
+	return new Promise((resolve) => {
+		localforage.getItem<string>('accessToken').then((accessToken) => {
+			if (accessToken) {
+				backendApi
+					.post<AccessTokenResponse>('refresh-token', {
+						headers: {
+							Authorization: `Bearer ${accessToken}`,
+						},
+					})
+					.json()
+					.then((data) => {
+						// Migrate token to localforage
+						resolve(
+							localforage.setItem<string>('accessToken', data.accessToken),
+						);
+					});
 			}
 		});
 	});

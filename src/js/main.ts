@@ -21,7 +21,11 @@ import type {
 	LeaderboardRecord,
 } from './types';
 import '@khmyznikov/pwa-install';
-import { getAccessToken, parseAccessToken } from './accessTokens';
+import {
+	checkAccessTokenValid,
+	getAccessToken,
+	parseAccessToken,
+} from './accessTokens';
 import { changePage } from './changePage';
 import { resetCachePage } from './resetCachePage';
 
@@ -35,7 +39,7 @@ const what3wordsApiKey = '/* @echo what3wordsApiKey */';
 const holdingEnabled = Boolean(
 	'/* @echo appHolding */'.toLowerCase() !== 'false',
 );
-const backendApi = ky.create({
+export const backendApi = ky.create({
 	prefix: `/api/`,
 	timeout: false,
 	totalTimeout: false,
@@ -279,7 +283,7 @@ async function loadCachesMapPage(): Promise<void> {
 							gmpClickable: true,
 							content: markerContent,
 						});
-						marker.addListener('click', () => {
+						marker.addListener('gmp-click', () => {
 							router.navigate(`/viewCache-${cache.id}`);
 						});
 						return [marker];
@@ -350,7 +354,7 @@ async function loadCachesMapPage(): Promise<void> {
 								gmpClickable: true,
 								content: markerContent,
 							});
-							marker.addListener('click', () => {
+							marker.addListener('gmp-click', () => {
 								router.navigate(`/viewCache-${cache.id}`);
 							});
 							markers.push(marker);
@@ -484,6 +488,10 @@ async function loadCachesMapPage(): Promise<void> {
 					// Call the what3words Grid API to obtain the grid squares within the current visble bounding box
 					ky.get<object>(
 						`https://api.what3words.com/v3/grid-section?key=${what3wordsApiKey}&bounding-box=${sw?.lat()},${sw?.lng()},${ne?.lat()},${ne?.lng()}&format=geojson`,
+						{
+							timeout: false,
+							totalTimeout: false,
+						},
 					)
 						.json()
 						.then((data) => {
@@ -1679,25 +1687,31 @@ window.addEventListener('load', async (): Promise<void> => {
 			if (hasAccount) {
 				const backupBanner = document.getElementById('backupBanner');
 				// Check if already dismissed
-				return localforage.getItem('backupBannerClosed').then((item) => {
-					if (!item) {
-						// Unhide banner
-						backupBanner?.classList.remove('d-none');
-						// Set listener to store dismissal event in local storage
-						backupBanner?.addEventListener('closed.bs.alert', (): void => {
-							// Set key in local storage (if able)
-							localforage.setItem('backupBannerClosed', true);
+				return localforage
+					.getItem('backupBannerClosed')
+					.then((item) => {
+						if (!item) {
+							// Unhide banner
+							backupBanner?.classList.remove('d-none');
+							// Set listener to store dismissal event in local storage
+							backupBanner?.addEventListener('closed.bs.alert', (): void => {
+								// Set key in local storage (if able)
+								localforage.setItem('backupBannerClosed', true);
+							});
+						}
+						const greetings =
+							document.querySelectorAll<HTMLElement>('.welcomeGreeting');
+						greetings.forEach((greeting) => {
+							greeting.innerText = 'back';
+							parseAccessToken(hasAccount).then((accountDetails) => {
+								greeting.innerText = `back ${accountDetails.sub}`;
+							});
 						});
-					}
-					const greetings =
-						document.querySelectorAll<HTMLElement>('.welcomeGreeting');
-					greetings.forEach((greeting) => {
-						greeting.innerText = 'back';
-						parseAccessToken(hasAccount).then((accountDetails) => {
-							greeting.innerText = `back ${accountDetails.sub}`;
-						});
+						return parseAccessToken(hasAccount);
+					})
+					.then((token) => {
+						return checkAccessTokenValid(token);
 					});
-				});
 			}
 		})
 		.catch((error): void => {

@@ -18,12 +18,12 @@ We have hidden over 100 codes around Witham, get out there and start searching f
 <div class="text-center">
 <figure class="figure">
 <picture>
-<source srcset="/img/cabletie-thumbnail.webp" type="image/webp" />
-<source srcset="/img/cabletie-thumbnail.png" type="image/png" />
+<source srcset="/img/cabletie-example.webp" type="image/webp" />
+<source srcset="/img/cabletie-example.png" type="image/png" />
 <img
-src="/img/cabletie-thumbnail.png"
-class="figure-img img-thumbnail logo-img"
-alt="Photo showing what a cable tie for @@appName might look like in the wild"
+src="/img/cabletie-example.png"
+class="figure-img img-thumbnail"
+alt="Photo showing what a cable tie for @@appName looks like"
 loading="lazy"
 />
 </picture>
