@@ -40,7 +40,12 @@ async function newAccessToken(): Promise<string> {
 			},
 		})
 		.json();
-	return await localforage.setItem<string>('accessToken', data_1.accessToken);
+	const token = await localforage.setItem<string>(
+		'accessToken',
+		data_1.accessToken,
+	);
+	await updateAccessTokenGreeting();
+	return token;
 }
 
 export async function getAccessToken(
@@ -117,5 +122,20 @@ function refreshAccessToken(): Promise<string> {
 					});
 			}
 		});
+	});
+}
+
+export async function updateAccessTokenGreeting() {
+	return getAccessToken().then((hasAccount) => {
+		if (hasAccount) {
+			const greetings =
+				document.querySelectorAll<HTMLElement>('.welcomeGreeting');
+			greetings.forEach((greeting) => {
+				greeting.innerText = 'back';
+				parseAccessToken(hasAccount).then((accountDetails) => {
+					greeting.innerText = `back ${accountDetails.sub}`;
+				});
+			});
+		}
 	});
 }

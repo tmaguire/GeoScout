@@ -25,6 +25,7 @@ import {
 	checkAccessTokenValid,
 	getAccessToken,
 	parseAccessToken,
+	updateAccessTokenGreeting,
 } from './accessTokens';
 import { changePage } from './changePage';
 import { resetCachePage } from './resetCachePage';
@@ -1222,6 +1223,7 @@ async function loadRestoreFile(): Promise<void> {
 	})
 		.then((result): void => {
 			if (result.value) {
+				updateAccessTokenGreeting();
 				router.navigate('home');
 				showToast.fire({
 					title: 'Restore successful!',
@@ -1316,6 +1318,7 @@ async function loadRestoreCode(): Promise<void> {
 	})
 		.then((result): void => {
 			if (result.value) {
+				updateAccessTokenGreeting();
 				router.navigate('home');
 				showToast.fire({
 					title: 'Restore successful!',
