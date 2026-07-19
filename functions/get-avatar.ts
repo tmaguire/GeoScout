@@ -1,11 +1,9 @@
-// Modules to handle avatar generation
-import { builder, HandlerEvent, HandlerResponse } from '@netlify/functions';
+import type { HandlerEvent, HandlerResponse } from '@netlify/functions';
 import Avatar from 'boring-avatars';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
-
 // Start Lambda Function
-async function handler(event: HandlerEvent): Promise<HandlerResponse> {
+export async function handler(event: HandlerEvent): Promise<HandlerResponse> {
 	const config = String(event.path).split('/');
 	console.log(config);
 	return {
@@ -25,8 +23,8 @@ async function handler(event: HandlerEvent): Promise<HandlerResponse> {
 		),
 		headers: {
 			'Content-Type': 'image/svg+xml',
+			'Netlify-CDN-Cache-Control':
+				'public, durable, max-age=60, stale-while-revalidate=120',
 		},
 	};
 }
-
-exports.handler = builder(handler);

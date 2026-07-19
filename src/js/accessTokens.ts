@@ -87,9 +87,9 @@ export async function checkAccessTokenValid(
 			resolve(newAccessToken());
 		} else {
 			// Refresh window of 2 months
-			const refreshWindow = new Date(
-				new Date().setMonth(new Date().getMonth() - 2),
-			).getTime();
+			const refreshWindow =
+				new Date(new Date().setMonth(new Date().getMonth() - 2)).getTime() /
+				1000;
 			if (refreshWindow > accessToken.exp) {
 				resolve(refreshAccessToken());
 			}
