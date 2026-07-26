@@ -50,7 +50,7 @@ to = "/.netlify/functions/:splat"
 force = true
 from = "/profilePic/*"
 status = 200
-to = "/.netlify/builders/get-avatar"
+to = "/.netlify/functions/get-avatar"
 [[redirects]]
 from = "/*"
 status = 200

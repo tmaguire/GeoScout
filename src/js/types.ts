@@ -1,6 +1,8 @@
 import type { TDataObjectRow } from 'gridjs/dist/src/types.js';
 import type { JwtPayload } from 'jsonwebtoken';
 
+export type CacheDifficulty = 'Easy' | 'Medium' | 'Hard';
+
 export interface GeoScoutCache extends TDataObjectRow {
 	coordinates: string;
 	polygon: string;
@@ -11,6 +13,7 @@ export interface GeoScoutCache extends TDataObjectRow {
 	gridRef: string;
 	stats: number;
 	suspended: boolean;
+	difficulty: CacheDifficulty;
 }
 
 export interface GeoScoutCaches {
@@ -37,6 +40,7 @@ export interface SharePointCacheRecord {
 		Found: number;
 		Suspended: boolean;
 		CableTieCode: string;
+		Difficulty: CacheDifficulty;
 	};
 }
 

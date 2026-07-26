@@ -14,6 +14,7 @@ import Swal from 'sweetalert2';
 import type {
 	AccessTokenResponse,
 	BackupToken,
+	CacheDifficulty,
 	ErrorResponse,
 	FoundCaches,
 	GeoScoutCache,
@@ -578,6 +579,26 @@ async function loadCachesTablePage(): Promise<void> {
 						},
 					},
 					{
+						id: 'difficulty',
+						name: html(
+							'Difficulty<span class="visually-hidden"> of this cache</span>',
+						),
+						sort: {
+							enabled: true,
+						},
+						formatter: (cell: CacheDifficulty) => {
+							const style =
+								cell === 'Easy'
+									? 'success'
+									: cell === 'Medium'
+										? 'warning'
+										: 'danger';
+							return html(
+								`<span class="badge text-bg-${style}">${cell}</span>`,
+							);
+						},
+					},
+					{
 						id: 'found',
 						name: html(
 							'Found<span class="visually-hidden"> this cache</span>?',
@@ -720,8 +741,15 @@ async function loadCachePage(id: string): Promise<void> {
 					'///',
 				)[1];
 				const coordinates = String(DOMPurify.sanitize(data.coordinates));
+				const style =
+					data.difficulty === 'Easy'
+						? 'success'
+						: data.difficulty === 'Medium'
+							? 'warning'
+							: 'danger';
 				w3wLink.innerHTML = `<p><strong>what3words address:</strong>&nbsp;<a href="https://what3words.com/${w3wAddress}?maptype=satellite" target="_blank" translate="no" rel="noopener noreferrer">///${w3wAddress}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a></p>
 				<p><strong>Grid reference:</strong>&nbsp;<a href="https://explore.osmaps.com/pin?lat=${coordinates.split(',')[0]}&lon=${coordinates.split(',')[1]}&zoom=18.0000&overlays=&style=Aerial&type=2d&placesCategory=" target="_blank" rel="noopener noreferrer">${DOMPurify.sanitize(data.gridRef)}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a><br><a class="text-decoration-none" href="https://getoutside.ordnancesurvey.co.uk/guides/beginners-guide-to-grid-references/" target="_blank" rel="noopener noreferrer">Learn more about grid references&nbsp;<i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a></p>
+				<p><strong>Cache difficulty:</strong>&nbsp;<span class="badge text-bg-${style}">${DOMPurify.sanitize(data.difficulty)}</span></p>
 				<p><br><strong id="cacheStats"></strong></p>`;
 				const w3wBtn = document.getElementById('cacheW3WBtn') as HTMLElement;
 				w3wBtn.removeAttribute('tabindex');
