@@ -107,6 +107,16 @@ function bundleCss() {
 		.pipe(dest('dist/css/'));
 }
 
+function bundleTableCss() {
+	return src('./src/css/table.scss', { encoding: false })
+		.pipe(concat(`table-${version}.min.css`))
+		.pipe(sass({
+			style: 'compressed',
+			quietDeps: true
+		}))
+		.pipe(dest('dist/css/'));
+}
+
 function copyImg() {
 	return src([
 		'./src/img/*',
@@ -177,4 +187,4 @@ function copyAppResources() {
 		.pipe(dest('./dist/.well-known/'));
 }
 
-exports.default = parallel(series(parallel(bundleOfflineJs, bundleMainJs, series(copyIcons, bundleCss), sitePages, copyImg, copySite, serviceWorker, copyAppResources), sri));
+exports.default = parallel(series(parallel(bundleOfflineJs, bundleMainJs, series(copyIcons, bundleCss), bundleTableCss, sitePages, copyImg, copySite, serviceWorker, copyAppResources), sri));

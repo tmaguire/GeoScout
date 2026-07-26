@@ -1,9 +1,8 @@
-import type { TDataObjectRow } from 'gridjs/dist/src/types.js';
 import type { JwtPayload } from 'jsonwebtoken';
 
 export type CacheDifficulty = 'Easy' | 'Medium' | 'Hard';
 
-export interface GeoScoutCache extends TDataObjectRow {
+export interface GeoScoutCache {
 	coordinates: string;
 	polygon: string;
 	image: string;
@@ -55,16 +54,21 @@ export interface SharePointUserRecord {
 	};
 }
 
-export interface FoundCache extends TDataObjectRow {
+export interface FoundCache {
 	id: string;
 	date: string;
 }
 
-export interface LeaderboardRecord extends TDataObjectRow {
+export interface LeaderboardRecord {
 	userId: string;
 	found: number;
 	lastUpdate: string;
 	position?: number;
+}
+
+export interface LeaderboardResponse {
+	leaderboard: LeaderboardRecord[];
+	userId: string;
 }
 
 export interface BackupToken {
@@ -77,7 +81,7 @@ export interface CurrentStats {
 	id: string;
 }
 
-export interface FoundCaches extends TDataObjectRow {
+export interface FoundCaches {
 	found: FoundCache[];
 	total: number;
 	position: number;

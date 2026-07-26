@@ -1,0 +1,84 @@
+@import '../../node_modules/tabulator-tables/src/scss/themes/bootstrap/tabulator_bootstrap5.scss';
+:root,
+[data-bs-theme='light'] {
+	--tt-table-active-bg: #9abcea;
+	--tt-table-active-bg-hover: color-mix(
+		in srgb,
+		var(--tt-table-active-bg),
+		black 30%
+	);
+}
+
+//Main Theme Variables
+$backgroundColor: var(--bs-table-bg) !default; //background color of tabulator
+$borderColor: var(--bs-table-border-color) !default; //border to tabulator
+$textSize: 16px !default; //table text size
+
+//header theming
+$headerBackgroundColor: var(--bs-table-bg) !default; //border to tabulator
+$headerForegroundColor: inherit !default; //border to tabulator
+$headerSeparatorColor: var(
+	--bs-table-border-color
+) !default; //header bottom separator color
+$headerTextColor: var(--bs-table-color) !default; //header text color
+$headerBorderColor: var(--bs-table-border-color) !default; //header border color
+$headerMargin: 4px !default; //padding round header
+
+//
+$cellPadding: 12px !default; //padding round header
+
+//column header arrows
+$sortArrowHover: color-mix(
+	in srgb,
+	var(--bs-primary),
+	var(--bs-gray-500) 40%
+) !default; //#555 !default;
+$sortArrowActive: color-mix(
+	in srgb,
+	var(--bs-primary),
+	black 0%
+) !default; //#666 !default;
+$sortArrowInactive: color-mix(
+	in srgb,
+	var(--bs-gray-500),
+	white 30%
+) !default; //#bbb !default;
+
+//row theming
+$rowBackgroundColor: var(--bs-table-bg) !default; //table row background color
+$rowTextColor: var(--bs-table-color) !default; //table text color
+$rowAltBackgroundColor: var(
+	--bs-table-striped-bg
+) !default; //table row background color
+$rowBorderColor: var(--bs-table-border-color) !default; //table border color
+$rowHoverBackground: var(
+	--bs-table-hover-bg
+) !default; //row background color on hover
+
+//
+$rowSelectedBackground: var(
+	--tt-table-active-bg
+) !default; //row background color when selected
+$rowSelectedBackgroundHover: var(
+	--tt-table-active-bg-hover
+) !default; //row background color when selected and hovered
+
+$editBoxColor: var(--bs-primary) !default; //border color for edit boxes
+$errorColor: var(--bs-danger) !default; //error indication
+
+//footer theming
+$footerBackgroundColor: var(--bs-table-bg) !default; //border to tabulator
+$footerTextColor: var(--bs-table-color) !default; //footer text color
+$footerBorderColor: var(--bs-table-border-color) !default; //footer border color
+$footerSeparatorColor: var(
+	--bs-table-border-color
+) !default; //footer bottom separator color
+$footerActiveColor: var(
+	--bs-table-active-color
+) !default; //footer bottom active text color
+
+$table-cell-padding-sm: 5px;
+
+//
+$popupBackgroundColor: var(--bs-gray-900) !default; //table row background color
+$popupTextColor: var(--bs-gray-100) !default; //table text color

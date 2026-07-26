@@ -4,8 +4,6 @@ import 'bootstrap';
 import { importLibrary, setOptions } from '@googlemaps/js-api-loader';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 import DOMPurify from 'dompurify';
-import { Grid, html, type Row } from 'gridjs';
-import type { TCell } from 'gridjs/dist/src/types.js';
 import ky, { isHTTPError } from 'ky';
 import localforage from 'localforage';
 import Navigo from 'navigo';
@@ -14,12 +12,11 @@ import Swal from 'sweetalert2';
 import type {
 	AccessTokenResponse,
 	BackupToken,
-	CacheDifficulty,
 	ErrorResponse,
 	FoundCaches,
 	GeoScoutCache,
 	GeoScoutCaches,
-	LeaderboardRecord,
+	LeaderboardResponse,
 } from './types';
 import '@khmyznikov/pwa-install';
 import {
@@ -29,6 +26,9 @@ import {
 	updateAccessTokenGreeting,
 } from './accessTokens';
 import { changePage } from './changePage';
+import { loadFoundCachesDashboard } from './foundCachesDashboard';
+import { loadLeaderboardTable } from './leaderboard';
+import { loadMapDataTable } from './mapDataTable';
 import { resetCachePage } from './resetCachePage';
 
 // Constants from build process
@@ -60,7 +60,7 @@ export const backendApi = ky.create({
 });
 // Variables
 let mainMap: google.maps.Map;
-let router: Navigo;
+export let router: Navigo;
 let newWorker: ServiceWorker | null;
 let locationWatch: number | null = null;
 // Loader animation
@@ -105,105 +105,6 @@ function showError(
 			}
 		},
 	});
-}
-
-function getPrettyDate(
-	date: Date = new Date(),
-	prefomattedDate: false | string = false,
-	hideYear: boolean = false,
-): string {
-	const months = [
-		'January',
-		'February',
-		'March',
-		'April',
-		'May',
-		'June',
-		'July',
-		'August',
-		'September',
-		'October',
-		'November',
-		'December',
-	];
-	const days = [
-		'Sunday',
-		'Monday',
-		'Tuesday',
-		'Wednesday',
-		'Thursday',
-		'Friday',
-		'Saturday',
-	];
-	const day = String(date.getDate());
-	const prettyDay = `${days[date.getDay()]} ${day}${day === '1' || day === '21' || day === '31' ? 'st' : day === '2' || day === '22' ? 'nd' : day === '3' || day === '23' ? 'rd' : 'th'}`;
-	const month = months[date.getMonth()];
-	const year = date.getFullYear();
-	const time = String(
-		date.toLocaleTimeString('en-GB', {
-			hour: 'numeric',
-			minute: 'numeric',
-			hour12: true,
-			hourCycle: 'h12',
-		}),
-	).replace(/\s+/g, '');
-	const formattedTime = `${time.split(':')[0] === '0' ? `12:${time.split(':')[1]}` : time}`;
-	if (prefomattedDate) {
-		// Today at 10:20am
-		// Yesterday at 10:20am
-		return `${prefomattedDate} at ${formattedTime}`;
-	}
-	if (hideYear) {
-		// Tuesday 1st August at 10:20am
-		return `${prettyDay} ${month} at ${formattedTime}`;
-	}
-	// Tuesday 1st August 2023 at 10:20am
-	return `${prettyDay} ${month} ${year} at ${formattedTime}`;
-}
-
-function getTimeAgo(dateParam: Date | string): string | null {
-	if (!dateParam) {
-		return null;
-	}
-	const date = typeof dateParam === 'object' ? dateParam : new Date(dateParam);
-	const today = new Date();
-	const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-	const seconds = Math.round((today.getTime() - date.getTime()) / 1000);
-	const minutes = Math.round(seconds / 60);
-	const isToday = today.toDateString() === date.toDateString();
-	const isYesterday = yesterday.toDateString() === date.toDateString();
-	const isThisYear = today.getFullYear() === date.getFullYear();
-	if (seconds < 5) {
-		return 'now';
-	} else if (seconds < 60) {
-		return `${seconds} seconds ago`;
-	} else if (seconds < 90) {
-		return 'about a minute ago';
-	} else if (minutes < 60) {
-		return `${minutes} minutes ago`;
-	} else if (isToday) {
-		return getPrettyDate(date, 'Today');
-	} else if (isYesterday) {
-		return getPrettyDate(date, 'Yesterday');
-	} else if (isThisYear) {
-		return getPrettyDate(date, false, true);
-	}
-	return getPrettyDate(date);
-}
-
-function appendSuffix(number: number): string {
-	const firstPass = number % 10;
-	const secondPass = number % 100;
-	if (firstPass === 1 && secondPass !== 11) {
-		return `${number}st`;
-	}
-	if (firstPass === 2 && secondPass !== 12) {
-		return `${number}nd`;
-	}
-	if (firstPass === 3 && secondPass !== 13) {
-		return `${number}rd`;
-	}
-	return `${number}th`;
 }
 
 async function loadCachesMapPage(): Promise<void> {
@@ -548,157 +449,7 @@ async function loadCachesTablePage(): Promise<void> {
 			}
 		})
 		.then((data) => {
-			tableContainer.innerHTML =
-				'<div id="tableFilter"></div><div id="table"></div><div class="my-3 text-center"><a href="viewCaches" class="text-decoration-none" data-navigo="true"><i class="bi bi-map" aria-hidden="true"></i>&nbsp;View table data in a map</a></div>';
-			const table = new Grid({
-				columns: [
-					{
-						id: 'id',
-						name: 'Cache ID',
-						sort: {
-							enabled: true,
-						},
-						formatter: (cell: string) =>
-							html(
-								`<a href="viewCache-${DOMPurify.sanitize(cell)}" data-navigo="true">${DOMPurify.sanitize(cell)}</a>`,
-							),
-					},
-					{
-						id: 'location',
-						name: 'what3words location',
-						sort: {
-							enabled: true,
-						},
-						formatter: (location: string) => {
-							const locationString = String(DOMPurify.sanitize(location)).split(
-								'///',
-							)[1];
-							return html(
-								`<a href="https://what3words.com/${locationString}?maptype=satellite" target="_blank" translate="no" rel="noopener noreferrer">///${locationString}<span class="text-decoration-none ms-1"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></span></a>`,
-							);
-						},
-					},
-					{
-						id: 'difficulty',
-						name: html(
-							'Difficulty<span class="visually-hidden"> of this cache</span>',
-						),
-						sort: {
-							enabled: true,
-						},
-						formatter: (cell: CacheDifficulty) => {
-							const style =
-								cell === 'Easy'
-									? 'success'
-									: cell === 'Medium'
-										? 'warning'
-										: 'danger';
-							return html(
-								`<span class="badge text-bg-${style}">${cell}</span>`,
-							);
-						},
-					},
-					{
-						id: 'found',
-						name: html(
-							'Found<span class="visually-hidden"> this cache</span>?',
-						),
-						sort: {
-							enabled: true,
-						},
-						formatter: (cell) => {
-							return cell ? 'Yes 😊' : 'No ☹️';
-						},
-					},
-					{
-						id: 'stats',
-						name: 'Stats',
-						sort: {
-							enabled: true,
-						},
-						formatter: (count) =>
-							`${Number(count) > 0 ? `Found by ${Number(count)} ${Number(count) > 1 ? 'people 😊' : 'person 😮'}` : 'No one has found this cache yet 😢'}`,
-					},
-				],
-				autoWidth: false,
-				sort: true,
-				pagination: {
-					// enabled: true,
-					limit: 15,
-					summary: true,
-				},
-				data: () => data.flatMap((cache) => (cache.suspended ? [] : [cache])),
-				search: {
-					selector: (cell, _rowIndex, cellIndex) =>
-						cellIndex === 0 ? String(cell) : '',
-				},
-				language: {
-					search: {
-						placeholder: 'Search by Cache ID',
-					},
-				},
-			}).render(document.getElementById('table') as HTMLElement);
-			return table;
-		})
-		.then((table) => {
-			let currentFilter = 'all';
-			(document.getElementById('tableFilter') as HTMLElement).innerHTML =
-				`<fieldset><div class="btn-group mb-3 shadow">
-				<legend class="visually-hidden">Filter control for the map to toggle which caches are visible</legend>
-				<input type="radio" class="btn-check" name="tableFilterBtn" id="tableFilterAll" autocomplete="off" value="all" checked>
-				<label class="btn btn-outline-primary rounded-start" for="tableFilterAll">All caches</label>
-				<input type="radio" class="btn-check" name="tableFilterBtn" id="tableFilterNotFound" autocomplete="off" value="notFound">
-				<label class="btn btn-outline-primary" for="tableFilterNotFound">Caches you haven't found</label>
-				<input type="radio" class="btn-check" name="tableFilterBtn" id="tableFilterFound" autocomplete="off" value="found">
-				<label class="btn btn-outline-primary" for="tableFilterFound">Caches you've found</label>
-			</div></fieldset>`;
-
-			function changeFilter(filter: string) {
-				if (currentFilter !== filter) {
-					currentFilter = filter;
-					const filterMode =
-						filter === 'all'
-							? {
-									found: true,
-									notFound: true,
-								}
-							: {
-									found: filter === 'found',
-									notFound: filter === 'notFound',
-								};
-					const cacheList: GeoScoutCache[] = [];
-					caches.forEach((cache) => {
-						if (
-							((cache.found && filterMode.found) ||
-								(!cache.found && filterMode.notFound)) &&
-							!cache.suspended
-						) {
-							cacheList.push(cache);
-						}
-					});
-					table
-						.updateConfig({
-							data: cacheList,
-						})
-						.forceRender();
-				}
-			}
-			['tableFilterAll', 'tableFilterNotFound', 'tableFilterFound'].forEach(
-				(element) => {
-					document.getElementById(element)?.addEventListener('click', () => {
-						changeFilter(
-							(
-								document.querySelector(
-									'input[name="tableFilterBtn"]:checked',
-								) as HTMLInputElement
-							).value,
-						);
-					});
-				},
-			);
-		})
-		.finally(() => {
-			router.updatePageLinks();
+			return loadMapDataTable(data, tableContainer);
 		})
 		.catch((error) => {
 			showError(error, true, 'home');
@@ -926,10 +677,9 @@ async function loadFoundCachesPage(): Promise<void> {
 	) as HTMLElement;
 	foundContainer.innerHTML = loadingGif;
 	changePage('foundCaches', 'Found caches', false);
-	try {
-		try {
-			const accessToken = await getAccessToken();
-			const data = await backendApi
+	return getAccessToken()
+		.then((accessToken) => {
+			return backendApi
 				.get<FoundCaches>('found-caches', {
 					...(accessToken && {
 						headers: {
@@ -938,132 +688,17 @@ async function loadFoundCachesPage(): Promise<void> {
 					}),
 				})
 				.json();
+		})
+		.then((data) => {
 			if (data.found.length > 0) {
-				foundContainer.innerHTML = `<div class="row">
-					<div class="col-md-12 col-xl-4">
-						<div class="card stat-card mb-2 shadow">
-							<div class="card-body">
-								<div class="row">
-									<div class="col">
-										<p class="card-title text-muted mb-0">User ID</p>
-										<p class="font-weight-bold mb-0"><strong id="foundCachesUserId"></strong></p>
-									</div>
-									<div class="col-auto">
-										<div class="icon rounded-circle">
-											<img id="foundCachesProfilePic" src="./img/loading.gif" height="150" width="150" alt="Loading placeholder...">
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="col-md-6 col-xl-4">
-						<div class="card stat-card mb-2 shadow">
-							<div class="card-body">
-								<div class="row">
-									<div class="col">
-										<p class="card-title text-muted mb-0">Caches found</p>
-										<p class="font-weight-bold mb-0"><strong id="foundCachesTotal"></strong></p>
-									</div>
-									<div class="col-auto">
-										<div class="icon icon-shape bg-primary text-white rounded-circle">
-											<i class="bi bi-geo" aria-hidden="true"></i>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="col-md-6 col-xl-4">
-						<div class="card stat-card mb-2 shadow">
-							<div class="card-body">
-								<div class="row">
-									<div class="col">
-										<p class="card-title text-muted mb-0">Ranking</p>
-										<p class="font-weight-bold mb-0"><strong id="foundCacheRanking"></strong></p>
-									</div>
-									<div class="col-auto">
-										<div class="icon icon-shape bg-primary text-white rounded-circle">
-											<i class="bi bi-trophy" aria-hidden="true"></i>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div id="foundWrapper"></div>`;
-				new Grid({
-					columns: [
-						{
-							id: 'id',
-							name: 'Cache number',
-							sort: {
-								enabled: true,
-							},
-							formatter: (cell_1: string) =>
-								html(
-									`<a href="viewCache-${DOMPurify.sanitize(cell_1)}" data-navigo="true">${DOMPurify.sanitize(cell_1)}</a>`,
-								),
-						},
-						{
-							id: 'date',
-							name: 'Found',
-							sort: {
-								enabled: true,
-							},
-							formatter: (date_1: string) => {
-								return html(
-									`<time datetime="${DOMPurify.sanitize(date_1)}">${getTimeAgo(date_1)}</time>`,
-								);
-							},
-						},
-					],
-					sort: true,
-					style: {
-						table: {
-							'white-space': 'nowrap',
-						},
-					},
-					pagination: {
-						// enabled: true,
-						limit: 15,
-						summary: true,
-					},
-					data: data.found,
-				}).render(document.getElementById('foundWrapper') as HTMLElement);
-				const userId = DOMPurify.sanitize(data.userId);
-				(
-					document.getElementById('foundCachesUserId') as HTMLElement
-				).innerText = userId;
-				document
-					.getElementById('foundCachesProfilePic')
-					?.setAttribute('src', `./profilePic/${userId}/96`);
-				document
-					.getElementById('foundCachesProfilePic')
-					?.setAttribute('height', '48');
-				document
-					.getElementById('foundCachesProfilePic')
-					?.setAttribute('width', '48');
-				document
-					.getElementById('foundCachesProfilePic')
-					?.setAttribute('alt', `Profile picture for ${userId} (your User ID)`);
-				(document.getElementById('foundCachesTotal') as HTMLElement).innerText =
-					Number(data.found.length).toString();
-				const positionString = appendSuffix(Number(data.position));
-				(
-					document.getElementById('foundCacheRanking') as HTMLElement
-				).innerHTML =
-					`${positionString}${positionString === '1st' ? '&nbsp;🥇' : positionString === '2nd' ? '&nbsp;🥈' : positionString === '3rd' ? '&nbsp;🥉' : ''}`;
+				return loadFoundCachesDashboard(data, foundContainer);
 			} else {
 				foundContainer.innerHTML = noneFound;
 			}
-		} finally {
-			router.updatePageLinks();
-		}
-	} catch (error) {
-		showError(error as string, true, 'home');
-	}
+		})
+		.catch((error) => {
+			showError(error as string, true, 'home');
+		});
 }
 
 async function loadLeaderboardPage(): Promise<void> {
@@ -1084,116 +719,20 @@ async function loadLeaderboardPage(): Promise<void> {
 	leaderboardContainer.innerHTML = loadingGif;
 	changePage('leaderboard', 'Leaderboard', false);
 	try {
-		try {
-			const accessToken = await getAccessToken();
-			const data = await backendApi
-				.get<{ leaderboard: LeaderboardRecord[]; userId: string }>(
-					'get-leaderboard',
-					{
-						...(accessToken && {
-							headers: {
-								Authorization: `Bearer ${accessToken}`,
-							},
-						}),
+		const accessToken = await getAccessToken();
+		const data = await backendApi
+			.get<LeaderboardResponse>('get-leaderboard', {
+				...(accessToken && {
+					headers: {
+						Authorization: `Bearer ${accessToken}`,
 					},
-				)
-				.json();
-			if (data.leaderboard.length > 0) {
-				leaderboardContainer.innerHTML = '<div id="leaderboardWrapper"></div>';
-				new Grid({
-					columns: [
-						{
-							id: 'position',
-							name: 'Position',
-							sort: {
-								enabled: true,
-							},
-							formatter: (position_1) => {
-								const positionString = appendSuffix(Number(position_1));
-								return html(
-									`${positionString}${positionString === '1st' ? '&nbsp;🥇' : positionString === '2nd' ? '&nbsp;🥈' : positionString === '3rd' ? '&nbsp;🥉' : ''}`,
-								);
-							},
-							attributes: (cell_1: TCell, row: Row) => {
-								if (cell_1) {
-									return {
-										'data-ranking': cell_1,
-										'data-match': String(
-											Boolean(row.cells[1].data === data.userId),
-										),
-									};
-								}
-							},
-						},
-						{
-							id: 'userId',
-							name: 'User ID',
-							sort: {
-								enabled: true,
-							},
-							formatter: (userId_1: string) => {
-								const name = DOMPurify.sanitize(userId_1);
-								return html(
-									`${name}${name === data.userId ? '&nbsp;<strong>(You)</strong>' : ''}`,
-								);
-							},
-						},
-						{
-							id: 'found',
-							name: 'Number of caches found',
-							sort: {
-								enabled: true,
-							},
-						},
-					],
-					sort: true,
-					style: {
-						table: {
-							'white-space': 'nowrap',
-						},
-					},
-					data: data.leaderboard,
-				}).render(document.getElementById('leaderboardWrapper') as HTMLElement);
-			} else {
-				leaderboardContainer.innerHTML = emptyLeaderboard;
-			}
-		} finally {
-			setTimeout((): void => {
-				try {
-					document
-						.querySelectorAll('td[data-ranking="1"]')
-						.forEach((element): void => {
-							[...(element?.parentElement?.children || [])].forEach((child) => {
-								child.classList.add('gs-gold');
-							});
-						});
-					document
-						.querySelectorAll('td[data-ranking="2"]')
-						.forEach((element_1): void => {
-							[...(element_1?.parentElement?.children || [])].forEach(
-								(child_1) => {
-									child_1.classList.add('gs-silver');
-								},
-							);
-						});
-					document
-						.querySelectorAll('td[data-ranking="3"]')
-						.forEach((element_2): void => {
-							[...(element_2?.parentElement?.children || [])].forEach(
-								(child_2) => {
-									child_2.classList.add('gs-bronze');
-								},
-							);
-						});
-					[
-						...(document.querySelector('td[data-match="true"]')?.parentElement
-							?.children || []),
-					].forEach((child_3): void => {
-						child_3.classList.add('gs-your-device');
-					});
-				} catch {}
-				router.updatePageLinks();
-			}, 1000);
+				}),
+			})
+			.json();
+		if (data.leaderboard.length > 0) {
+			return loadLeaderboardTable(data, leaderboardContainer);
+		} else {
+			leaderboardContainer.innerHTML = emptyLeaderboard;
 		}
 	} catch (error) {
 		showError(error as string, true, 'home');

@@ -40,7 +40,6 @@
 		"cdn-cache-control": "^1.3.1",
 		"core-js": "^3.49.0",
 		"geodesy": "^2.4.0",
-		"gridjs": "^6.2.0",
 		"isomorphic-fetch": "^3.0.0",
 		"jsonwebtoken": "^9.0.3",
 		"ky": "^2.0.2",
@@ -52,6 +51,7 @@
 		"react": "^19.2.8",
 		"react-dom": "^19.2.8",
 		"sweetalert2": "^11.26.25",
+		"tabulator-tables": "^6.5.2",
 		"validator": "^13.15.35"
 	},
 	"devDependencies": {
@@ -66,6 +66,7 @@
 		"@types/react": "^19.2.17",
 		"@types/react-dom": "^19.2.3",
 		"@types/serviceworker": "^0.0.200",
+		"@types/tabulator-tables": "^6.3.6",
 		"@types/validator": "^13.15.10",
 		"dompurify": "^3.4.12",
 		"gulp": "^5.0.1",
