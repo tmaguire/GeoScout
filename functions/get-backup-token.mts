@@ -6,7 +6,7 @@ const { sign, verify } = pkg;
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
 // Validation module
-import isUUID from 'validator/es/lib/isUUID';
+import isUUID from 'validator/es/lib/isUUID.js';
 
 // Microsoft Graph API details
 const clientId = process.env.graphClientId as string;
