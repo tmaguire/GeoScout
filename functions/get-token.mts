@@ -6,7 +6,9 @@ const { sign } = pkg;
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
 // Validation module
-import isUUID from 'validator/es/lib/isUUID.js';
+import validator from 'validator';
+
+const { isUUID } = validator;
 
 // Microsoft Graph API details
 const clientId = process.env.graphClientId as string;
@@ -33,7 +35,13 @@ const client = Client.initWithMiddleware({
 const userListId = process.env.graphUserListId as string;
 const siteId = process.env.graphSiteId as string;
 
-import { HandlerEvent, HandlerResponse } from '@netlify/functions';
+import { getStore } from '@netlify/blobs';
+import {
+	HandlerContext,
+	HandlerEvent,
+	HandlerResponse,
+} from '@netlify/functions';
+
 // Imports for rate limiting
 import crypto from 'crypto';
 import awsLimit from 'lambda-rate-limiter';
@@ -56,7 +64,7 @@ const jwtOptions: SignOptions = {
 	algorithm: 'HS384',
 };
 // Cache for validation
-const uuidCache: { [id: string]: string } = {};
+// const uuidCache: { [id: string]: string } = {};
 // Return for all responses
 const headers = {
 	'Content-Type': 'application/json',
@@ -78,7 +86,10 @@ import { withLambda } from '@netlify/aws-lambda-compat';
 
 // Start Lambda Function
 export default withLambda(
-	async (event: HandlerEvent): Promise<HandlerResponse> => {
+	async (
+		event: HandlerEvent,
+		context: HandlerContext,
+	): Promise<HandlerResponse> => {
 		// Only allow POST
 		if (event.httpMethod !== 'POST') {
 			return {
@@ -89,6 +100,10 @@ export default withLambda(
 				headers,
 			};
 		}
+
+		const uuidCache = getStore('uuidCache');
+
+		console.log(event.body);
 
 		let uuid: string;
 
@@ -109,6 +124,7 @@ export default withLambda(
 				statusCode: 400,
 				body: JSON.stringify({
 					error: 'Invalid request',
+					errorDebug: 'UUID validation failed',
 				}),
 				headers,
 			};
@@ -147,73 +163,80 @@ export default withLambda(
 					statusCode: 400,
 					body: JSON.stringify({
 						error: 'Invalid request',
+						errorDebug: 'Unable to parse challenge token',
 					}),
 					headers,
 				};
 			}
-			if (tempToken === uuidCache[uuid]) {
-				delete uuidCache[uuid];
-				return client
-					.api(`/sites/${siteId}/lists/${userListId}/items`)
-					.post({
-						fields: {
-							Title: `${usernameList[crypto.randomInt(usernameList.length)]}-${crypto.randomInt(100, 999)}`,
-						},
-					})
-					.then((data) => {
-						itemId = data.id;
-						return sign(
-							{
-								sub: data.fields.Title,
-								oid: data.id,
-								jwtId: tempToken,
-							},
-							jwtSecret,
-							jwtOptions,
-						);
-					})
-					.then((jwt) => {
-						accessToken = jwt;
-						return client
-							.api(
-								`/sites/${siteId}/lists/${userListId}/items/${itemId}/fields`,
-							)
-							.patch({
-								Username: JSON.stringify([tempToken]),
-							});
-					})
-					.then(() => {
-						return {
-							statusCode: 201,
-							body: JSON.stringify({
-								accessToken,
-							} as AccessTokenResponse),
-							headers,
-						};
-					})
-					.catch((error) => {
-						console.warn(error);
-						return {
-							statusCode: 500,
-							body: JSON.stringify({
-								error: 'Unable to generate an account for this device',
-								errorDebug: error,
-							}),
-							headers,
-						};
-					});
-			} else {
-				try {
-					delete uuidCache[uuid];
-				} catch {}
-				return {
-					statusCode: 400,
-					body: JSON.stringify({
-						error: 'Invalid request',
-					}),
-					headers,
-				};
-			}
+			return uuidCache.get(uuid).then((uuidCacheResult) => {
+				if (tempToken === uuidCacheResult) {
+					return uuidCache
+						.delete(uuid)
+						.then(() => {
+							return client
+								.api(`/sites/${siteId}/lists/${userListId}/items`)
+								.post({
+									fields: {
+										Title: `${usernameList[crypto.randomInt(usernameList.length)]}-${crypto.randomInt(100, 999)}`,
+									},
+								});
+						})
+						.then((data) => {
+							itemId = data.id;
+							return sign(
+								{
+									sub: data.fields.Title,
+									oid: data.id,
+									jwtId: tempToken,
+								},
+								jwtSecret,
+								jwtOptions,
+							);
+						})
+						.then((jwt) => {
+							accessToken = jwt;
+							return client
+								.api(
+									`/sites/${siteId}/lists/${userListId}/items/${itemId}/fields`,
+								)
+								.patch({
+									Username: JSON.stringify([tempToken]),
+								});
+						})
+						.then(() => {
+							return {
+								statusCode: 201,
+								body: JSON.stringify({
+									accessToken,
+								} as AccessTokenResponse),
+								headers,
+							};
+						})
+						.catch((error) => {
+							console.warn(error);
+							return {
+								statusCode: 500,
+								body: JSON.stringify({
+									error: 'Unable to generate an account for this device',
+									errorDebug: error,
+								}),
+								headers,
+							};
+						});
+				} else {
+					try {
+						uuidCache.delete(uuid);
+					} catch {}
+					return {
+						statusCode: 400,
+						body: JSON.stringify({
+							error: 'Invalid request',
+							errorDebug: 'Challenge not valid',
+						}),
+						headers,
+					};
+				}
+			});
 		} else {
 			const tempToken = crypto
 				.createHash('SHA256')
@@ -223,14 +246,13 @@ export default withLambda(
 					),
 				)
 				.digest('hex');
-			uuidCache[uuid] = tempToken;
-			return {
+			return uuidCache.set(uuid, tempToken).then(() => ({
 				statusCode: 200,
 				body: JSON.stringify({
 					token: tempToken,
 				} as AccessTokenChallengeResponse),
 				headers,
-			};
+			}));
 		}
 	},
 );

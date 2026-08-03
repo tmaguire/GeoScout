@@ -3,7 +3,9 @@ import { SignOptions, sign, VerifyOptions, verify } from 'jsonwebtoken';
 // Import Fetch (Isomorphic Fetch)
 import 'isomorphic-fetch';
 // Validation module
-import isUUID from 'validator/es/lib/isUUID.js';
+import validator from 'validator';
+
+const { isUUID } = validator;
 
 // Microsoft Graph API details
 const clientId = process.env.graphClientId as string;

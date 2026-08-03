@@ -71,7 +71,7 @@
     "packageJson": {
       "dependencies": [
         "npm:@azure/identity@^4.13.1",
-        "npm:@biomejs/biome@2.5.5",
+        "npm:@biomejs/biome@2.5.6",
         "npm:@googlemaps/js-api-loader@^2.1.1",
         "npm:@googlemaps/markerclusterer@^2.6.2",
         "npm:@googlemaps/url-signature@^1.0.40",
@@ -83,21 +83,22 @@
         "npm:@types/bootstrap@^5.2.11",
         "npm:@types/geodesy@^2.2.8",
         "npm:@types/geojson@^7946.0.16",
-        "npm:@types/google.maps@^3.65.2",
+        "npm:@types/google.maps@^3.65.3",
         "npm:@types/jsonwebtoken@^9.0.10",
         "npm:@types/lambda-rate-limiter@^3.0.2",
         "npm:@types/qrcode@^1.5.6",
         "npm:@types/react-dom@^19.2.3",
-        "npm:@types/react@^19.2.17",
+        "npm:@types/react@^19.2.18",
         "npm:@types/serviceworker@^0.0.200",
+        "npm:@types/tabulator-tables@^6.3.6",
         "npm:@types/validator@^13.15.10",
         "npm:bootstrap-icons@^1.13.1",
         "npm:bootstrap@^5.3.8",
         "npm:boring-avatars@^2.0.4",
+        "npm:cdn-cache-control@^1.3.1",
         "npm:core-js@^3.49.0",
         "npm:dompurify@^3.4.12",
         "npm:geodesy@^2.4.0",
-        "npm:gridjs@^6.2.0",
         "npm:gulp-concat@^2.6.1",
         "npm:gulp-esbuild@0.15",
         "npm:gulp-file-include@^2.3.0",
@@ -121,6 +122,7 @@
         "npm:react@^19.2.8",
         "npm:sass@^1.102.0",
         "npm:sweetalert2@^11.26.25",
+        "npm:tabulator-tables@^6.5.2",
         "npm:validator@^13.15.35"
       ]
     }
