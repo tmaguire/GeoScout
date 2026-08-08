@@ -69,7 +69,7 @@
 		"@types/serviceworker": "^0.0.200",
 		"@types/tabulator-tables": "^6.3.6",
 		"@types/validator": "^13.15.10",
-		"dompurify": "^3.4.12",
+		"dompurify": "^3.4.13",
 		"gulp": "^5.0.1",
 		"gulp-concat": "^2.6.1",
 		"gulp-esbuild": "^0.15.0",
