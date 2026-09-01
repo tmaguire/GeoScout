@@ -43,7 +43,7 @@
 		"geodesy": "^2.4.0",
 		"isomorphic-fetch": "^3.0.0",
 		"jsonwebtoken": "^9.0.3",
-		"ky": "^2.0.2",
+		"ky": "^2.1.0",
 		"lambda-rate-limiter": "^4.0.2",
 		"localforage": "^1.10.0",
 		"navigo": "^8.11.1",
