@@ -9,7 +9,7 @@
 	"what3wordsApiKey": "OL112976",
 	"lat": 51.80007,
 	"lng": 0.64038,
-	"appHolding": false,
+	"appHolding": true,
 	"scripts": {
 		"build": "npm run license-check && gulp",
 		"license-check": "npx license-checker-rseidelsohn --json --relativeLicensePath --production --excludePrivatePackages --depth 0 --customPath ./thirdparty-licenses-template.json --nopeer > thirdparty-licenses.json"
