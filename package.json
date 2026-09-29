@@ -29,7 +29,7 @@
 		"@googlemaps/js-api-loader": "^2.1.1",
 		"@googlemaps/markerclusterer": "^2.6.2",
 		"@googlemaps/url-signature": "^1.0.40",
-		"@khmyznikov/pwa-install": "^0.6.4",
+		"@khmyznikov/pwa-install": "^0.7.0",
 		"@microsoft/microsoft-graph-client": "^3.0.7",
 		"@netlify/aws-lambda-compat": "^2.0.0",
 		"@netlify/blobs": "^11.0.3",
