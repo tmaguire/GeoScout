@@ -32,7 +32,7 @@
 		"@khmyznikov/pwa-install": "^0.7.0",
 		"@microsoft/microsoft-graph-client": "^3.0.7",
 		"@netlify/aws-lambda-compat": "^2.0.0",
-		"@netlify/blobs": "^11.0.3",
+		"@netlify/blobs": "^11.1.1",
 		"@netlify/functions": "^6.0.0",
 		"@popperjs/core": "^2.11.8",
 		"bootstrap": "^5.3.8",
