@@ -13,3 +13,11 @@ updates:
     commit-message:
       prefix: "[skip ci]"
       include: "scope"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: 'daily'
+      time: '09:00'
+    commit-message:
+      prefix: '[skip ci]'
+      include: 'scope'
