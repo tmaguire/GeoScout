@@ -33,7 +33,7 @@
 		"@microsoft/microsoft-graph-client": "^3.0.7",
 		"@netlify/aws-lambda-compat": "^2.0.3",
 		"@netlify/blobs": "^11.1.4",
-		"@netlify/functions": "^6.0.2",
+		"@netlify/functions": "^6.0.3",
 		"@popperjs/core": "^2.11.8",
 		"bootstrap": "^5.3.8",
 		"bootstrap-icons": "^1.13.2",
@@ -52,7 +52,7 @@
 		"react": "^19.3.0",
 		"react-dom": "^19.3.1",
 		"sweetalert2": "^11.26.25",
-		"tabulator-tables": "^6.6.1",
+		"tabulator-tables": "^6.7.1",
 		"validator": "^13.15.35"
 	},
 	"devDependencies": {
@@ -81,6 +81,6 @@
 		"gulp-uglify": "^3.0.2",
 		"license-checker-rseidelsohn": "^5.0.1",
 		"marked": "^18.1.1",
-		"sass": "^1.105.2"
+		"sass": "^1.106.1"
 	}
 }
