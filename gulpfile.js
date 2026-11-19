@@ -40,7 +40,7 @@ function licensePrep() {
 			name: license.name,
 			version: license.version,
 			repo: license.repository,
-			license: license.licenseText,
+			license: (String(license.licenseFile).endsWith('LICENSE') || String(license.licenseFile).endsWith('LICENSE.md') || String(license.licenseFile).endsWith('LICENSE.txt') || String(license.licenseFile).endsWith('license')) ? license.licenseText : '',
 			counter
 		});
 	});
